@@ -1,0 +1,20 @@
+/*Badge*/
+
+.sidebar-profile h3 {
+  display: flex;
+  align-items: flex-end;
+    justify-content: center;
+    flex-wrap: nowrap;
+}
+
+.sidebar-profile .verified-badge {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-left: 5px;
+}
+
+
+.sidebar-profile .verified-badge img {
+  width: 22px;
+}

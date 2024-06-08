@@ -1,0 +1,19 @@
+* {
+    scrollbar-color: red;
+}
+
+aside.EmojiPickerReact.epr-main {
+    border-color: #181818;
+}
+
+.EmojiPickerReact * {
+    background-color: #181818;
+}
+
+.EmojiPickerReact li.epr-emoji-category>.epr-emoji-category-label {
+    background: #181818;
+}
+
+.EmojiPickerReact .epr-search-container input.epr-search {
+    background: #181818;
+}
