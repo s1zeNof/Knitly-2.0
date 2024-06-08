@@ -10,7 +10,6 @@ import './EmojiPicker.css';
 import profile_image_icon from './img/Profile-Settings/profile-image-icon-white.svg';
 import verifiedIcon from './img/Profile-Settings/verified_icon-lg-bl.svg'; 
 
-
 const Settings = () => {
   const { user, setUser } = useUserContext();
   const [nickname, setNickname] = useState(user?.nickname || '');
@@ -57,6 +56,10 @@ const Settings = () => {
 
   const handleDescriptionChange = (event) => {
     setDescription(event.target.value.substring(0, 250));
+  };
+
+  const handleNicknameChange = (event) => {
+    setNickname(event.target.value);
   };
 
   const handleSaveEdits = async () => {
@@ -167,7 +170,7 @@ const handleProfileImageChange = async (e) => {
               </div>
               <div className="form-field">
                 <label>Nickname</label>
-                <input type="text" value={nickname} onChange={handleDescriptionChange} />
+                <input type="text" value={nickname} onChange={handleNicknameChange} />
               </div>
               <div className="form-field">
                 <label>Profile Description</label>
