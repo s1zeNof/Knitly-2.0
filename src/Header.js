@@ -7,11 +7,12 @@ import { doc, updateDoc, arrayUnion, arrayRemove, getDoc } from 'firebase/firest
 import { useUserContext } from './UserContext';
 import default_picture from './img/Default-Images/default-picture.svg';
 import notificationBell from './img/notifications/notificationBell-white.svg';
+import verifiedIcon from './img/Profile-Settings/verified_icon-lg-bl.svg'; // Додаємо імпорт значка
 
 import './Header.css';
 
 const Header = () => {
-    const { user, setUser, refreshUser  } = useUserContext();
+    const { user, setUser, refreshUser } = useUserContext();
     const [showMenu, setShowMenu] = useState(false);
     const [notifications, setNotifications] = useState([]);
     const [showNotificationsPopup, setShowNotificationsPopup] = useState(false);
@@ -23,11 +24,11 @@ const Header = () => {
                 const fetchNotifications = async () => {
                     const userRef = doc(db, 'users', authUser.uid);
                     const docSnap = await getDoc(userRef);
-    
+
                     if (docSnap.exists()) {
                         const userData = docSnap.data();
                         const followRequests = userData.followRequests || [];
-                        
+
                         // Отримуємо дані для кожного користувача, який надіслав запит на слідкування
                         const notificationPromises = followRequests.map(async (requesterId) => {
                             const requesterRef = doc(db, 'users', requesterId);
@@ -36,27 +37,27 @@ const Header = () => {
                                 const requesterData = requesterSnap.data();
                                 return {
                                     senderId: requesterId,
-                                    senderPhotoURL: requesterData.photoURL || '/path/to/default-avatar.jpg', // фото профілю
-                                    senderDisplayName: requesterData.displayName || 'Someone', // нікнейм
+                                    senderPhotoURL: requesterData.photoURL || '/path/to/default-avatar.jpg',
+                                    senderDisplayName: requesterData.displayName || 'Someone',
+                                    isVerified: requesterData.isVerified || false, // Додаємо поле isVerified
                                     message: "wants to start following you",
                                     type: "followRequest"
                                 };
                             }
                             return null;
                         });
-    
+
                         const resolvedNotifications = await Promise.all(notificationPromises);
                         setNotifications(resolvedNotifications.filter(notif => notif !== null));
                     }
                 };
-                
+
                 fetchNotifications();
             }
         });
-    
+
         return () => unsubscribe();
     }, [user]);
-    
 
     const handleNotificationClick = () => {
         setShowNotificationsPopup(!showNotificationsPopup);
@@ -66,16 +67,16 @@ const Header = () => {
         try {
             const userRef = doc(db, 'users', user.uid);
             const requesterRef = doc(db, 'users', requesterId);
-    
+
             await updateDoc(userRef, {
                 followers: arrayUnion(requesterId),
                 followRequests: arrayRemove(requesterId)
             });
-    
+
             await updateDoc(requesterRef, {
                 following: arrayUnion(user.uid)
             });
-    
+
             // Оновлення стану та UI
             setNotifications(notifications.filter(notification => notification.senderId !== requesterId));
             refreshUser(); // Оновлення даних користувача в контексті
@@ -121,24 +122,29 @@ const Header = () => {
                     <div className="notification-icon" onClick={handleNotificationClick}>
                         <img className="notif-icon" src={notificationBell} alt="Notifications" />
                         <span className={`notification-count ${notifications.length > 0 ? 'active' : ''}`}>{notifications.length}</span>
-                        {showNotificationsPopup && (
-                            <div className="notifications-popup">
-                                {notifications.map((notification, index) => (
-    <div key={index} className="notification-item">
-        <div className="notification-item-picture">
-            <img src={notification.senderPhotoURL} alt={`${notification.senderDisplayName}'s Avatar`} className="profile-picture" />
-        </div>
-        <div className="notification-item-info">
-            <p><strong>{notification.senderDisplayName}</strong> {notification.message}</p>
-            <div className="notification-item-btns">
-                <button onClick={() => handleAcceptFollowRequest(notification.senderId)}>Accept</button>
-                <button onClick={() => handleDeclineFollowRequest(notification.senderId)}>Decline</button>
-            </div>
-        </div>
-    </div>
-))}
-                            </div>
-                        )}
+                        <div className={`notifications-popup ${showNotificationsPopup ? 'show' : ''}`}>
+                            <h4>Notifications</h4>
+                            {notifications.map((notification, index) => (
+                                <div key={index} className="notification-item">
+                                    <div className="notification-item-picture">
+                                        <img src={notification.senderPhotoURL} alt={`${notification.senderDisplayName}'s Avatar`} className="profile-picture" />
+                                    </div>
+                                    <div className="notification-item-info">
+                                        <p>
+                                            <strong className="notify-name">
+                                                {notification.senderDisplayName}
+                                                {notification.isVerified && <img src={verifiedIcon} className="verified-badge" alt="Verified" />}
+                                            </strong> 
+                                            {notification.message}
+                                        </p>
+                                        <div className="notification-item-btns">
+                                            <button className="approve-btn" onClick={() => handleAcceptFollowRequest(notification.senderId)}>Accept</button>
+                                            <button className="decline-btn" onClick={() => handleDeclineFollowRequest(notification.senderId)}>Decline</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
                     </div>
                     <div className="user-profile" onClick={() => setShowMenu(!showMenu)}>
                         <img src={user.photoURL || default_picture} alt="Avatar" className="profile-picture" />

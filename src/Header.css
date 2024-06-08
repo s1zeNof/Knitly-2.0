@@ -202,16 +202,44 @@ header {
     width: 350px;
     height: 200px auto;
     position: absolute;
-    background: #3333337d;
+    background-color: #33333300;
     right: 70px;
     top: 80px;
     border-radius: 10px;
     padding: 20px;
-    transition: 0.5s;
+    border: 1px solid #ffffff05;
+    backdrop-filter: blur(20px);
+    transform: translateY(-20px);
+    opacity: 0;
+    transition: transform 0.5s ease-in-out, opacity 0.5s ease-in-out;
+    visibility: hidden; /* Початково приховуємо */
 }
+
+.notifications-popup.show {
+    transform: translateY(0);
+    opacity: 1;
+    visibility: visible; /* Показуємо при натисканні */
+}
+
+
+.notifications-popup.hidden {
+    display: none; /* Залишаємо прихованим */
+}
+
 
 .notification-item {
     display: flex;
+}
+
+.notification-item-info .verified-badge {
+    height: 15px;
+    width: auto;
+    padding: 0px 5px 0px 2px;
+}
+
+.notify-name {
+    display: flex;
+    align-items: center;
 }
 
 .notification-item:not(:last-child) {
@@ -241,12 +269,16 @@ height: 75px;
 
 .notification-item-btns {
     display: flex;
+    gap: 10px;
 }
 
 
 .notification-count.active {
     background-color: #6f32a8;
+    padding: 1px 6px;
+    font-size: 12px;
     animation: pulse 1s infinite;
+    border-radius: 50px;
 }
 
 @keyframes pulse {

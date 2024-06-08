@@ -1,3 +1,10 @@
+::selection {
+
+  background: #6f32a850; /* Safari */
+  
+  
+  }
+
 .follow-btn {
     background: #6821c4;
     border: none;
@@ -9,6 +16,31 @@
   }
 
 
+  .approve-btn {
+    background: #6821c4;
+    border: none;
+    border-radius: 8px;
+    padding: 5px 13px;
+    color: #fff;
+    cursor: pointer;
+    transition: 0.3s;
+  }
+
+  .decline-btn {
+    background-color: transparent;
+    color: white;
+    border-radius: 8px;
+    border: 1px solid #1B1B1B;
+    padding: 5px 13px;
+    cursor: pointer;
+    transition: 0.3s;
+  }
+
+  .decline-btn:hover {
+    background-color: #6821c4;
+    border: 1px solid #6821c4;;
+    transition: 0.3s;
+  }
 
 
   /* UserList.js */
