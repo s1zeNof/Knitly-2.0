@@ -1,37 +1,69 @@
 import React from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import { QueryClient, QueryClientProvider } from 'react-query';
+import { UserProvider } from './UserContext';
+import { PlayerProvider, usePlayerContext } from './PlayerContext';
+
 import Header from './Header';
-import Home from './Home'; // Ваш компонент Home
+import Home from './Home';
 import Login from './Login';
 import Register from './Register';
-import Profile from './Profile'; // Ваш компонент Profile
-import Settings from './Settings'; // Ваш компонент Settings
-import UserList from './UserList'; // UserList вивід списку людей
+import Profile from './Profile';
+import Settings from './Settings';
+import UserList from './UserList';
 import UserProfile from './UserProfile';
-import MyFriends from './MyFriends';
-import Room from './Room';
-import './App.css'
-import { UserProvider } from './UserContext';
+import UploadMusic from './UploadMusic';
+import CreateAlbum from './CreateAlbum';
+import PlaylistPage from './PlaylistPage'; // <-- ІМПОРТ
+import Player from './Player';
+
+import './App.css';
+
+const queryClient = new QueryClient();
+
+const AppContent = () => {
+    const { notification } = usePlayerContext();
+
+    return (
+        <>
+            <div style={{ paddingBottom: '90px' }}>
+                <Header />
+                <Routes>
+                    <Route path="/" element={<Home />} />
+                    <Route path="/login" element={<Login />} />
+                    <Route path="/register" element={<Register />} />
+                    <Route path="/profile" element={<Profile />} />
+                    <Route path="/user/:userNickname" element={<UserProfile />} />
+                    <Route path="/settings" element={<Settings />} />
+                    <Route path="/upload" element={<UploadMusic />} />
+                    <Route path="/create-album" element={<CreateAlbum />} />
+                    <Route path="/playlist/:playlistId" element={<PlaylistPage />} /> {/* <-- НОВИЙ МАРШРУТ */}
+                    <Route path="/userlist" element={<UserList />} />
+                </Routes>
+            </div>
+            <Player />
+            
+            {notification.message && (
+                <div className={`toast-notification ${notification.type}`}>
+                    {notification.message}
+                </div>
+            )}
+        </>
+    );
+}
 
 const App = () => {
     return (
-        <UserProvider>
-      <Router>
-          <Header />
-          <Routes>
-              <Route path="/" element={<Home />} />
-              <Route path="/login" element={<Login />} />
-              <Route path="/register" element={<Register />} />
-              <Route path="/profile" element={<Profile />} /> 
-              <Route path="/userlist" element={<UserList />} />
-              <Route path="/user/:userNickname" element={<UserProfile />} />
-              <Route path="/my-friends" element={<MyFriends />} />
-              <Route path="/settings" element={<Settings />} /> 
-              <Route path="/room" element={<Room />} />
-              {/* Додайте тут інші маршрути, якщо потрібно */}
-          </Routes>
-      </Router>
-      </UserProvider>
+        <QueryClientProvider client={queryClient}>
+            <UserProvider>
+                <PlayerProvider>
+                    <Router>
+                        <AppContent />
+                    </Router>
+                </PlayerProvider>
+            </UserProvider>
+        </QueryClientProvider>
     );
 };
+
 export default App;

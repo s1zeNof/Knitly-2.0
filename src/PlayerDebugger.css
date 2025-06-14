@@ -1,0 +1,33 @@
+.debugger-container {
+    position: fixed;
+    bottom: 100px; /* Трохи вище основного плеєра */
+    right: 20px;
+    background-color: rgba(0, 0, 0, 0.85);
+    border: 1px solid var(--color-border);
+    color: #00ff00; /* Класичний колір дебагера */
+    font-family: monospace;
+    font-size: 12px;
+    padding: 10px 15px;
+    border-radius: 8px;
+    z-index: 9999;
+    max-width: 350px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+}
+
+.debugger-title {
+    margin: 0 0 10px 0;
+    padding-bottom: 5px;
+    border-bottom: 1px solid #00ff0030;
+    font-size: 14px;
+    color: white;
+}
+
+.debugger-container p {
+    margin: 5px 0;
+    white-space: normal;
+    word-break: break-all;
+}
+
+.debugger-url {
+    color: #ffae00;
+}

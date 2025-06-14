@@ -1,0 +1,347 @@
+.tracklist-container {
+    width: 100%;
+}
+.tracklist-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  padding: 0 1rem;
+}
+.tracklist-header h3 {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+.tracklist-placeholder {
+  color: var(--color-text-secondary);
+  text-align: center;
+  padding: 3rem;
+}
+.view-mode-toggle {
+  display: flex;
+  background-color: var(--color-bg-light);
+  border-radius: 0.5rem;
+  padding: 0.25rem;
+}
+.view-mode-toggle button {
+  background: none;
+  border: none;
+  color: var(--color-text-secondary);
+  padding: 0.5rem;
+  border-radius: 0.375rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+}
+.view-mode-toggle button:hover {
+  color: var(--color-text-primary);
+}
+.view-mode-toggle button.active {
+  background-color: var(--color-border);
+  color: var(--color-text-primary);
+}
+.tracks-as-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+.track-item-list {
+  display: flex;
+  align-items: center;
+  padding: 0.75rem;
+  border-radius: 0.5rem;
+  background-color: var(--color-bg-light);
+  transition: background-color 0.2s;
+}
+.track-item-list:hover {
+  background-color: var(--color-border);
+}
+.track-cover-list {
+  width: 56px;
+  height: 56px;
+  border-radius: 0.25rem;
+  object-fit: cover;
+}
+.track-info-list {
+  flex-grow: 1;
+}
+.track-title-list {
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin: 0;
+}
+.track-plays-list {
+  font-size: 0.85rem;
+  color: var(--color-text-secondary);
+  margin: 0.25rem 0 0 0;
+}
+.play-button-list {
+  background: none;
+  border: none;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 1rem;
+}
+.play-button-list:hover {
+  color: var(--color-text-primary);
+}
+.options-container {
+    position: relative;
+}
+.options-button-list {
+  background: none;
+  border: none;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  padding: 0.5rem;
+  border-radius: 50%;
+  transition: background-color 0.2s;
+}
+.track-item-list:hover .options-button-list,
+.options-button-list:hover {
+  background-color: var(--color-border);
+  color: var(--color-text-primary);
+}
+.options-menu {
+    position: absolute;
+    right: 0;
+    top: 100%;
+    background-color: var(--color-bg-light);
+    border: 1px solid var(--color-border);
+    border-radius: 0.5rem;
+    padding: 0.5rem;
+    z-index: 20;
+    width: 200px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+}
+.options-menu button {
+    display: block;
+    width: 100%;
+    background: none;
+    border: none;
+    color: var(--color-text-primary);
+    padding: 0.75rem 1rem;
+    text-align: left;
+    border-radius: 0.25rem;
+    cursor: pointer;
+}
+.options-menu button:hover {
+    background-color: var(--color-accent);
+}
+.options-menu button.option-delete:hover {
+    background-color: #ef4444;
+}
+
+/* Кнопка "Лайк" */
+.like-button {
+    background: none;
+    border: none;
+    color: var(--color-text-secondary);
+    cursor: pointer;
+    padding: 0.5rem;
+    margin: 0 0.5rem;
+}
+.like-button.liked,
+.like-button:hover {
+    color: var(--color-accent);
+}
+
+.tracks-as-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 1.5rem;
+}
+.track-card-grid {
+  background-color: transparent;
+  padding: 1rem;
+  border-radius: 0.5rem;
+  transition: background-color 0.2s;
+}
+.track-card-grid:hover {
+  background-color: var(--color-bg-light);
+}
+.cover-container-grid {
+  position: relative;
+  margin-bottom: 0.75rem;
+  cursor: pointer;
+}
+.track-cover-grid {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+  border-radius: 0.375rem;
+}
+.play-overlay-grid {
+  position: absolute;
+  bottom: 0.5rem;
+  right: 0.5rem;
+  width: 40px;
+  height: 40px;
+  background-color: var(--color-accent);
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity 0.2s, transform 0.2s;
+}
+.track-card-grid:hover .play-overlay-grid {
+  opacity: 1;
+  transform: translateY(0);
+}
+.track-card-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.track-title-grid {
+  font-weight: 600;
+  color: var(--color-text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin: 0;
+}
+.like-button-grid {
+    background: none;
+    border: none;
+    color: var(--color-text-secondary);
+    cursor: pointer;
+}
+.like-button-grid.liked,
+.like-button-grid:hover {
+    color: var(--color-accent);
+}
+
+/* --- СТИЛІ ДЛЯ МОДАЛЬНОГО ВІКНА ПІДТВЕРДЖЕННЯ (З ЕФЕКТОМ СКЛА) --- */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(18, 18, 18, 0.5); /* Напівпрозорий фон */
+    backdrop-filter: blur(8px); /* Ефект розмиття */
+    -webkit-backdrop-filter: blur(8px); /* Для підтримки Safari */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2000;
+}
+
+.modal-content {
+    background-color: rgba(40, 40, 40, 0.7); /* Напівпрозорий фон для самого вікна */
+    padding: 2rem;
+    border-radius: 0.75rem;
+    border: 1px solid rgba(255, 255, 255, 0.1); /* Ледь помітна рамка */
+    width: 90%;
+    max-width: 500px;
+    text-align: center;
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+}
+
+.modal-content h4 {
+    margin-top: 0;
+    font-size: 1.5rem;
+}
+
+.modal-content p {
+    color: var(--color-text-secondary);
+    margin: 1rem 0 2rem 0;
+}
+
+.modal-actions {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+}
+
+.modal-button-cancel, .modal-button-confirm {
+    padding: 0.75rem 1.5rem;
+    border-radius: 0.5rem;
+    border: none;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.modal-button-cancel {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: var(--color-text-primary);
+}
+
+.modal-button-cancel:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+}
+
+.modal-button-confirm {
+    background-color: #ef4444; /* Червоний для небезпечних дій */
+    color: white;
+}
+
+.modal-button-confirm:hover {
+    background-color: #dc2626;
+}
+
+
+/* --- СТИЛІ ДЛЯ МОДАЛЬНОГО ВІКНА ДОДАВАННЯ В ПЛЕЙЛИСТ --- */
+.modal-close-button {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    background: none;
+    border: none;
+    font-size: 2rem;
+    color: var(--color-text-secondary);
+    cursor: pointer;
+}
+.modal-close-button:hover {
+    color: var(--color-text-primary);
+}
+
+.add-to-playlist-list {
+    margin-top: 1.5rem;
+    max-height: 40vh;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.add-to-playlist-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    width: 100%;
+    padding: 0.75rem;
+    border-radius: 0.375rem;
+    background-color: transparent;
+    border: none;
+    cursor: pointer;
+    text-align: left;
+    color: var(--color-text-primary);
+    transition: background-color 0.2s;
+}
+
+.add-to-playlist-item:hover {
+    background-color: var(--color-bg-light);
+}
+
+.add-to-playlist-item img {
+    width: 48px;
+    height: 48px;
+    border-radius: 0.25rem;
+    object-fit: cover;
+}
+
+.add-to-playlist-item span {
+    font-weight: 500;
+}

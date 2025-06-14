@@ -1,197 +1,133 @@
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { db } from './firebase';
-import { query, collection, where, getDocs, doc, updateDoc, arrayUnion, arrayRemove, getDoc } from 'firebase/firestore';
+import { query, collection, where, getDocs, doc, updateDoc, arrayUnion, arrayRemove } from 'firebase/firestore';
 import { useUserContext } from './UserContext';
+import TrackList from './TrackList';
+
 import default_picture from './img/Default-Images/default-picture.svg';
 import verifiedIcon from './img/Profile-Settings/verified_icon-lg-bl.svg';
-import './UserProfile.css';
-import './Global.css';
+import './Profile.css';
+
 const UserProfile = () => {
     const { userNickname } = useParams();
-    const { user: currentUser, refreshUser } = useUserContext();
+    const navigate = useNavigate();
+    const { user: currentUser, authLoading, refreshUser } = useUserContext();
+    
     const [profileUser, setProfileUser] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [activeTab, setActiveTab] = useState('music');
+    
     const [isFollowing, setIsFollowing] = useState(false);
     const [followRequestSent, setFollowRequestSent] = useState(false);
-    const [followersCount, setFollowersCount] = useState(0);
-    const [followingCount, setFollowingCount] = useState(0);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
 
     useEffect(() => {
+        if (authLoading) return;
+
         const fetchUserData = async () => {
             setLoading(true);
             try {
-                let userRef;
                 const usersQuery = query(collection(db, 'users'), where('nickname', '==', userNickname));
                 const querySnapshot = await getDocs(usersQuery);
     
                 if (!querySnapshot.empty) {
-                    // Якщо користувач знайдений за нікнеймом
-                    const userData = querySnapshot.docs[0].data();
-                    setProfileUser({ ...userData, uid: querySnapshot.docs[0].id });
-                    setFollowersCount(userData.followers?.length || 0);
-                    setFollowingCount(userData.following?.length || 0);
-                    setIsFollowing(userData.followers?.includes(currentUser?.uid));
-                    setFollowRequestSent(userData.followRequests?.includes(currentUser?.uid));
-                } else {
-                    // Якщо користувач не знайдений за нікнеймом, спробуємо знайти за ID
-                    userRef = doc(db, 'users', userNickname);
-                    const docSnap = await getDoc(userRef);
-                    if (docSnap.exists()) {
-                        const userData = docSnap.data();
-                        setProfileUser({ ...userData, uid: userNickname });
-                        setFollowersCount(userData.followers?.length || 0);
-                        setFollowingCount(userData.following?.length || 0);
-                        setIsFollowing(userData.followers?.includes(currentUser?.uid));
-                        setFollowRequestSent(userData.followRequests?.includes(currentUser?.uid));
-                    } else {
-                        setError('User not found');
+                    const userDoc = querySnapshot.docs[0];
+                    const userData = userDoc.data();
+
+                    if (currentUser && userDoc.id === currentUser.uid) {
+                        navigate('/profile');
+                        return;
                     }
+
+                    setProfileUser({ ...userData, uid: userDoc.id });
+                    
+                    if (currentUser) {
+                        setIsFollowing(userData.followers?.includes(currentUser.uid));
+                        setFollowRequestSent(userData.followRequests?.includes(currentUser.uid));
+                    }
+                } else {
+                    console.error("Користувача не знайдено");
                 }
             } catch (e) {
-                setError('Error fetching user data');
-                console.error(e);
+                console.error("Помилка завантаження даних користувача:", e);
             } finally {
                 setLoading(false);
             }
         };
     
         fetchUserData();
-    }, [userNickname, currentUser]);
-    
+    }, [userNickname, currentUser, authLoading, navigate]);
 
-    useEffect(() => {
-        console.log(`isFollowing: ${isFollowing}, followRequestSent: ${followRequestSent}`);
-    }, [isFollowing, followRequestSent]);
+    const handleFollowToggle = async () => {
+        if (!currentUser || !profileUser) return;
 
-    const refreshUserProfileData = async () => {
-        if (!profileUser || !currentUser) return;
-    
-        try {
-            const userRef = doc(db, 'users', profileUser.uid);
-            const userDoc = await getDoc(userRef);
-    
-            if (userDoc.exists()) {
-                const userData = userDoc.data();
-                setProfileUser({...userData, uid: profileUser.uid}, () => {
-                    // Оновлення isFollowing після оновлення profileUser
-                    setIsFollowing(userData.followers?.includes(currentUser.uid));
-                    setFollowRequestSent(userData.followRequests?.includes(currentUser.uid));
-                });
-                setFollowersCount(userData.followers?.length || 0);
-                setFollowingCount(userData.following?.length || 0);
-            }
-        } catch (error) {
-            console.error('Error in refreshUserProfileData:', error);
-        }
-    };
-    
-
-    const handleFollow = async () => {
-        if (!currentUser || !profileUser || currentUser.uid === profileUser.uid) return;
-    
         const profileUserRef = doc(db, 'users', profileUser.uid);
         const currentUserRef = doc(db, 'users', currentUser.uid);
+
         try {
-            console.log('Updating followers for profileUser:', profileUser.uid);
-            if (profileUser.isPublicProfile) {
-                await updateDoc(profileUserRef, {
-                    followers: arrayUnion(currentUser.uid)
-                });
-                console.log('Updating following for currentUser:', currentUser.uid);
-                const result = await updateDoc(currentUserRef, {
-                    following: arrayUnion(profileUser.uid)
-                });
-    
-                console.log('Update result:', result); // Додайте цей рядок для логування результату оновлення
-    
-                setIsFollowing(true);
-                setFollowersCount(prevCount => prevCount + 1);
-                refreshUser();
+            if (isFollowing) {
+                await updateDoc(profileUserRef, { followers: arrayRemove(currentUser.uid) });
+                await updateDoc(currentUserRef, { following: arrayRemove(profileUser.uid) });
+                setIsFollowing(false);
             } else {
-                await updateDoc(profileUserRef, {
-                    followRequests: arrayUnion(currentUser.uid)
-                });
+                if (profileUser.isPublicProfile) {
+                    await updateDoc(profileUserRef, { followers: arrayUnion(currentUser.uid) });
+                    await updateDoc(currentUserRef, { following: arrayUnion(profileUser.uid) });
+                    setIsFollowing(true);
+                } else {
+                    await updateDoc(profileUserRef, { followRequests: arrayUnion(currentUser.uid) });
+                    setFollowRequestSent(true);
+                }
             }
-            refreshUserProfileData();
-        } catch (error) {
-            console.error('Error in handleFollow:', error);
-        }
-    };
-    
-    
-    const handleUnfollow = async () => {
-        if (!currentUser || !profileUser || currentUser.uid === profileUser.uid) return;
-    
-        const profileUserRef = doc(db, 'users', profileUser.uid);
-        const currentUserRef = doc(db, 'users', currentUser.uid);
-        try {
-            await updateDoc(profileUserRef, {
-                followers: arrayRemove(currentUser.uid)
-            });
-            await updateDoc(currentUserRef, {
-                following: arrayRemove(profileUser.uid) // Видаляємо UID профілю зі списку підписок поточного користувача
-            });
-            setIsFollowing(false);
-            setFollowersCount(prevCount => prevCount - 1);
-            // Оновлюємо кількість підписок у UserContext
             refreshUser();
-            // Оновлюємо дані профілю користувача
-            await refreshUserProfileData();
         } catch (error) {
-            console.error('Error in handleUnfollow:', error);
+            console.error('Помилка підписки/відписки:', error);
         }
-        setIsFollowing(false); // Встановлюємо isFollowing у false після успішної відписки
     };
-    
 
-    if (loading) {
-        return <div>Loading...</div>;
-    }
 
-    if (error) {
-        return <div>{error}</div>;
-    }
+    if (loading) return <div>Завантаження профілю...</div>;
+    if (!profileUser) return <div>Користувача не знайдено.</div>;
 
-    
-
+    const followButtonText = isFollowing ? "Відписатися" : followRequestSent ? "Запит надіслано" : "Підписатися";
 
     return (
-        <div className="settings-container">
-            <aside className="sidebar">
-                <div className="sidebar-profile">
-                    <img src={profileUser?.photoURL || default_picture} alt={`${profileUser?.displayName}'s Avatar`} className="profile-picture" />
-                    <h3>
-                        {profileUser?.displayName || 'User'}
-                        {profileUser?.isVerified && <span className="verified-badge"><img src={verifiedIcon} alt="Verified" /></span>}
-                    </h3>
-                    <p>@{profileUser?.nickname || 'No nickname available'}</p>
-                    <p>Followers: {followersCount}</p>
-                    <p>Following: {followingCount}</p>
-                    <p>{profileUser?.email || 'No email available'}</p>
-                    {/* Відображення опису тільки якщо профіль публічний або поточний користувач слідкує за цим профілем */}
-                    {(profileUser?.isPublicProfile || isFollowing) && (
-                        <p className="profile-description">{profileUser?.description || 'No description available'}</p>
-                    )}
-                    <button className="follow-btn" 
-                            onClick={isFollowing ? handleUnfollow : followRequestSent ? null : handleFollow}>
-                        {isFollowing ? "Unfollow" : followRequestSent ? "Request Sent" : "Follow"}
-                    </button>
-                    {!profileUser?.isPublicProfile && !isFollowing && (
-                        <p className="private-profile-message">The user has made their profile private</p>
+        <div className="page-profile-container">
+            <aside className="page-profile-sidebar">
+                <div className="page-profile-background" style={{ backgroundImage: `url(${profileUser.backgroundImage})` }}></div>
+                <div className="page-profile-info-card">
+                    <img src={profileUser.photoURL || default_picture} alt="Avatar" className="page-profile-avatar" />
+                    <h2 className="page-profile-display-name">
+                        {profileUser.displayName || 'No Name'}
+                        {profileUser.isVerified && <img src={verifiedIcon} className="page-profile-verified-badge" alt="Verified" />}
+                    </h2>
+                    <p className="page-profile-nickname">@{profileUser.nickname}</p>
+                    <p className="page-profile-description">{profileUser.description || 'No description'}</p>
+                    <div className="page-profile-stats">
+                        <div className="page-profile-stat-item"><strong>{profileUser.followers?.length || 0}</strong><span>Підписники</span></div>
+                        <div className="page-profile-stat-item"><strong>{profileUser.following?.length || 0}</strong><span>Підписки</span></div>
+                    </div>
+                    {currentUser && currentUser.uid !== profileUser.uid && (
+                         <button className="page-profile-follow-button" onClick={handleFollowToggle} disabled={followRequestSent && !isFollowing}>
+                            {followButtonText}
+                        </button>
                     )}
                 </div>
             </aside>
-            <div className="profile-main-content">
-                <div className="profile-background" style={{ backgroundImage: `url(${profileUser?.backgroundImage || '/path/to/default-background.jpg'})` }}></div>
-                <main className="profile-main-content">
-                    <div className="profile-details">
-                        <h2>{profileUser?.displayName || 'User'}'s Profile</h2>
-                        
-                    </div>
-                </main>
-            </div>
+
+            <main className="page-profile-main-content">
+                <div className="page-profile-tabs">
+                    <button className={`page-profile-tab-button ${activeTab === 'music' ? 'active' : ''}`} onClick={() => setActiveTab('music')}>Музика</button>
+                    <button className={`page-profile-tab-button ${activeTab === 'feed' ? 'active' : ''}`} onClick={() => setActiveTab('feed')}>Стрічка</button>
+                </div>
+                <div className="page-profile-tab-content">
+                    {activeTab === 'music' ? (
+                        <TrackList userId={profileUser.uid} />
+                    ) : (
+                        <div className="page-profile-tab-placeholder">Стрічка цього користувача буде тут.</div>
+                    )}
+                </div>
+            </main>
         </div>
     );
 };

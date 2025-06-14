@@ -1,0 +1,272 @@
+/* Цей стиль застосовується до <body> ТІЛЬКИ на головній сторінці.
+  Він перебиває будь-який фоновий малюнок і встановлює суцільний темний колір.
+*/
+body.home-page-background {
+  background-color: #121212 !important;
+  background-image: none !important;
+}
+
+/* Загальний контейнер для головної сторінки */
+.home-container {
+    display: flex;
+    background-color: #121212; /* Основний темний фон */
+    color: #e0e0e0; /* Світлий текст */
+    min-height: calc(100vh - 70px); /* Висота екрану мінус висота хедера */
+}
+
+/* --- Лівий та Правий Сайдбари --- */
+.left-sidebar, .right-sidebar {
+    padding: 20px;
+    background-color: #181818; /* Трохи світліший фон для сайдбарів */
+}
+
+.left-sidebar {
+    width: 240px;
+    border-right: 1px solid #282828;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.right-sidebar {
+    width: 280px;
+    border-left: 1px solid #282828;
+}
+
+/* Навігація в лівому сайдбарі */
+.sidebar-nav {
+    display: flex;
+    flex-direction: column;
+}
+
+.nav-item {
+    color: #b3b3b3;
+    text-decoration: none;
+    padding: 15px 10px;
+    border-radius: 5px;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    gap: 15px; /* Відстань між іконкою та текстом */
+    transition: background-color 0.2s, color 0.2s;
+}
+
+.nav-item:hover {
+    background-color: #282828;
+    color: #ffffff;
+}
+
+.nav-item.active {
+    color: #ffffff;
+    background-color: #282828;
+}
+
+
+/* --- Центральний контент --- */
+.main-content {
+    flex-grow: 1; /* Займає весь доступний простір */
+    padding: 20px 40px;
+    overflow-y: auto; /* Дозволяє скролити контент */
+}
+
+.content-header {
+    margin-bottom: 20px;
+}
+
+.feed-tabs {
+    margin-top: 10px;
+}
+
+.tab-button {
+    background: none;
+    border: 1px solid #535353;
+    color: #b3b3b3;
+    padding: 8px 16px;
+    border-radius: 20px;
+    margin-right: 10px;
+    cursor: pointer;
+    transition: background-color 0.2s, color 0.2s;
+}
+
+.tab-button:hover {
+    border-color: #ffffff;
+}
+
+.tab-button.active {
+    background-color: #ffffff;
+    color: #121212;
+    border-color: #ffffff;
+}
+
+/* Картки контенту */
+.content-card {
+    background-color: #181818;
+    border-radius: 8px;
+    overflow: hidden;
+    margin-bottom: 25px;
+    border: 1px solid #282828;
+}
+
+.card-image-placeholder {
+    height: 250px;
+    background-size: cover;
+    background-position: center;
+}
+
+.card-body {
+    padding: 20px;
+}
+
+.card-body h3 {
+    margin-top: 0;
+    color: #ffffff;
+}
+
+.listen-now-btn {
+    background-color: #1DB954; /* Зелений акцент, як на референсі */
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 20px;
+    font-weight: bold;
+    cursor: pointer;
+    margin-top: 10px;
+}
+
+/* --- Стилі для блоку профілю в лівому сайдбарі --- */
+.sidebar-profile {
+    margin-top: auto; /* Притискає блок до низу */
+}
+
+.profile-link-card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px;
+    border-radius: 8px;
+    text-decoration: none;
+    color: inherit;
+    transition: background-color 0.2s;
+    margin-bottom: 10px;
+}
+
+.profile-link-card:hover {
+    background-color: #282828;
+}
+
+.profile-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.profile-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.profile-name {
+    font-weight: bold;
+    color: #ffffff;
+}
+
+.profile-nickname {
+    font-size: 0.9em;
+    color: #b3b3b3;
+}
+
+/* Стилі для блоку, якщо користувач не залогінений */
+.sidebar-login-prompt {
+    margin-top: auto;
+    padding: 20px;
+    text-align: center;
+    background-color: #181818;
+    border-radius: 8px;
+}
+.login-button {
+    display: block;
+    width: 100%;
+    padding: 10px;
+    margin-top: 15px;
+    background-color: #6f32a8; /* Пурпуровий акцент */
+    color: white;
+    text-decoration: none;
+    border-radius: 20px;
+    font-weight: bold;
+    text-align: center;
+    transition: background-color 0.2s;
+}
+.login-button:hover {
+    background-color: #5c2a91;
+}
+
+
+/* --- Оновлення для правого сайдбару --- */
+/* Застосовуємо стилі до Link, щоб він поводився як наш блок */
+.friend-list .friend-item {
+    display: flex;
+    align-items: center;
+    margin-bottom: 15px;
+    gap: 10px;
+    text-decoration: none;
+    color: inherit;
+    border-radius: 5px;
+    padding: 5px;
+    transition: background-color 0.2s;
+}
+
+.friend-list .friend-item:hover {
+    background-color: #282828;
+}
+
+.friend-item img {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+}
+
+.status-dot {
+    height: 8px;
+    width: 8px;
+    border-radius: 50%;
+    margin-left: auto;
+}
+.status-dot.online { background-color: #1DB954; }
+.status-dot.offline { background-color: #535353; }
+
+
+/* Адаптивність для Home */
+@media (max-width: 1024px) {
+    .right-sidebar {
+        display: none; /* Ховаємо правий сайдбар на планшетах */
+    }
+    .main-content {
+        padding: 1.5rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .home-container {
+        flex-direction: column;
+    }
+    .left-sidebar {
+        width: 100%;
+        border-right: none;
+        border-bottom: 1px solid var(--color-border);
+        flex-direction: row; /* Горизонтальне меню */
+        justify-content: space-around;
+        padding: 0.5rem;
+        box-sizing: border-box;
+    }
+    .sidebar-nav {
+        flex-direction: row;
+        gap: 1rem;
+    }
+    .sidebar-profile {
+        display: none; /* Ховаємо профіль, бо він є в хедері */
+    }
+    .main-content {
+        padding: 1rem;
+    }
+}

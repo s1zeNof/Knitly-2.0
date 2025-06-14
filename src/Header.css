@@ -5,9 +5,12 @@ header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background-color: #333;
+    background-color: #1f1f1f;
     color: white;
-    padding: 15px 20px;
+    padding: 1rem 1.5rem;
+    position: sticky;
+    top: 0;
+    z-index: 100;
 }
 
 .header-section {
@@ -120,6 +123,9 @@ header {
     .header-menu, .header-auth {
         flex-direction: column;
         align-items: flex-start;
+    }
+    .right-side-header .notification-icon {
+        margin-right: 1rem;
     }
 }
 

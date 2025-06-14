@@ -1,0 +1,195 @@
+.playlist-page-container {
+    padding: 2rem 3rem;
+    background: linear-gradient(to bottom, var(--color-accent) 0%, var(--color-bg-deep) 350px);
+}
+
+.playlist-header {
+    display: flex;
+    align-items: flex-end;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.playlist-cover-art {
+    width: 230px;
+    height: 230px;
+    flex-shrink: 0;
+    border-radius: 0.5rem;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+    background-color: var(--color-bg-light);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.playlist-cover-art img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 0.5rem;
+}
+
+.playlist-details {
+    display: flex;
+    flex-direction: column;
+}
+
+.playlist-type {
+    font-size: 0.9rem;
+    font-weight: 600;
+    margin: 0 0 0.5rem 0;
+}
+
+.playlist-title {
+    font-size: 4rem;
+    font-weight: 800;
+    margin: 0;
+    line-height: 1.1;
+}
+
+.playlist-creator {
+    margin-top: 1rem;
+    color: var(--color-text-secondary);
+}
+
+.playlist-creator a {
+    color: var(--color-text-primary);
+    font-weight: 600;
+    text-decoration: none;
+}
+.playlist-creator a:hover {
+    text-decoration: underline;
+}
+
+.loading-placeholder {
+    padding: 4rem;
+    text-align: center;
+    color: var(--color-text-secondary);
+    font-size: 1.2rem;
+}
+
+/* --- НОВІ СТИЛІ ДЛЯ ПАНЕЛІ ДІЙ --- */
+.playlist-actions-bar {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    padding: 1.5rem 0;
+}
+
+.playlist-play-button {
+    background-color: var(--color-accent);
+    color: white;
+    border: none;
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: transform 0.2s, background-color 0.2s;
+}
+.playlist-play-button:hover {
+    background-color: var(--color-accent-hover);
+    transform: scale(1.05);
+}
+.playlist-play-button svg {
+    width: 32px;
+    height: 32px;
+}
+
+.playlist-edit-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: none;
+    border: 1px solid var(--color-border);
+    color: var(--color-text-primary);
+    padding: 0.75rem 1.5rem;
+    border-radius: 0.5rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+.playlist-edit-button:hover {
+    background-color: var(--color-bg-light);
+}
+
+.playlist-options-container {
+    position: relative;
+}
+
+.playlist-options-button {
+    background: none;
+    border: none;
+    color: var(--color-text-secondary);
+    cursor: pointer;
+}
+.playlist-options-button:hover {
+    color: var(--color-text-primary);
+}
+.playlist-options-button svg {
+    width: 32px;
+    height: 32px;
+}
+
+.options-menu {
+    position: absolute;
+    left: 0;
+    top: calc(100% + 10px);
+    background-color: var(--color-bg-light);
+    border: 1px solid var(--color-border);
+    border-radius: 0.5rem;
+    padding: 0.5rem;
+    z-index: 20;
+    width: 250px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+}
+.options-menu button {
+    display: block;
+    width: 100%;
+    background: none;
+    border: none;
+    color: var(--color-text-primary);
+    padding: 0.75rem 1rem;
+    text-align: left;
+    border-radius: 0.25rem;
+    cursor: pointer;
+}
+.options-menu button:hover {
+    background-color: var(--color-accent);
+}
+.options-menu button.option-delete:hover {
+    background-color: #ef4444;
+}
+
+.playlist-content {
+    padding-top: 2rem;
+}
+.playlist-empty-message {
+    text-align: center;
+    color: var(--color-text-secondary);
+    font-size: 1.1rem;
+    padding: 2rem;
+}
+
+/* Адаптивність для PlaylistPage */
+@media (max-width: 768px) {
+    .playlist-page-container {
+        padding: 1.5rem 1rem;
+    }
+    .playlist-header {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+    }
+    .playlist-title {
+        font-size: 2.5rem;
+    }
+    .playlist-cover-art {
+        width: 180px;
+        height: 180px;
+    }
+    .playlist-actions-bar {
+        justify-content: center;
+    }
+}

@@ -1,8 +1,9 @@
 import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
-import { getAnalytics } from "firebase/analytics";
+import { getStorage } from "firebase/storage"; // <<< 1. ІМПОРТУЄМО СЕРВІС STORAGE
 
+// Ваш конфігураційний об'єкт залишається без змін
 const firebaseConfig = {
   apiKey: "AIzaSyDo4UIKRxXU2uhLr250iyXNuC8J5n_8hz0",
   authDomain: "knitly-92828.firebaseapp.com",
@@ -15,7 +16,10 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 
+// Ініціалізуємо сервіси
 const db = getFirestore(app);
 const auth = getAuth(app);
+const storage = getStorage(app); // <<< 2. ІНІЦІАЛІЗУЄМО STORAGE
 
-export { db, auth };
+// Експортуємо всі три сервіси
+export { db, auth, storage }; // <<< 3. ДОДАЄМО STORAGE ДО ЕКСПОРТУ

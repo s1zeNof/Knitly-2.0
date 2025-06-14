@@ -1,285 +1,222 @@
-/* Settings.css */
-
-.emoji-icon, .user-description, textarea {
-  font-family: "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji", sans-serif;
+.settings-page-container {
+    max-width: 1440px;
+    margin: 0 auto;
+    padding: 2rem 4rem;
 }
-
-.settings-container {
+.settings-page-header h1 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin: 0 0 2rem 0;
+}
+.settings-layout {
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    gap: 3rem;
+}
+.settings-sidebar {
     display: flex;
-    background-color: #121212;
-    color: white;
-    height: 100vh;
-  }
-  
-  .sidebar {
-    width: 250px;
-    background-color: #1f1f1f;
-    padding: 20px;
-  }
-  
-  .sidebar-profile {
-    text-align: center;
-    margin-bottom: 20px;
-  }
-
-  /*change image*/
-  
-  .profile-picture-upload {
-    position: relative;
-    cursor: pointer;
-    display: inline-block;
-    border-radius: 50%; /* Закруглення країв */
-  }
-  
-  .profile-picture-upload:hover::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+.settings-sidebar button {
+    display: flex; align-items: center; gap: 1rem;
+    width: 100%; padding: 0.75rem 1rem; border: none; background: none;
+    color: var(--color-text-secondary); font-size: 1rem; font-weight: 500;
+    text-align: left; border-radius: 0.5rem; cursor: pointer;
+    transition: background-color 0.2s, color 0.2s;
+}
+.settings-sidebar button:hover { color: var(--color-text-primary); }
+.settings-sidebar button.active {
+    background-color: var(--color-bg-light);
+    color: var(--color-text-primary);
+    font-weight: 600;
+}
+.settings-sidebar svg { width: 24px; height: 24px; stroke-width: 2px; }
+.settings-main-content {
+    display: flex;
+    flex-direction: column;
+}
+.settings-tab-content { flex-grow: 1; }
+.settings-tab-content h3 {
+    font-size: 1.5rem; font-weight: 600;
+    padding-bottom: 1.5rem; border-bottom: 1px solid var(--color-border);
+    margin: 0 0 2rem 0;
+}
+.form-section { margin-bottom: 2.5rem; }
+.form-section > label {
+    display: block; font-weight: 600;
+    color: var(--color-text-primary); margin-bottom: 0.75rem;
+}
+.image-uploaders-container {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 2rem;
+    align-items: flex-end;
+    padding: 1.5rem;
+    background-color: var(--color-bg-light);
+    border-radius: 0.5rem;
+}
+.image-uploader {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    align-items: center;
+}
+.image-uploader.background {
+    align-items: flex-start;
     width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.5); /* Сірий фон при наведенні */
+}
+.image-preview { object-fit: cover; }
+.image-preview.profile {
+    width: 100px;
+    height: 100px;
     border-radius: 50%;
-    transition: background 0.3s ease;
-  }
-  
-  .profile-picture-upload:hover .camera-icon {
-    display: block;
-  }
-  
-  .camera-icon {
-    display: none;
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    /* Стилі для іконки камери */
-  }
-
-  .camera-icon img {
-    width: 28px;
-    height: auto;
-  }
-  
-
-  
-  .profile-picture-upload {
-    position: relative;
-    cursor: pointer;
-    display: inline-block;
-  }
-  /*** end change image ***/
-  .logout-button {
-    background-color: #333;
-    color: white;
-    border: none;
-    padding: 10px;
-    margin-top: 10px;
-    cursor: pointer;
-    transition: 0.3s;
-  }
-
-  .logout-button:hover {
-    background-color: rgb(219, 70, 70);
-    transition: 0.3s;
-  }
-  
-  .settings-content {
-    flex-grow: 1;
-    padding: 20px;
-  }
-  
-  .settings-section {
-    background-color: #333;
-    padding: 20px;
-    border-radius: 8px;
-    padding-right: 45px;
-  }
-  
-  .settings-tabs {
-    display: flex;
-    margin-bottom: 20px;
-  }
-  
-  .settings-tabs button {
-    background: none;
-    border: none;
-    padding: 10px;
-    color: white;
-    cursor: pointer;
-  }
-  
-  .settings-tabs button.active {
-    border-bottom: 2px solid #fff;
-  }
-  
-  .settings-form .form-field {
-    margin-bottom: 20px;
-  }
-  
-  .settings-form .form-field label {
-    display: block;
-    margin-bottom: 5px;
-  }
-  
-  .settings-form .form-field input {
+}
+.image-preview.background {
     width: 100%;
-    padding: 10px;
-    border-radius: 4px;
-    border: 1px solid #555;
-    background-color: #333;
-    color: white;
-  }
-  
-  .settings-form .form-field button {
-    padding: 10px 15px;
-    border-radius: 4px;
-    border: none;
-    background-color: #0078D4; /* Синій колір кнопки */
-    color: white;
-    cursor: pointer;
-  }
-  
-  .settings-form .form-field .error {
-    color: #e57373; /* Червоний колір помилок */
-  }
-
-  .save-edits-btn {
-    background: #6821c4;
-    border: none;
-    border-radius: 8px;
-    padding: 10px;
-    color: #fff;
-    cursor: pointer;
-    transition: 0.3s;
-  }
-
-  .save-edits-btn:hover {
-    background-color: #571ba6;
-    transition: 0.3s;
-  }
-  
-  /* Продовжуйте стилізацію згідно з вашим дизайном */
-  
-
-  .settings-form .form-field {
-    position: relative;
-  }
-  
-  .character-count {
+    height: 150px;
+    border-radius: 0.5rem;
+}
+.image-uploader input[type="file"] { display: none; }
+.button-secondary {
+    padding: 0.6rem 1.2rem; border-radius: 0.5rem;
+    border: 1px solid var(--color-border);
+    background-color: var(--color-bg-deep);
+    color: var(--color-text-primary); cursor: pointer; font-weight: 500;
+}
+.button-secondary:hover { border-color: var(--color-text-primary); }
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+}
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+.form-group label {
+    font-weight: 500;
+    color: var(--color-text-secondary);
+}
+.form-group small {
+    margin-top: 0.25rem;
+    font-size: 0.875rem;
+    line-height: 1.2;
+}
+.form-error-text {
+    color: var(--color-error);
+}
+.input-group {
+    display: flex; align-items: center;
+    background-color: var(--color-bg-light);
+    border: 1px solid var(--color-border);
+    border-radius: 0.5rem;
+}
+.input-group span {
+    padding-left: 1rem;
+    color: var(--color-text-secondary);
+}
+.input-group input {
+    border: none; background: none; padding: 0.75rem 1rem;
+    padding-left: 0.5rem; flex-grow: 1; color: var(--color-text-primary);
+}
+.input-group input:focus { box-shadow: none; outline: none; }
+.textarea-wrapper { 
+    position: relative; 
+}
+.settings-tab-content .form-textarea {
+    padding-bottom: 45px;
+    resize: vertical;
+}
+.textarea-footer {
     position: absolute;
     bottom: 10px;
     right: 10px;
-    color: #aaa;
-  }
-  
-  .emoji-icon {
-    position: absolute;
-    bottom: 10px;
-    right: 30px;
-    cursor: pointer;
-  }
-  
-  .user-description {
-    /* Add your styles for the description in the sidebar here */
-  }
-  
-
-
-  /*New Settings Design*/
-
-  .profile-main-content {
-    width: 100%;
-  }
-
-  .profile-background {
-    width: 100%;
-    height: 300px; /* Adjust the height as needed */
-    background-size: cover;
-    background-position: center;
-    position: relative;
-    background-size: cover;
-  }
-  
-  .profile-background:hover .profile-background-label {
-    display: block;
-  }
-  
-  .profile-background-label {
-    display: none;
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background: rgba(255, 255, 255, 0.7);
-    padding: 10px;
-    cursor: pointer;
-  }
-  
-  /* Ensure the rest of your CSS matches the design from the screenshot */
-  
-
-  /*Private & Public profile*/
-
-  /* The switch - the box around the slider */
-.switch {
-  position: relative;
-  display: inline-block;
-  width: 60px;
-  height: 34px;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
 }
-
-/* Hide default HTML checkbox */
-.switch input {
-  opacity: 0;
-  width: 0;
-  height: 0;
+.char-counter {
+    font-size: 0.9rem;
+    color: var(--color-text-secondary);
 }
-
-/* The slider */
+.emoji-button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 1.2rem;
+    padding: 0;
+}
+.emoji-picker-wrapper {
+    position: absolute;
+    right: 0;
+    bottom: 45px;
+    z-index: 10;
+}
+.privacy-toggle {
+    display: flex; justify-content: space-between; align-items: center;
+    background-color: var(--color-bg-light);
+    padding: 1.5rem; border-radius: 0.5rem; border: 1px solid var(--color-border);
+}
+.privacy-toggle div { max-width: 70%; }
+.privacy-toggle p { font-weight: 600; margin: 0; }
+.privacy-toggle span { font-size: 0.9rem; color: var(--color-text-secondary); }
+.switch { position: relative; display: inline-block; width: 50px; height: 28px; }
+.switch input { opacity: 0; width: 0; height: 0; }
 .slider {
-  position: absolute;
-  cursor: pointer;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: #ccc;
-  -webkit-transition: .4s;
-  transition: .4s;
+  position: absolute; cursor: pointer; inset: 0;
+  background-color: var(--color-border); transition: .4s;
 }
-
 .slider:before {
-  position: absolute;
-  content: "";
-  height: 26px;
-  width: 26px;
-  left: 4px;
-  bottom: 4px;
-  background-color: white;
-  -webkit-transition: .4s;
-  transition: .4s;
+  position: absolute; content: ""; height: 20px; width: 20px;
+  left: 4px; bottom: 4px; background-color: white; transition: .4s;
+}
+input:checked + .slider { background-color: var(--color-accent); }
+input:checked + .slider:before { transform: translateX(22px); }
+.slider.round { border-radius: 34px; }
+.slider.round:before { border-radius: 50%; }
+.settings-actions {
+    margin-top: auto;
+    padding-top: 2rem;
+    border-top: 1px solid var(--color-border);
+    display: flex;
+    justify-content: flex-end;
+}
+.button-primary {
+  padding: 0.75rem 2rem; border: none; font-size: 1rem;
+  font-weight: 600; border-radius: 0.5rem; cursor: pointer;
+  color: white; background-color: var(--color-accent);
+}
+.button-primary:disabled {
+  background-color: var(--color-disabled); cursor: not-allowed;
 }
 
-input:checked + .slider {
-  background-color: #2196F3;
+@media (max-width: 900px) {
+    .settings-layout {
+        grid-template-columns: 1fr;
+    }
+    .settings-sidebar {
+        flex-direction: row;
+        overflow-x: auto;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid var(--color-border);
+        margin-bottom: 1rem;
+    }
+    .settings-sidebar button {
+        flex-shrink: 0;
+    }
+    .settings-page-container {
+        padding: 1.5rem 1rem;
+    }
 }
-
-input:focus + .slider {
-  box-shadow: 0 0 1px #2196F3;
-}
-
-input:checked + .slider:before {
-  -webkit-transform: translateX(26px);
-  -ms-transform: translateX(26px);
-  transform: translateX(26px);
-}
-
-/* Rounded sliders */
-.slider.round {
-  border-radius: 34px;
-}
-
-.slider.round:before {
-  border-radius: 50%;
+@media (max-width: 600px) {
+    .form-row, .image-uploaders-container {
+        grid-template-columns: 1fr;
+    }
+    .privacy-toggle {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
 }
