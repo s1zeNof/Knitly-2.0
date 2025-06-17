@@ -6,9 +6,10 @@ import { collection, getDocs, query, limit } from 'firebase/firestore';
 import './Home.css';
 import default_picture from './img/Default-Images/default-picture.svg';
 
-// Іконки (можна залишити або замінити на бібліотеку)
+// Іконки
 const HomeIcon = () => '🏠';
 const DiscoverIcon = () => '🧭';
+const MessagesIcon = () => '💬'; // <<< НОВА ІКОНКА
 const SettingsIcon = () => '⚙️';
 
 const Home = () => {
@@ -65,6 +66,7 @@ const Home = () => {
                 <nav className="sidebar-nav">
                     <Link to="/" className="nav-item active"><HomeIcon /> Home</Link>
                     <Link to="/userlist" className="nav-item"><DiscoverIcon /> Discover</Link>
+                    <Link to="/messages" className="nav-item"><MessagesIcon /> Messages</Link> {/* <<< ДОДАНО ПОСИЛАННЯ */}
                 </nav>
                 {user ? (
                     <div className="sidebar-profile">

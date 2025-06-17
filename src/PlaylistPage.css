@@ -1,6 +1,6 @@
 .playlist-page-container {
     padding: 2rem 3rem;
-    background: linear-gradient(to bottom, var(--color-accent) 0%, var(--color-bg-deep) 350px);
+    transition: background 0.5s ease-in-out;
 }
 
 .playlist-header {
@@ -8,6 +8,7 @@
     align-items: flex-end;
     gap: 1.5rem;
     margin-bottom: 2rem;
+    z-index: 1 !important;
 }
 
 .playlist-cover-art {
@@ -67,11 +68,10 @@
     font-size: 1.2rem;
 }
 
-/* --- НОВІ СТИЛІ ДЛЯ ПАНЕЛІ ДІЙ --- */
 .playlist-actions-bar {
     display: flex;
     align-items: center;
-    gap: 1.5rem;
+    gap: 1rem; 
     padding: 1.5rem 0;
 }
 
@@ -87,6 +87,7 @@
     justify-content: center;
     cursor: pointer;
     transition: transform 0.2s, background-color 0.2s;
+    margin-right: 0.5rem; 
 }
 .playlist-play-button:hover {
     background-color: var(--color-accent-hover);
@@ -95,23 +96,6 @@
 .playlist-play-button svg {
     width: 32px;
     height: 32px;
-}
-
-.playlist-edit-button {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    background: none;
-    border: 1px solid var(--color-border);
-    color: var(--color-text-primary);
-    padding: 0.75rem 1.5rem;
-    border-radius: 0.5rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background-color 0.2s;
-}
-.playlist-edit-button:hover {
-    background-color: var(--color-bg-light);
 }
 
 .playlist-options-container {
@@ -123,6 +107,7 @@
     border: none;
     color: var(--color-text-secondary);
     cursor: pointer;
+    padding: 0.5rem;
 }
 .playlist-options-button:hover {
     color: var(--color-text-primary);
@@ -165,14 +150,124 @@
 .playlist-content {
     padding-top: 2rem;
 }
-.playlist-empty-message {
-    text-align: center;
-    color: var(--color-text-secondary);
-    font-size: 1.1rem;
-    padding: 2rem;
+
+/* --- СТИЛІ ДЛЯ ПАНЕЛІ КАСТОМІЗАЦІЇ --- */
+.customize-panel {
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: 360px;
+    height: 100%;
+    background-color: var(--color-bg-medium);
+    border-left: 1px solid var(--color-border);
+    z-index: 1500;
+    display: flex;
+    flex-direction: column;
+    animation: slideIn 0.3s ease-out;
+}
+@keyframes slideIn {
+    from { transform: translateX(100%); }
+    to { transform: translateX(0); }
 }
 
-/* Адаптивність для PlaylistPage */
+.customize-panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid var(--color-border);
+    flex-shrink: 0;
+}
+.customize-panel-header h4 { margin: 0; font-size: 1.2rem; }
+.customize-panel-header button {
+    background: none; border: none; font-size: 1.75rem;
+    color: var(--color-text-secondary); cursor: pointer;
+}
+.customize-panel-header button:hover { color: var(--color-text-primary); }
+
+.customize-panel-content {
+    padding: 1.5rem;
+    overflow-y: auto;
+    flex-grow: 1;
+}
+.customize-panel-content h5 {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--color-text-secondary);
+    margin: 0 0 1rem 0;
+}
+.gradient-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+}
+.gradient-option {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    border-radius: 0.5rem;
+    cursor: pointer;
+    border: 3px solid transparent;
+    transition: transform 0.2s, border-color 0.2s;
+}
+.gradient-option:hover {
+    transform: scale(1.05);
+}
+.gradient-option.selected {
+    border-color: var(--color-text-primary);
+    box-shadow: 0 0 15px rgba(255, 255, 255, 0.5);
+}
+.customize-panel-footer {
+    padding: 1.5rem;
+    border-top: 1px solid var(--color-border);
+}
+.button-primary {
+  padding: 0.75rem 2rem; border: none; font-size: 1rem;
+  font-weight: 600; border-radius: 0.5rem; cursor: pointer;
+  color: white; background-color: var(--color-accent);
+}
+.button-primary:disabled {
+  background-color: var(--color-disabled); cursor: not-allowed;
+}
+
+/* --- ГОЛОВНІ ГРАДІЄНТИ СТОРІНКИ --- */
+.playlist-page-container.gradient-default { background: linear-gradient(to bottom, var(--color-accent) 0%, var(--color-bg-deep) 350px); }
+.playlist-page-container.gradient-1 { background: linear-gradient(to bottom, #667eea 0%, var(--color-bg-deep) 350px); }
+.playlist-page-container.gradient-2 { background: linear-gradient(to bottom, #ff9a9e 0%, var(--color-bg-deep) 350px); }
+.playlist-page-container.gradient-3 { background: linear-gradient(to bottom, #00c6fb 0%, var(--color-bg-deep) 350px); }
+.playlist-page-container.gradient-4 { background: linear-gradient(to bottom, #30cfd0 0%, var(--color-bg-deep) 350px); }
+.playlist-page-container.gradient-5 { background: linear-gradient(to bottom, #a1c4fd 0%, var(--color-bg-deep) 350px); }
+.playlist-page-container.gradient-6 { background: linear-gradient(to bottom, #43e97b 0%, var(--color-bg-deep) 350px); }
+.playlist-page-container.gradient-7 { background: linear-gradient(to bottom, #fa709a 0%, var(--color-bg-deep) 350px); }
+.playlist-page-container.gradient-8 { background: linear-gradient(to bottom, #f093fb 0%, var(--color-bg-deep) 350px); }
+.playlist-page-container.gradient-9 { background: linear-gradient(to bottom, #4facfe 0%, var(--color-bg-deep) 350px); }
+.playlist-page-container.gradient-10 { background: linear-gradient(to bottom, #f5d020 0%, var(--color-bg-deep) 350px); }
+.playlist-page-container.gradient-11 { background: linear-gradient(to bottom, #1e3c72 0%, var(--color-bg-deep) 350px); }
+.playlist-page-container.gradient-12 { background: linear-gradient(to bottom, #B721FF 0%, var(--color-bg-deep) 350px); }
+.playlist-page-container.gradient-13 { background: linear-gradient(to bottom, #08AEEA 0%, var(--color-bg-deep) 350px); }
+.playlist-page-container.gradient-14 { background: linear-gradient(to bottom, #8BC6EC 0%, var(--color-bg-deep) 350px); }
+.playlist-page-container.gradient-15 { background: linear-gradient(to bottom, #784BA0 0%, var(--color-bg-deep) 350px); }
+.playlist-page-container.gradient-16 { background: linear-gradient(to bottom, #52ACFF 0%, var(--color-bg-deep) 350px); }
+
+
+/* --- ГРАДІЄНТИ ДЛЯ ПРЕВ'Ю В ПАНЕЛІ --- */
+.gradient-option.gradient-1 { background-image: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+.gradient-option.gradient-2 { background-image: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%); }
+.gradient-option.gradient-3 { background-image: linear-gradient(135deg, #00c6fb 0%, #005bea 100%); }
+.gradient-option.gradient-4 { background-image: linear-gradient(135deg, #30cfd0 0%, #330867 100%); }
+.gradient-option.gradient-5 { background-image: linear-gradient(135deg, #a1c4fd 0%, #c2e9fb 100%); }
+.gradient-option.gradient-6 { background-image: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); }
+.gradient-option.gradient-7 { background-image: linear-gradient(135deg, #fa709a 0%, #fee140 100%); }
+.gradient-option.gradient-8 { background-image: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); }
+.gradient-option.gradient-9 { background-image: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); }
+.gradient-option.gradient-10 { background-image: linear-gradient(135deg, #f5d020 0%, #f53803 100%); }
+.gradient-option.gradient-11 { background-image: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); }
+.gradient-option.gradient-12 { background-image: linear-gradient(135deg, #21D4FD 0%, #B721FF 100%); }
+.gradient-option.gradient-13 { background-image: linear-gradient(135deg, #08AEEA 0%, #2AF598 100%); }
+.gradient-option.gradient-14 { background-image: linear-gradient(135deg, #8BC6EC 0%, #9599E2 100%); }
+.gradient-option.gradient-15 { background-image: linear-gradient(135deg, #FF3CAC 0%, #784BA0 100%, #2B86C5 100%); }
+.gradient-option.gradient-16 { background-image: linear-gradient(135deg, #52ACFF 0%, #FFE32C 100%); }
+
+/* Адаптивність */
 @media (max-width: 768px) {
     .playlist-page-container {
         padding: 1.5rem 1rem;
@@ -191,5 +286,8 @@
     }
     .playlist-actions-bar {
         justify-content: center;
+    }
+    .customize-panel {
+        width: 100%;
     }
 }

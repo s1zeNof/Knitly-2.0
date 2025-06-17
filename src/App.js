@@ -14,7 +14,8 @@ import UserList from './UserList';
 import UserProfile from './UserProfile';
 import UploadMusic from './UploadMusic';
 import CreateAlbum from './CreateAlbum';
-import PlaylistPage from './PlaylistPage'; // <-- ІМПОРТ
+import PlaylistPage from './PlaylistPage';
+import MessagesPage from './MessagesPage'; // <<< ДОДАНО ІМПОРТ
 import Player from './Player';
 
 import './App.css';
@@ -37,7 +38,8 @@ const AppContent = () => {
                     <Route path="/settings" element={<Settings />} />
                     <Route path="/upload" element={<UploadMusic />} />
                     <Route path="/create-album" element={<CreateAlbum />} />
-                    <Route path="/playlist/:playlistId" element={<PlaylistPage />} /> {/* <-- НОВИЙ МАРШРУТ */}
+                    <Route path="/playlist/:playlistId" element={<PlaylistPage />} />
+                    <Route path="/messages" element={<MessagesPage />} /> {/* <<< ДОДАНО МАРШРУТ */}
                     <Route path="/userlist" element={<UserList />} />
                 </Routes>
             </div>

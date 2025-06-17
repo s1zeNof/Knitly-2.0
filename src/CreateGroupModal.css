@@ -1,0 +1,76 @@
+.create-group-modal {
+    max-width: 500px;
+    width: 90%;
+    height: 80vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.modal-body {
+    padding: 0 1.5rem 1.5rem 1.5rem;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    flex-grow: 1;
+}
+
+.group-name-input {
+    margin-bottom: 1rem !important;
+}
+.search-users-input {
+    margin-bottom: 1.5rem !important;
+}
+
+.followers-list {
+    flex-grow: 1;
+    overflow-y: auto;
+    margin: 0 -1.5rem; /* Компенсація падінгів .modal-body */
+    padding: 0 1.5rem;
+}
+
+.follower-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.75rem;
+    border-radius: 0.5rem;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+.follower-item:hover {
+    background-color: var(--color-bg-light);
+}
+
+.follower-item input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+    accent-color: var(--color-accent);
+}
+
+.follower-item img {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.follower-info {
+    overflow: hidden;
+}
+
+.follower-name {
+    margin: 0;
+    font-weight: 500;
+}
+.follower-nickname {
+    margin: 0;
+    font-size: 0.9rem;
+    color: var(--color-text-secondary);
+}
+
+.no-followers-message {
+    color: var(--color-text-secondary);
+    text-align: center;
+    padding: 2rem;
+}

@@ -1,7 +1,7 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import { auth, db } from './firebase';
 import { onAuthStateChanged } from 'firebase/auth';
-import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
 
 const UserContext = createContext();
 
@@ -10,13 +10,15 @@ export const UserProvider = ({ children }) => {
     const [authLoading, setAuthLoading] = useState(true);
 
     const refreshUser = async () => {
-        if (user) {
+        if (!user) return;
+        try {
             const userRef = doc(db, 'users', user.uid);
             const userDoc = await getDoc(userRef);
             if (userDoc.exists()) {
-                const userData = userDoc.data();
-                setUser({ ...user, ...userData });
+                setUser({ uid: user.uid, ...userDoc.data() });
             }
+        } catch (error) {
+            console.error("Error refreshing user:", error);
         }
     };
 
@@ -27,20 +29,21 @@ export const UserProvider = ({ children }) => {
                 const userDoc = await getDoc(userRef);
 
                 if (userDoc.exists()) {
-                    setUser({ ...userDoc.data(), uid: authUser.uid });
+                    setUser({ uid: authUser.uid, ...userDoc.data() });
                 } else {
-                    const nickname = authUser.email ? authUser.email.split('@')[0] : `user${Date.now()}`;
+                    const nickname = authUser.email ? authUser.email.split('@')[0].replace(/[^a-z0-9_.]/g, '') : `user${Date.now()}`;
                     const newUser = {
                         uid: authUser.uid,
-                        displayName: authUser.displayName || 'New User',
+                        displayName: authUser.displayName || 'Новий Артист',
                         email: authUser.email,
-                        photoURL: authUser.photoURL,
+                        photoURL: authUser.photoURL || null,
                         nickname: nickname,
                         followers: [],
                         following: [],
                         likedTracks: [],
-                        isPublicProfile: true,
+                        createdAt: serverTimestamp(),
                     };
+                    // Цей запит тепер буде дозволено новими правилами
                     await setDoc(userRef, newUser);
                     setUser(newUser);
                 }
@@ -54,7 +57,7 @@ export const UserProvider = ({ children }) => {
     }, []);
 
     return (
-        <UserContext.Provider value={{ user, authLoading, refreshUser }}>
+        <UserContext.Provider value={{ user, setUser, authLoading, refreshUser }}>
             {children}
         </UserContext.Provider>
     );

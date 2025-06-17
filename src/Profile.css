@@ -198,6 +198,51 @@
     margin-right: 0.5rem;
 }
 
+/* Додайте або замініть стилі для кнопок на це */
+.page-profile-actions-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-top: 1.5rem;
+}
+.page-profile-logout-button, 
+.page-profile-action-button, 
+.page-profile-secondary-button {
+    width: 100%;
+    padding: 0.75rem;
+    border-radius: 0.5rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    font-size: 1rem;
+}
+.page-profile-action-button {
+    background-color: var(--color-accent);
+    color: white;
+    border: none;
+}
+.page-profile-action-button:hover {
+    background-color: var(--color-accent-hover);
+}
+.page-profile-secondary-button {
+    background-color: var(--color-bg-light);
+    color: var(--color-text-primary);
+    border: 1px solid var(--color-border);
+}
+.page-profile-secondary-button:hover {
+    background-color: var(--color-border);
+}
+
+.page-profile-logout-button {
+  background-color: transparent;
+  color: var(--color-text-secondary);
+  border: 1px solid var(--color-border);
+}
+.page-profile-logout-button:hover {
+    background-color: var(--color-bg-light);
+    color: var(--color-text-primary);
+}
+
 /* Адаптивність для Profile */
 @media (max-width: 1024px) {
     .page-profile-container {

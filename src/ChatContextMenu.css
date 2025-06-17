@@ -1,0 +1,53 @@
+.context-menu {
+    position: fixed;
+    background-color: var(--color-bg-light);
+    border: 1px solid var(--color-border);
+    border-radius: 0.5rem;
+    padding: 0.5rem;
+    z-index: 3000;
+    width: 250px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    animation: fadeIn 0.1s ease-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: scale(0.95); }
+    to { opacity: 1; transform: scale(1); }
+}
+
+.context-menu-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    width: 100%;
+    background: none;
+    border: none;
+    color: var(--color-text-primary);
+    padding: 0.75rem 1rem;
+    text-align: left;
+    border-radius: 0.25rem;
+    cursor: pointer;
+    font-size: 0.9rem;
+}
+
+.context-menu-item:hover {
+    background-color: var(--color-accent);
+    color: white;
+}
+
+.context-menu-item.delete:hover {
+    background-color: var(--color-error);
+}
+
+.context-menu-item svg {
+    width: 20px;
+    height: 20px;
+    stroke-width: 2;
+    flex-shrink: 0;
+}
+
+.context-menu-divider {
+    height: 1px;
+    background-color: var(--color-border);
+    margin: 0.5rem 0;
+}
