@@ -1,0 +1,149 @@
+.message-wrapper {
+    display: flex;
+    gap: 0.75rem;
+    max-width: 80%;
+    position: relative;
+    padding: 5px 15px; 
+    border-radius: 12px;
+    transition: background-color 0.2s;
+    align-items: flex-end; 
+}
+.message-wrapper.sent { align-self: flex-end; flex-direction: row-reverse; }
+.message-wrapper.received { align-self: flex-start; }
+
+.message-wrapper.selected {
+    background-color: rgba(45, 223, 184, 0.2);
+}
+
+.message-avatar {
+    width: 32px; height: 32px; border-radius: 50%;
+    object-fit: cover;
+    margin-bottom: 25px; 
+}
+.message-content-wrapper { display: flex; flex-direction: column; }
+.message-wrapper.sent .message-content-wrapper { align-items: flex-end; }
+.message-wrapper.received .message-content-wrapper { align-items: flex-start; }
+
+.sender-name {
+    font-size: 0.8rem; font-weight: 600; color: var(--color-text-secondary);
+    margin: 0 0.75rem 0.25rem;
+}
+
+.message-bubble { 
+    padding: 0.75rem 1rem; 
+    border-radius: 1.25rem; 
+    position: relative;
+    padding-bottom: 25px; 
+    min-width: 85px; /* <-- ОСНОВНЕ ВИПРАВЛЕННЯ: Задаємо мінімальну ширину */
+    box-sizing: border-box; /* Гарантує, що padding не впливає на ширину */
+}
+.message-bubble.deleted {
+    background-color: transparent !important;
+    border: 1px dashed var(--color-border);
+    padding: 0.75rem 1rem;
+}
+.message-bubble.deleted p {
+    font-style: italic;
+    color: var(--color-text-secondary);
+}
+
+.message-bubble p { 
+    margin: 0; 
+    word-break: break-word; /* Покращення: для дуже довгих слів без пробілів */
+}
+.message-wrapper.sent .message-bubble {
+    background-color: var(--color-accent); color: white;
+    border-bottom-right-radius: 0.25rem;
+}
+.message-wrapper.received .message-bubble {
+    background-color: var(--color-bg-light); border-bottom-left-radius: 0.25rem;
+}
+
+.message-metadata {
+    position: absolute;
+    bottom: 5px;
+    right: 12px;
+    font-size: 0.75rem;
+    color: var(--color-text-placeholder);
+    display: flex; 
+    align-items: center; 
+    gap: 5px; 
+}
+.message-wrapper.sent .message-metadata {
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.reply-preview-bubble {
+    border-left: 2px solid var(--color-accent);
+    padding: 4px 8px;
+    margin-bottom: 5px;
+    background-color: rgba(0,0,0,0.1);
+    border-radius: 4px;
+    max-width: 100%;
+}
+.reply-sender {
+    font-weight: 600;
+    font-size: 0.85rem;
+    color: var(--color-accent);
+    margin: 0;
+}
+.reply-text {
+    font-size: 0.9rem;
+    color: var(--color-text-secondary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin: 0;
+}
+
+.selection-checkbox {
+    position: absolute; 
+    top: 50%;
+    transform: translateY(-50%);
+    width: 22px;
+    height: 22px;
+    border: 2px solid var(--color-text-secondary);
+    border-radius: 50%;
+    background-color: var(--color-bg-deep);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+.message-wrapper.received .selection-checkbox {
+    right: -30px; 
+}
+
+.message-wrapper.sent .selection-checkbox {
+    left: -30px;
+}
+
+.message-wrapper.selected .selection-checkbox {
+    background-color: var(--color-accent);
+    border-color: var(--color-accent);
+    color: white;
+}
+.selection-checkbox svg {
+    width: 14px;
+    height: 14px;
+}
+
+.message-bubble.track-message { background: transparent; padding: 0; max-width: 350px; width: 100%; }
+.track-message-card {
+    display: flex; align-items: center; gap: 1rem; background-color: var(--color-bg-light);
+    padding: 0.75rem; border-radius: 0.75rem; border: 1px solid var(--color-border);
+}
+.message-wrapper.sent .track-message-card { border: 1px solid var(--color-accent); }
+.track-message-card img {
+    width: 60px; height: 60px; object-fit: cover;
+    border-radius: 0.375rem; flex-shrink: 0;
+}
+.track-message-info { flex-grow: 1; overflow: hidden; }
+.track-message-info .track-title { font-weight: 600; }
+.track-message-info .track-author { color: var(--color-text-secondary); font-size: 0.9rem; }
+.play-track-button {
+    background: var(--color-accent); color: white; border: none;
+    width: 40px; height: 40px; border-radius: 50%; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center; cursor: pointer;
+}

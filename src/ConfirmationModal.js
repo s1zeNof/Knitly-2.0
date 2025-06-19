@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './ConfirmationModal.css';
 
 const ConfirmationModal = ({
@@ -13,11 +13,19 @@ const ConfirmationModal = ({
 }) => {
     const [isChecked, setIsChecked] = useState(false);
 
+    // Скидуємо стан галочки при кожному новому відкритті
+    useEffect(() => {
+        if (isOpen) {
+            setIsChecked(false);
+        }
+    }, [isOpen]);
+
     if (!isOpen) {
         return null;
     }
 
     const handleConfirm = () => {
+        // Передаємо стан галочки в функцію onConfirm
         onConfirm(isChecked);
     };
 

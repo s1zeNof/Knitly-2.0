@@ -7,7 +7,7 @@ import { auth, db } from './firebase';
 import { Country, City } from 'country-state-city';
 import Select from 'react-select';
 import EmojiPicker from 'emoji-picker-react';
-import FolderEditModal from './FolderEditModal'; // <<< ІМПОРТ НОВОГО КОМПОНЕНТА
+import FolderEditModal from './FolderEditModal';
 import './Settings.css';
 
 // Іконки
@@ -15,6 +15,7 @@ const UserIcon = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor
 const PrivacyIcon = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>;
 const FolderIcon = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>;
 const OptionsIcon = () => <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="2"></circle><circle cx="19" cy="12" r="2"></circle><circle cx="5" cy="12" r="2"></circle></svg>;
+const ChatIcon = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>;
 
 
 const Settings = () => {
@@ -22,32 +23,24 @@ const Settings = () => {
     const { showNotification } = usePlayerContext();
     const [activeTab, setActiveTab] = useState('profile');
     const [isSaving, setIsSaving] = useState(false);
-
-    // Стани для даних профілю
     const [displayName, setDisplayName] = useState('');
     const [nickname, setNickname] = useState('');
     const [description, setDescription] = useState('');
     const [profileImageUrl, setProfileImageUrl] = useState('');
     const [backgroundImageUrl, setBackgroundImageUrl] = useState('');
-    
-    // Стани для геолокації
     const [countries, setCountries] = useState([]);
     const [cities, setCities] = useState([]);
     const [selectedCountry, setSelectedCountry] = useState(null);
     const [selectedCity, setSelectedCity] = useState(null);
-
-    // Стан для приватності
     const [isNamePublic, setIsNamePublic] = useState(true);
-
-    // Стан для валідації та UI
     const [nicknameError, setNicknameError] = useState('');
     const [showEmojiPicker, setShowEmojiPicker] = useState(false);
     const emojiPickerRef = useRef(null);
-    
-    // <<< НОВІ СТАНИ ДЛЯ КЕРУВАННЯ ПАПКАМИ
     const [chatFolders, setChatFolders] = useState([]);
     const [isFolderModalOpen, setIsFolderModalOpen] = useState(false);
-    const [editingFolder, setEditingFolder] = useState(null); // null для створення, об'єкт для редагування
+    const [editingFolder, setEditingFolder] = useState(null); 
+    const [deleteAnimation, setDeleteAnimation] = useState('animation-vortex-out');
+    const previewRefs = useRef({});
 
     useEffect(() => {
         const countryOptions = Country.getAllCountries().map(c => ({ value: c.isoCode, label: c.name }));
@@ -60,25 +53,21 @@ const Settings = () => {
             setProfileImageUrl(user.photoURL || '');
             setBackgroundImageUrl(user.backgroundImage || '');
             setIsNamePublic(user.isNamePublic !== false);
+            setDeleteAnimation(user.settings?.chat?.deleteAnimation || 'animation-vortex-out');
 
             const userCountry = countryOptions.find(c => c.value === user.country);
             if (userCountry) {
                 setSelectedCountry(userCountry);
                 const cityOptions = City.getCitiesOfCountry(userCountry.value).map(c => ({ value: c.name, label: c.name }));
                 setCities(cityOptions);
-
                 const userCity = cityOptions.find(c => c.value === user.city);
-                if (userCity) {
-                    setSelectedCity(userCity);
-                }
+                if (userCity) setSelectedCity(userCity);
             }
         }
     }, [user]);
     
-    // <<< НОВИЙ useEffect для синхронізації папок
     useEffect(() => {
         if (user && user.chatFolders) {
-            // Сортуємо папки для відображення
             const sortedFolders = [...user.chatFolders].sort((a, b) => a.order - b.order);
             setChatFolders(sortedFolders);
         }
@@ -104,7 +93,6 @@ const Settings = () => {
     const handleNicknameChange = (e) => {
         const value = e.target.value.toLowerCase();
         setNickname(value);
-
         if (value && !/^[a-z0-9_.]+$/.test(value)) {
             setNicknameError('Нікнейм може містити лише латинські літери, цифри, "_" та "."');
         } else if (value.length > 0 && (value.length < 3 || value.length > 20)) {
@@ -149,6 +137,7 @@ const Settings = () => {
                 photoURL: profileImageUrl,
                 backgroundImage: backgroundImageUrl,
                 isNamePublic,
+                'settings.chat.deleteAnimation': deleteAnimation,
             };
             await updateDoc(userRef, updatedData);
             await refreshUser();
@@ -161,7 +150,6 @@ const Settings = () => {
         }
     };
 
-    // <<< НОВІ ФУНКЦІЇ ДЛЯ КЕРУВАННЯ МОДАЛЬНИМ ВІКНОМ
     const handleOpenCreateModal = () => {
         setEditingFolder(null);
         setIsFolderModalOpen(true);
@@ -179,24 +167,19 @@ const Settings = () => {
 
     const handleSaveFolder = async (folderData) => {
         if (!user) return;
-        
         let updatedFolders = [...chatFolders];
         const isEditing = updatedFolders.some(f => f.id === folderData.id);
-
         if (isEditing) {
-            // Оновлюємо існуючу папку
             updatedFolders = updatedFolders.map(f => f.id === folderData.id ? { ...f, ...folderData } : f);
         } else {
-            // Додаємо нову папку з правильним 'order'
             const maxOrder = updatedFolders.length > 0 ? Math.max(...updatedFolders.map(f => f.order || 0)) : -1;
             folderData.order = maxOrder + 1;
             updatedFolders.push(folderData);
         }
-
         try {
             const userRef = doc(db, 'users', user.uid);
             await updateDoc(userRef, { chatFolders: updatedFolders });
-            await refreshUser(); // Оновлюємо глобальний контекст
+            await refreshUser();
             showNotification('Папку успішно збережено!', 'info');
             handleCloseModal();
         } catch (error) {
@@ -205,6 +188,17 @@ const Settings = () => {
         }
     };
 
+    const handleAnimationSelect = (animationId) => {
+        setDeleteAnimation(animationId);
+        const element = previewRefs.current[animationId];
+        if (element) {
+            // Force animation restart by removing and re-adding the class
+            element.classList.remove(animationId);
+            void element.offsetWidth; // Trigger a reflow
+            element.classList.add(animationId);
+        }
+    };
+    
     const renderProfileTab = () => (
         <div className="settings-tab-content">
             <div className="form-section">
@@ -251,7 +245,6 @@ const Settings = () => {
                     }
                 </div>
             </div>
-
             <div className="form-row">
                 <div className="form-group">
                     <label htmlFor="country">Країна</label>
@@ -306,6 +299,49 @@ const Settings = () => {
         </div>
     );
     
+    const renderChatTab = () => {
+        const animations = [
+            { id: 'animation-vortex-out', name: 'Вихор' },
+            { id: 'animation-fall-out', name: 'Падіння' },
+            { id: 'animation-pixelate-out', name: 'Пікселізація' },
+            { id: 'animation-blur-out', name: 'Розмиття' },
+        ];
+
+        return (
+            <div className="settings-tab-content">
+                <h3>Кастомізація чатів</h3>
+                <div className="form-section">
+                    <label>Анімація зникання повідомлення</label>
+                    <p className="form-section-description">Оберіть, як виглядатиме видалення повідомлення у ваших чатах.</p>
+                    <div className="animation-picker">
+                        {animations.map(anim => (
+                            <div key={anim.id} className="animation-option" onClick={() => handleAnimationSelect(anim.id)}>
+                                <div className="animation-preview-wrapper">
+                                    <div 
+                                        ref={el => (previewRefs.current[anim.id] = el)}
+                                        className={`animation-preview ${anim.id} ${deleteAnimation === anim.id ? 'active' : ''}`}
+                                    >
+                                        <span>Knitly</span>
+                                    </div>
+                                </div>
+                                <label>
+                                    <input
+                                        type="radio"
+                                        name="delete-animation"
+                                        value={anim.id}
+                                        checked={deleteAnimation === anim.id}
+                                        readOnly
+                                    />
+                                    {anim.name}
+                                </label>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </div>
+        );
+    };
+
     return (
         <div className="settings-page-container">
             <header className="settings-page-header">
@@ -314,11 +350,13 @@ const Settings = () => {
             <div className="settings-layout">
                 <aside className="settings-sidebar">
                     <button className={activeTab === 'profile' ? 'active' : ''} onClick={() => setActiveTab('profile')}><UserIcon /> Профіль</button>
+                    <button className={activeTab === 'chat' ? 'active' : ''} onClick={() => setActiveTab('chat')}><ChatIcon /> Чати</button>
                     <button className={activeTab === 'privacy' ? 'active' : ''} onClick={() => setActiveTab('privacy')}><PrivacyIcon /> Приватність</button>
                     <button className={activeTab === 'folders' ? 'active' : ''} onClick={() => setActiveTab('folders')}><FolderIcon /> Папки чатів</button>
                 </aside>
                 <main className="settings-main-content">
                     {activeTab === 'profile' && renderProfileTab()}
+                    {activeTab === 'chat' && renderChatTab()}
                     {activeTab === 'privacy' && renderPrivacyTab()}
                     {activeTab === 'folders' && renderFoldersTab()}
                     

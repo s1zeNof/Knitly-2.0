@@ -1,0 +1,75 @@
+.pinned-bar-container {
+    position: relative;
+    border-bottom: 1px solid var(--color-border);
+    background-color: var(--color-bg-medium);
+    flex-shrink: 0;
+}
+.pinned-bar-main {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.75rem 1.5rem;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+.pinned-bar-main:hover {
+    background-color: var(--color-bg-light);
+}
+.pinned-bar-main svg {
+    width: 20px;
+    height: 20px;
+    color: var(--color-accent);
+    flex-shrink: 0;
+    fill: var(--color-accent);
+    stroke: none;
+}
+.pinned-bar-info {
+    overflow: hidden;
+}
+.pinned-bar-title {
+    margin: 0;
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+.pinned-bar-content {
+    margin: 0;
+    font-size: 0.9rem;
+    color: var(--color-text-secondary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.pinned-list-overlay {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background-color: var(--color-bg-light);
+    z-index: 50;
+    max-height: 250px;
+    overflow-y: auto;
+    border: 1px solid var(--color-border);
+    border-radius: 0 0 0.5rem 0.5rem;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+}
+.pinned-list-item {
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid var(--color-border);
+    cursor: pointer;
+}
+.pinned-list-item:hover {
+    background-color: var(--color-border);
+}
+.pinned-list-item:last-child {
+    border-bottom: none;
+}
+.pinned-list-sender {
+    margin: 0 0 0.25rem 0;
+    font-weight: 600;
+    color: var(--color-accent);
+}
+.pinned-list-content {
+    margin: 0;
+    color: var(--color-text-primary);
+}

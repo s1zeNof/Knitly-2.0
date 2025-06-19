@@ -1,0 +1,45 @@
+.selection-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid var(--color-border);
+    background-color: var(--color-bg-medium);
+    flex-shrink: 0;
+    animation: slideDown 0.3s ease-out;
+}
+@keyframes slideDown {
+    from { transform: translateY(-100%); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+.selection-count {
+    font-size: 1.2rem;
+    font-weight: 600;
+}
+
+.selection-actions {
+    display: flex;
+    gap: 1rem;
+}
+
+.selection-action-btn {
+    background: none;
+    border: none;
+    color: var(--color-text-primary);
+    cursor: pointer;
+    padding: 0.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.selection-action-btn:hover {
+    color: var(--color-accent);
+}
+.selection-action-btn svg {
+    width: 24px;
+    height: 24px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
+}
