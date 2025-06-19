@@ -7,11 +7,15 @@ import { auth, db } from './firebase';
 import { Country, City } from 'country-state-city';
 import Select from 'react-select';
 import EmojiPicker from 'emoji-picker-react';
+import FolderEditModal from './FolderEditModal'; // <<< ІМПОРТ НОВОГО КОМПОНЕНТА
 import './Settings.css';
 
 // Іконки
 const UserIcon = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>;
 const PrivacyIcon = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>;
+const FolderIcon = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>;
+const OptionsIcon = () => <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="2"></circle><circle cx="19" cy="12" r="2"></circle><circle cx="5" cy="12" r="2"></circle></svg>;
+
 
 const Settings = () => {
     const { user, refreshUser } = useUserContext();
@@ -39,8 +43,12 @@ const Settings = () => {
     const [nicknameError, setNicknameError] = useState('');
     const [showEmojiPicker, setShowEmojiPicker] = useState(false);
     const emojiPickerRef = useRef(null);
+    
+    // <<< НОВІ СТАНИ ДЛЯ КЕРУВАННЯ ПАПКАМИ
+    const [chatFolders, setChatFolders] = useState([]);
+    const [isFolderModalOpen, setIsFolderModalOpen] = useState(false);
+    const [editingFolder, setEditingFolder] = useState(null); // null для створення, об'єкт для редагування
 
-    // --- ЗМІНЕНО: Цей useEffect тепер відповідає за повне початкове завантаження даних ---
     useEffect(() => {
         const countryOptions = Country.getAllCountries().map(c => ({ value: c.isoCode, label: c.name }));
         setCountries(countryOptions);
@@ -66,8 +74,15 @@ const Settings = () => {
             }
         }
     }, [user]);
-
-    // --- ВИДАЛЕНО: Проблемний useEffect, що залежав від [selectedCountry], видалено ---
+    
+    // <<< НОВИЙ useEffect для синхронізації папок
+    useEffect(() => {
+        if (user && user.chatFolders) {
+            // Сортуємо папки для відображення
+            const sortedFolders = [...user.chatFolders].sort((a, b) => a.order - b.order);
+            setChatFolders(sortedFolders);
+        }
+    }, [user]);
 
     useEffect(() => {
         const handleClickOutside = (event) => {
@@ -79,12 +94,11 @@ const Settings = () => {
         return () => document.removeEventListener("mousedown", handleClickOutside);
     }, []);
 
-    // --- ДОДАНО: Нова функція для обробки ручної зміни країни ---
     const handleCountryChange = (countryOption) => {
         setSelectedCountry(countryOption);
         const cityOptions = City.getCitiesOfCountry(countryOption.value)?.map(c => ({ value: c.name, label: c.name })) || [];
         setCities(cityOptions);
-        setSelectedCity(null); // Очищуємо місто, бо змінилася країна
+        setSelectedCity(null);
     };
 
     const handleNicknameChange = (e) => {
@@ -99,7 +113,7 @@ const Settings = () => {
             setNicknameError('');
         }
     };
-
+    
     const handleImageUpload = async (e, imageType) => {
         const file = e.target.files[0];
         if (!file || !user) return;
@@ -117,7 +131,7 @@ const Settings = () => {
             showNotification(`Помилка завантаження: ${error.message}`, 'error');
         }
     };
-    
+
     const onEmojiClick = (emojiObject) => {
         setDescription(prevDescription => prevDescription + emojiObject.emoji);
         setShowEmojiPicker(false);
@@ -147,9 +161,52 @@ const Settings = () => {
         }
     };
 
+    // <<< НОВІ ФУНКЦІЇ ДЛЯ КЕРУВАННЯ МОДАЛЬНИМ ВІКНОМ
+    const handleOpenCreateModal = () => {
+        setEditingFolder(null);
+        setIsFolderModalOpen(true);
+    };
+
+    const handleOpenEditModal = (folder) => {
+        setEditingFolder(folder);
+        setIsFolderModalOpen(true);
+    };
+
+    const handleCloseModal = () => {
+        setIsFolderModalOpen(false);
+        setEditingFolder(null);
+    };
+
+    const handleSaveFolder = async (folderData) => {
+        if (!user) return;
+        
+        let updatedFolders = [...chatFolders];
+        const isEditing = updatedFolders.some(f => f.id === folderData.id);
+
+        if (isEditing) {
+            // Оновлюємо існуючу папку
+            updatedFolders = updatedFolders.map(f => f.id === folderData.id ? { ...f, ...folderData } : f);
+        } else {
+            // Додаємо нову папку з правильним 'order'
+            const maxOrder = updatedFolders.length > 0 ? Math.max(...updatedFolders.map(f => f.order || 0)) : -1;
+            folderData.order = maxOrder + 1;
+            updatedFolders.push(folderData);
+        }
+
+        try {
+            const userRef = doc(db, 'users', user.uid);
+            await updateDoc(userRef, { chatFolders: updatedFolders });
+            await refreshUser(); // Оновлюємо глобальний контекст
+            showNotification('Папку успішно збережено!', 'info');
+            handleCloseModal();
+        } catch (error) {
+            console.error("Помилка збереження папки:", error);
+            showNotification('Не вдалося зберегти папку.', 'error');
+        }
+    };
+
     const renderProfileTab = () => (
         <div className="settings-tab-content">
-            {/* ... (код для фото, імені, опису без змін) ... */}
             <div className="form-section">
                 <label>Фото та фон профілю</label>
                 <div className="image-uploaders-container">
@@ -198,7 +255,6 @@ const Settings = () => {
             <div className="form-row">
                 <div className="form-group">
                     <label htmlFor="country">Країна</label>
-                    {/* --- ЗМІНЕНО: Використовуємо нову функцію onChange --- */}
                     <Select options={countries} value={selectedCountry} onChange={handleCountryChange} placeholder="Оберіть країну" styles={customSelectStyles} />
                 </div>
                 <div className="form-group">
@@ -223,6 +279,32 @@ const Settings = () => {
             </div>
         </div>
     );
+
+    const renderFoldersTab = () => (
+        <div className="settings-tab-content folders-tab-container">
+            <h3>Папки чатів</h3>
+            <div className="folders-tab-description">
+                <p>Створюйте папки, щоб організувати ваші чати. Ви можете додати будь-які чати в одну папку та швидко перемикатися між ними.</p>
+            </div>
+            <button className="button-primary" onClick={handleOpenCreateModal}>Створити нову папку</button>
+            <div className="folder-list">
+                {chatFolders.length > 0 ? (
+                    chatFolders.map(folder => (
+                        <div key={folder.id} className="folder-item">
+                            <span className="folder-item-name">{folder.name}</span>
+                            <div className="folder-item-actions">
+                                <button onClick={() => handleOpenEditModal(folder)}>Редагувати</button>
+                                <button>Видалити</button>
+                                <button className="drag-handle"><OptionsIcon /></button>
+                            </div>
+                        </div>
+                    ))
+                ) : (
+                    <p className="folder-list-placeholder">У вас ще немає створених папок.</p>
+                )}
+            </div>
+        </div>
+    );
     
     return (
         <div className="settings-page-container">
@@ -233,17 +315,28 @@ const Settings = () => {
                 <aside className="settings-sidebar">
                     <button className={activeTab === 'profile' ? 'active' : ''} onClick={() => setActiveTab('profile')}><UserIcon /> Профіль</button>
                     <button className={activeTab === 'privacy' ? 'active' : ''} onClick={() => setActiveTab('privacy')}><PrivacyIcon /> Приватність</button>
+                    <button className={activeTab === 'folders' ? 'active' : ''} onClick={() => setActiveTab('folders')}><FolderIcon /> Папки чатів</button>
                 </aside>
                 <main className="settings-main-content">
                     {activeTab === 'profile' && renderProfileTab()}
                     {activeTab === 'privacy' && renderPrivacyTab()}
-                    <div className="settings-actions">
-                        <button className="button-primary" onClick={handleSaveChanges} disabled={isSaving || !!nicknameError}>
-                            {isSaving ? "Збереження..." : "Зберегти зміни"}
-                        </button>
-                    </div>
+                    {activeTab === 'folders' && renderFoldersTab()}
+                    
+                    {activeTab !== 'folders' && (
+                        <div className="settings-actions">
+                            <button className="button-primary" onClick={handleSaveChanges} disabled={isSaving || !!nicknameError}>
+                                {isSaving ? "Збереження..." : "Зберегти зміни"}
+                            </button>
+                        </div>
+                    )}
                 </main>
             </div>
+            <FolderEditModal
+                isOpen={isFolderModalOpen}
+                onClose={handleCloseModal}
+                onSave={handleSaveFolder}
+                folderToEdit={editingFolder}
+            />
         </div>
     );
 };

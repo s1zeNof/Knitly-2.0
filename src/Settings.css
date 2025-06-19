@@ -192,6 +192,65 @@ input:checked + .slider:before { transform: translateX(22px); }
   background-color: var(--color-disabled); cursor: not-allowed;
 }
 
+.folders-tab-container {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.folders-tab-description p {
+    color: var(--color-text-secondary);
+    margin: 0 0 1rem 0;
+    max-width: 80%;
+    line-height: 1.6;
+}
+
+.folder-list {
+    margin-top: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    border-top: 1px solid var(--color-border);
+    padding-top: 2rem;
+}
+
+.folder-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem 1.5rem;
+    background-color: var(--color-bg-light);
+    border: 1px solid var(--color-border);
+    border-radius: 0.5rem;
+}
+
+.folder-item-name {
+    font-weight: 600;
+}
+
+.folder-item-actions {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.folder-item-actions button {
+    background: none;
+    border: none;
+    color: var(--color-text-secondary);
+    cursor: pointer;
+    padding: 0.5rem;
+}
+.folder-item-actions button:hover {
+    color: var(--color-text-primary);
+}
+
+.folder-list-placeholder {
+    color: var(--color-text-secondary);
+    text-align: center;
+    padding: 3rem;
+}
+
 @media (max-width: 900px) {
     .settings-layout {
         grid-template-columns: 1fr;

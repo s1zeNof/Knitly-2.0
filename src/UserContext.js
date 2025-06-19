@@ -15,7 +15,13 @@ export const UserProvider = ({ children }) => {
             const userRef = doc(db, 'users', user.uid);
             const userDoc = await getDoc(userRef);
             if (userDoc.exists()) {
-                setUser({ uid: user.uid, ...userDoc.data() });
+                // <<< ЗМІНА: Переконуємось, що chatFolders завантажуються при оновленні
+                const userData = userDoc.data();
+                setUser({ 
+                    uid: user.uid, 
+                    ...userData,
+                    chatFolders: userData.chatFolders || [] // Гарантуємо, що поле існує
+                });
             }
         } catch (error) {
             console.error("Error refreshing user:", error);
@@ -29,7 +35,13 @@ export const UserProvider = ({ children }) => {
                 const userDoc = await getDoc(userRef);
 
                 if (userDoc.exists()) {
-                    setUser({ uid: authUser.uid, ...userDoc.data() });
+                    // <<< ЗМІНА: Додаємо завантаження chatFolders для існуючого користувача
+                    const userData = userDoc.data();
+                    setUser({ 
+                        uid: authUser.uid, 
+                        ...userData,
+                        chatFolders: userData.chatFolders || [] // Важливо для старих користувачів
+                    });
                 } else {
                     const nickname = authUser.email ? authUser.email.split('@')[0].replace(/[^a-z0-9_.]/g, '') : `user${Date.now()}`;
                     const newUser = {
@@ -42,8 +54,8 @@ export const UserProvider = ({ children }) => {
                         following: [],
                         likedTracks: [],
                         createdAt: serverTimestamp(),
+                        chatFolders: [] // <<< ЗМІНА: Додаємо порожнє поле для нового користувача
                     };
-                    // Цей запит тепер буде дозволено новими правилами
                     await setDoc(userRef, newUser);
                     setUser(newUser);
                 }
