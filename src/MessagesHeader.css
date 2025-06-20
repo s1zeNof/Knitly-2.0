@@ -1,0 +1,105 @@
+.messages-header-mobile {
+    background-color: var(--color-bg-deep);
+    padding: 1rem 1.5rem;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    transition: height 0.3s ease-in-out, padding 0.3s ease-in-out;
+    overflow: hidden;
+    height: 90px;
+    border-bottom: 1px solid var(--color-border);
+    display: none; /* Ховаємо за замовчуванням на ПК */
+}
+
+/* Показуємо тільки на мобільних */
+@media (max-width: 768px) {
+    .messages-header-mobile {
+        display: block;
+    }
+}
+
+.messages-header-mobile.expanded {
+    height: 140px;
+}
+
+.messages-header-top-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    position: relative;
+    height: 40px;
+}
+
+.logo-container {
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%) rotate(-9deg);
+    opacity: 0;
+    transition: opacity 0.3s ease-in-out;
+}
+
+.logo-container.visible {
+    opacity: 1;
+}
+
+.logo-container .header-logo {
+    font-size: 24px;
+    font-family: 'Knewave';
+    color: white;
+    text-decoration: none;
+}
+
+.messages-header-title {
+    margin: 0;
+    font-size: 1.8rem;
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    transition: all 0.3s ease-in-out;
+}
+.messages-header-mobile.expanded .messages-header-title {
+    transform: translate(-50%, -150%);
+    opacity: 0;
+}
+
+.avatar-container {
+    margin-left: auto;
+}
+.avatar-container img {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.messages-header-search-bar {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    background-color: var(--color-bg-light);
+    border-radius: 0.5rem;
+    padding: 0.5rem 1rem;
+    position: absolute;
+    bottom: 1rem;
+    left: 1.5rem;
+    right: 1.5rem;
+    transition: transform 0.3s ease-in-out;
+}
+.messages-header-mobile.expanded .messages-header-search-bar {
+    transform: translateY(50px);
+}
+.messages-header-search-bar svg {
+    color: var(--color-text-placeholder);
+    width: 20px;
+}
+.messages-header-search-bar input {
+    background: none;
+    border: none;
+    outline: none;
+    color: var(--color-text-primary);
+    width: 100%;
+    font-size: 1rem;
+}

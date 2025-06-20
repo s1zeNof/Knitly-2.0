@@ -328,6 +328,8 @@
     animation: highlight-anim 1.5s ease-out;
 }
 
+
+
 @keyframes highlight-anim {
     0% { background-color: rgba(45, 223, 184, 0.4); }
     100% { background-color: transparent; }
