@@ -1,4 +1,6 @@
 import React, { createContext, useState, useContext, useRef, useEffect } from 'react';
+import { db } from './firebase'; // Імпортуємо db
+import { doc, updateDoc, increment } from 'firebase/firestore'; // Імпортуємо потрібні функції
 
 const PlayerContext = createContext();
 
@@ -10,7 +12,7 @@ export const PlayerProvider = ({ children }) => {
     const [volume, setVolume] = useState(0.75);
     const [queue, setQueue] = useState([]);
     const [history, setHistory] = useState([]);
-    const [notification, setNotification] = useState({ message: '', type: 'info' }); // type: 'info' | 'error'
+    const [notification, setNotification] = useState({ message: '', type: 'info' });
 
     const audioRef = useRef(new Audio());
 
@@ -35,7 +37,7 @@ export const PlayerProvider = ({ children }) => {
             audio.removeEventListener('timeupdate', setAudioTime);
             audio.removeEventListener('ended', handleEnded);
         };
-    }, [queue]); // Перезапускаємо ефект, коли змінюється черга
+    }, []);
 
     useEffect(() => {
         audioRef.current.volume = volume;
@@ -60,6 +62,16 @@ export const PlayerProvider = ({ children }) => {
         if (currentTrack?.id === track.id) {
             setIsPlaying(!isPlaying);
         } else {
+            // --- ОНОВЛЕНО: ЛОГІКА ПІДРАХУНКУ ПРОСЛУХОВУВАНЬ ---
+            if (track.id) {
+                const trackRef = doc(db, 'tracks', track.id);
+                // Ми не чекаємо на завершення (await), щоб не блокувати відтворення
+                updateDoc(trackRef, {
+                    playCount: increment(1)
+                }).catch(err => console.error("Failed to increment play count:", err));
+            }
+            // --- КІНЕЦЬ ОНОВЛЕННЯ ---
+
             if (currentTrack) {
                 setHistory(prev => [currentTrack, ...prev]);
             }
@@ -83,7 +95,7 @@ export const PlayerProvider = ({ children }) => {
     const playNext = () => {
         if (queue.length > 0) {
             const nextTrack = queue[0];
-            setHistory(prev => [currentTrack, ...prev]);
+            if(currentTrack) setHistory(prev => [currentTrack, ...prev]);
             setCurrentTrack(nextTrack);
             setQueue(prevQueue => prevQueue.slice(1));
             setIsPlaying(true);
@@ -99,7 +111,7 @@ export const PlayerProvider = ({ children }) => {
         }
         if (history.length > 0) {
             const prevTrack = history[0];
-            setQueue(prev => [currentTrack, ...prev]);
+            if(currentTrack) setQueue(prev => [currentTrack, ...prev]);
             setCurrentTrack(prevTrack);
             setHistory(prevHistory => prevHistory.slice(1));
             setIsPlaying(true);

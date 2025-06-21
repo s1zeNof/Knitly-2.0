@@ -1,0 +1,142 @@
+.storage-panel-overlay {
+    position: fixed;
+    inset: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(10px);
+    z-index: 2500;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.storage-panel {
+    width: 90%;
+    height: 90vh;
+    max-width: 1200px;
+    background-color: var(--color-bg-deep);
+    border-radius: 1rem;
+    border: 1px solid var(--color-border);
+    display: flex;
+    overflow: hidden;
+    animation: scaleIn 0.3s ease;
+}
+
+@keyframes scaleIn {
+    from { transform: scale(0.95); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+}
+
+.storage-sidebar {
+    width: 260px;
+    background-color: var(--color-bg-medium);
+    border-right: 1px solid var(--color-border);
+    padding: 1.5rem;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.storage-sidebar h3 {
+    font-size: 1.5rem;
+    margin: 0 0 2rem 0;
+    padding-left: 0.5rem;
+}
+
+.storage-sidebar nav {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.storage-sidebar nav button {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    background: none;
+    border: none;
+    color: var(--color-text-secondary); /* <-- ВИПРАВЛЕНО КОЛІР */
+    padding: 0.85rem 1rem;
+    border-radius: 0.5rem;
+    font-size: 1rem;
+    font-weight: 500;
+    text-align: left;
+    cursor: pointer;
+    transition: background-color 0.2s, color 0.2s;
+}
+
+.storage-sidebar nav button:hover {
+    color: var(--color-text-primary);
+    background-color: var(--color-bg-light);
+}
+
+.storage-sidebar nav button.active {
+    color: white; /* <-- ВИПРАВЛЕНО КОЛІР */
+    background-color: var(--color-accent);
+}
+
+.storage-sidebar nav button svg {
+    width: 24px;
+    height: 24px;
+    stroke: currentColor; /* <-- ДОДАНО: іконка успадковує колір кнопки */
+    fill: none;
+    stroke-width: 2;
+    transition: transform 0.3s ease; /* <-- ДОДАНО: для плавності анімації */
+}
+
+/* --- АНІМАЦІЯ ІКОНОК --- */
+.storage-sidebar nav button:hover svg {
+    transform: scale(1.1) rotate(-5deg);
+}
+.storage-sidebar nav button.active svg {
+    transform: scale(1.15);
+    fill: white; /* Заливаємо активну іконку */
+}
+
+
+.storage-main-content {
+    flex-grow: 1;
+    position: relative;
+    padding: 2rem;
+    display: flex;
+    flex-direction: column;
+}
+
+.storage-main-content .close-button {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    background: none;
+    border: none;
+    color: var(--color-text-secondary);
+    font-size: 2rem;
+    cursor: pointer;
+    line-height: 1;
+    padding: 0.5rem;
+}
+
+.placeholder-content {
+    margin: auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    color: var(--color-text-secondary);
+    text-align: center;
+}
+.placeholder-content .placeholder-icon {
+    width: 60px;
+    height: 60px;
+    margin-bottom: 1rem;
+    color: var(--color-border);
+}
+.placeholder-content h4 {
+    margin: 0 0 0.5rem 0;
+    color: var(--color-text-primary);
+}

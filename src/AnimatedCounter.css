@@ -1,0 +1,43 @@
+.counter-viewport {
+    position: relative;
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    height: 1.1em;
+    line-height: 1.1em;
+    vertical-align: middle;
+    color: inherit;
+    font-size: inherit;
+    font-weight: inherit;
+    min-width: 1.5ch; /* Резервуємо місце для цифр */
+    overflow: hidden;
+}
+
+.counter-viewport > span {
+    position: absolute;
+    transition: transform 0.4s cubic-bezier(0.65, 0, 0.35, 1), opacity 0.4s cubic-bezier(0.65, 0, 0.35, 1);
+}
+
+/* Анімація появи */
+.digit-enter {
+    transform: translateY(0);
+    opacity: 1;
+}
+.digit-enter.from-up {
+    transform: translateY(100%);
+    opacity: 0;
+}
+.digit-enter.from-down {
+    transform: translateY(-100%);
+    opacity: 0;
+}
+
+/* Анімація зникання */
+.digit-leave-up {
+    transform: translateY(-100%);
+    opacity: 0;
+}
+.digit-leave-down {
+    transform: translateY(100%);
+    opacity: 0;
+}

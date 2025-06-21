@@ -87,13 +87,19 @@ const UserProfile = () => {
     };
 
     const handleStartConversation = async () => {
-        console.log("--- Початок створення чату ---");
         if (!currentUser || !profileUser) {
             console.error("ВІДСУТНІ ДАНІ: currentUser або profileUser не визначені.", { currentUser, profileUser });
             return;
         }
         const chatId = [currentUser.uid, profileUser.uid].sort().join('_');
         const chatRef = doc(db, 'chats', chatId);
+
+        // Створюємо об'єкт лічильників
+        const unreadCounts = {
+            [currentUser.uid]: 0,
+            [profileUser.uid]: 0
+        };
+
         const dataToCreate = {
             participants: [currentUser.uid, profileUser.uid],
             participantInfo: [
@@ -101,10 +107,10 @@ const UserProfile = () => {
                 { uid: profileUser.uid, displayName: profileUser.displayName, photoURL: profileUser.photoURL }
             ],
             lastMessage: null,
-            lastUpdatedAt: serverTimestamp()
+            lastUpdatedAt: serverTimestamp(),
+            unreadCounts: unreadCounts, // <-- ДОДАНО НОВЕ ПОЛЕ
         };
-        console.log("ID чату, що створюється:", chatId);
-        console.log("Дані, що будуть відправлені в Firestore:", dataToCreate);
+
         try {
             const chatSnap = await getDoc(chatRef);
             if (!chatSnap.exists()) {

@@ -1,0 +1,159 @@
+.share-music-modal {
+    max-width: 650px;
+    height: 80vh;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.share-music-header {
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid var(--color-border);
+    position: relative;
+    text-align: center;
+    flex-shrink: 0;
+}
+.share-music-header h4 { margin: 0; font-size: 1.25rem; }
+.share-music-header .modal-close-button {
+    position: absolute;
+    top: 50%;
+    right: 1rem;
+    transform: translateY(-50%);
+}
+
+.share-music-body {
+    padding: 1rem;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.search-music-input { margin-bottom: 1rem; }
+
+.share-music-tabs {
+    display: flex;
+    gap: 0.5rem;
+    background-color: var(--color-bg-light);
+    border-radius: 0.5rem;
+    padding: 0.25rem;
+    margin-bottom: 1rem;
+    flex-shrink: 0;
+}
+.share-music-tabs button {
+    flex-grow: 1;
+    background: none;
+    border: none;
+    color: var(--color-text-secondary);
+    padding: 0.75rem;
+    border-radius: 0.375rem;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+.share-music-tabs button.active {
+    background-color: var(--color-border);
+    color: var(--color-text-primary);
+}
+
+.share-music-content {
+    flex-grow: 1;
+    overflow-y: auto;
+    margin: 0 -0.5rem; /* Компенсація внутрішніх відступів */
+    padding: 0 0.5rem;
+}
+
+.share-list { display: flex; flex-direction: column; gap: 0.5rem; }
+
+.share-track-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.75rem;
+    border-radius: 0.5rem;
+}
+.share-track-item:hover { background-color: var(--color-bg-light); }
+.share-track-item img {
+    width: 48px;
+    height: 48px;
+    border-radius: 4px;
+    object-fit: cover;
+    flex-shrink: 0;
+}
+.share-item-info { flex-grow: 1; overflow: hidden; }
+.share-item-title { margin: 0; font-weight: 500; white-space: nowrap; text-overflow: ellipsis; overflow: hidden; }
+.share-item-author { margin: 0.25rem 0 0; font-size: 0.85rem; color: var(--color-text-secondary); }
+.share-track-item button {
+    background-color: var(--color-accent);
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+    font-weight: 500;
+    cursor: pointer;
+    flex-shrink: 0; /* Запобігаємо стисканню кнопки */
+}
+
+.share-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 1rem;
+}
+.share-album-card {
+    background-color: var(--color-bg-light);
+    border-radius: 0.5rem;
+    padding: 1rem;
+    text-align: center;
+}
+.share-album-card img {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    object-fit: cover;
+    border-radius: 4px;
+    margin-bottom: 0.75rem;
+}
+.share-album-card button {
+    width: 100%;
+    margin-top: 0.75rem;
+    background-color: var(--color-accent);
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+.share-loading, .share-empty {
+    text-align: center;
+    padding: 3rem;
+    color: var(--color-text-secondary);
+}
+
+@media (max-width: 768px) {
+    .share-music-modal {
+        max-width: 100%;
+        width: 100%;
+        height: 90vh;
+        max-height: 90vh;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        border-radius: 1rem 1rem 0 0;
+        animation: slideUp 0.3s ease-out;
+    }
+
+    @keyframes slideUp {
+        from { transform: translateY(100%); }
+        to { transform: translateY(0); }
+    }
+
+    /* Виправлення адаптивності елемента треку */
+    .share-track-item {
+        gap: 0.75rem;
+    }
+    .share-track-item button {
+        padding: 0.5rem 0.75rem;
+        font-size: 0.85rem;
+    }
+}

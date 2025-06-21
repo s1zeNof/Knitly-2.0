@@ -1,56 +1,69 @@
 import React from 'react';
 import { useUserContext } from './UserContext';
-import { usePlayerContext } from './PlayerContext';
 import { db } from './firebase';
 import { collection, query, where, getDocs, documentId } from 'firebase/firestore';
 import { useQuery } from 'react-query';
-import './TrackList.css'; 
+import TrackList from './TrackList';
 
-const DEFAULT_COVER_URL = 'https://placehold.co/256x256/181818/333333?text=K';
-
-const PlayIcon = () => <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"></path></svg>;
-const PauseIcon = () => <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"></path></svg>;
-
+// Функція для завантаження даних про треки на основі масиву їхніх ID
 const fetchLikedTracks = async (likedTrackIds) => {
+    // Якщо масив ID порожній, нічого не завантажуємо
     if (!likedTrackIds || likedTrackIds.length === 0) {
         return [];
     }
+    
+    // Firestore має обмеження в 10 елементів для оператора 'in'.
+    // Тому ми розбиваємо великий масив ID на менші частини (чанки) по 10.
+    const chunks = [];
+    for (let i = 0; i < likedTrackIds.length; i += 10) {
+        chunks.push(likedTrackIds.slice(i, i + 10));
+    }
+    
     const tracksRef = collection(db, 'tracks');
-    const q = query(tracksRef, where(documentId(), 'in', likedTrackIds.slice(0, 10)));
-    const querySnapshot = await getDocs(q);
-    return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    // Створюємо масив промісів, де кожен проміс - це запит для одного чанка
+    const promises = chunks.map(chunk => {
+        const q = query(tracksRef, where(documentId(), 'in', chunk));
+        return getDocs(q);
+    });
+    
+    // Виконуємо всі запити паралельно
+    const snapshots = await Promise.all(promises);
+    
+    // Збираємо результати з усіх запитів в один масив
+    const tracks = snapshots.flatMap(snapshot => snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+    
+    // Сортуємо отримані треки в тому ж порядку, в якому вони були лайкнуті,
+    // щоб найновіші лайки були зверху.
+    const orderedTracks = likedTrackIds
+        .map(id => tracks.find(track => track.id === id))
+        .filter(Boolean) // Видаляємо undefined, якщо трек раптом був видалений з бази
+        .reverse(); // Перевертаємо, щоб показати останні лайкнуті першими
+
+    return orderedTracks;
 };
 
 const LikedTracks = () => {
     const { user: currentUser } = useUserContext();
-    const { currentTrack, isPlaying, handlePlayPause } = usePlayerContext();
 
+    // Використовуємо react-query для завантаження та кешування даних
     const { data: tracks, isLoading } = useQuery(
-        ['likedTracks', currentUser?.uid], 
+        // Ключ запиту: він унікальний для користувача та його списку лайків
+        ['likedTracks', currentUser?.uid, currentUser?.likedTracks], 
         () => fetchLikedTracks(currentUser.likedTracks),
         {
-            enabled: !!currentUser?.likedTracks,
+            // Запит буде виконуватися тільки якщо користувач залогінений і має лайки
+            enabled: !!currentUser?.likedTracks && currentUser.likedTracks.length > 0,
         }
     );
     
-    if (isLoading) return <div className="tracklist-placeholder">Завантаження...</div>;
-    if (!tracks || tracks.length === 0) return <div className="tracklist-placeholder">Ви ще не вподобали жодного треку.</div>;
-
+    // Компонент сам не малює список. Він лише завантажує дані
+    // і передає їх у TrackList, який вже вміє все гарно відображати.
     return (
-        <div className="tracks-as-list">
-            {tracks.map(track => (
-                <div key={track.id} className="track-item-list">
-                    <img src={track.coverArtUrl || DEFAULT_COVER_URL} alt={track.title} className="track-cover-list"/>
-                    <button className="play-button-list" onClick={() => handlePlayPause(track)}>
-                        {isPlaying && currentTrack?.id === track.id ? <PauseIcon /> : <PlayIcon />}
-                    </button>
-                    <div className="track-info-list">
-                        <p className="track-title-list">{track.title}</p>
-                        <p className="track-artist-list">{track.authorName}</p>
-                    </div>
-                </div>
-            ))}
-        </div>
+        <TrackList 
+            initialTracks={tracks} 
+            isLoading={isLoading} 
+            listTitle="Вподобана музика"
+        />
     );
 };
 

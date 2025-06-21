@@ -4,9 +4,10 @@ import { usePlayerContext } from './PlayerContext';
 import default_picture from './img/Default-Images/default-picture.svg';
 import './MessageBubble.css';
 
-// Іконки
 const PlayIcon = () => <svg height="24" width="24" viewBox="0 0 24 24"><path fill="currentColor" d="M8 5v14l11-7z"></path></svg>;
 const CheckmarkIcon = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M20 6L9 17l-5-5"></path></svg>;
+const ForwardIcon = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 12l-7.5-7.5v4.5H4v6h8.5v4.5L20 12z"/></svg>;
+
 
 const MessageBubble = ({
     message,
@@ -19,53 +20,43 @@ const MessageBubble = ({
     isSelected,
     selectionMode,
     isDeleting,
-    deleteAnimationClass
+    deleteAnimationClass,
+    isSavedContext = false
 }) => {
     const { user: currentUser } = useUserContext();
     const { handlePlayPause } = usePlayerContext();
-    
-    // Стан для обробки одинарного та подвійного кліку
     const clickTimeoutRef = useRef(null);
 
-    // --- НОВА ЛОГІКА ВЗАЄМОДІЇ ---
-
-    // Обробник для короткого та подвійного тапу
     const handleClick = (e) => {
-        // Якщо ми в режимі виділення, тап завжди додає/видаляє повідомлення
         if (selectionMode) {
             onTap(message);
             return;
         }
-
-        // Якщо таймер вже запущено - це подвійний клік.
         if (clickTimeoutRef.current) {
-            // Скасовуємо таймер, щоб не спрацював одинарний клік.
             clearTimeout(clickTimeoutRef.current);
             clickTimeoutRef.current = null;
-            // Нічого не робимо при подвійному кліку, як і просили.
         } else {
-            // Якщо таймера немає - це перший клік. Запускаємо таймер.
             clickTimeoutRef.current = setTimeout(() => {
-                // Якщо за 250мс не було другого кліку, виконуємо дію для одинарного тапу.
-                onContextMenu(e, message); // Відкриваємо контекстне меню.
-                clickTimeoutRef.current = null; // Скидаємо таймер.
+                onContextMenu(e, message);
+                clickTimeoutRef.current = null;
             }, 250);
         }
     };
 
-    // Обробник для довгого затискання (на мобільних) та правого кліку (на ПК)
     const handleLongPressOrRightClick = (e) => {
-        e.preventDefault(); // Запобігаємо стандартному меню браузера
-        if (selectionMode) return; // Не робимо нічого, якщо вже в режимі виділення
-        onLongPress(message); // Вмикаємо режим виділення
+        e.preventDefault();
+        if (selectionMode) return;
+        onLongPress(message);
     };
     
+    const showSenderInfo = isSavedContext || (!isSent && isGroup);
+
     return (
         <div
             className={`message-wrapper ${isSent ? 'sent' : 'received'} ${isSelected ? 'selected' : ''} ${isDeleting ? deleteAnimationClass : ''}`}
             data-message-id={message.id}
-            onClick={handleClick} // Використовуємо новий обробник для кліків
-            onContextMenu={handleLongPressOrRightClick} // Використовуємо для довгого затискання та правого кліку
+            onClick={handleClick}
+            onContextMenu={handleLongPressOrRightClick}
         >
             {selectionMode && (
                 <div className="selection-checkbox">
@@ -73,10 +64,10 @@ const MessageBubble = ({
                 </div>
             )}
 
-            {!isSent && <img src={senderInfo?.photoURL || default_picture} alt="avatar" className="message-avatar"/>}
+            {(isSavedContext || !isSent) && <img src={senderInfo?.photoURL || default_picture} alt="avatar" className="message-avatar"/>}
             
             <div className="message-content-wrapper">
-                {!isSent && message.isGroup && <p className="sender-name">{senderInfo?.displayName}</p>}
+                {showSenderInfo && <p className="sender-name">{senderInfo?.displayName}</p>}
                 
                 {message.replyTo && (
                     <div className="reply-preview-bubble">
@@ -85,8 +76,16 @@ const MessageBubble = ({
                     </div>
                 )}
 
-                <div className={`message-bubble ${message.type === 'track' ? 'track-message' : ''}`}>
+                {message.forwardedFrom && !isSavedContext && (
+                    <div className="forwarded-header">
+                        <ForwardIcon />
+                        Переслано від {message.forwardedFrom.name}
+                    </div>
+                )}
+
+                <div className={`message-bubble ${message.type === 'track' || message.type === 'album' ? `${message.type}-message` : ''}`}>
                     {message.type === 'text' && <p>{message.content}</p>}
+                    
                     {message.type === 'track' && (
                         <div className="track-message-card">
                             <img src={message.content.coverArtUrl || default_picture} alt={message.content.title} />
@@ -97,10 +96,23 @@ const MessageBubble = ({
                             <button className="play-track-button" onClick={() => handlePlayPause(message.content)}><PlayIcon /></button>
                         </div>
                     )}
+
+                    {/* --- НОВИЙ БЛОК ДЛЯ АЛЬБОМІВ --- */}
+                    {message.type === 'album' && (
+                        <div className="album-message-card">
+                            <img src={message.content.coverArtUrl || default_picture} alt={message.content.title} />
+                            <div className="album-message-info">
+                                <p className="album-label">АЛЬБОМ</p>
+                                <p className="album-title">{message.content.title}</p>
+                                <p className="album-author">{message.content.artistName}</p>
+                            </div>
+                        </div>
+                    )}
+
                     <div className="message-metadata">
                         {message.isEdited && <span className="edited-label">(ред.)</span>}
                         <span className="timestamp">
-                            {message.timestamp?.toDate().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                            { (message.timestamp || message.savedAt)?.toDate().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }
                         </span>
                     </div>
                 </div>

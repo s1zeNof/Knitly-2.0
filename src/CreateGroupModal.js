@@ -29,7 +29,6 @@ const CreateGroupModal = ({ onClose, onGroupCreated }) => {
 
             const allFollowersSnapshots = await Promise.all(followersPromises);
             
-            // ВИПРАВЛЕННЯ 1: Стандартизуємо поле ID на 'uid'
             const followersList = allFollowersSnapshots.flatMap(snapshot =>
                 snapshot.docs.map(doc => ({ uid: doc.id, ...doc.data() }))
             );
@@ -56,15 +55,19 @@ const CreateGroupModal = ({ onClose, onGroupCreated }) => {
         setIsLoading(true);
 
         const allParticipants = [currentUser, ...selectedMembers];
-        
-        // ВИПРАВЛЕННЯ 2: Спрощуємо логіку та гарантуємо, що немає 'undefined'
         const participantIds = allParticipants.map(p => p.uid);
         const participantInfo = allParticipants.map(p => ({
             uid: p.uid,
-            displayName: p.displayName || 'Користувач', // Надаємо значення за замовчуванням
-            photoURL: p.photoURL || null,           // Замінюємо undefined на null
+            displayName: p.displayName || 'Користувач',
+            photoURL: p.photoURL || null,
         }));
         
+        // Створюємо об'єкт лічильників
+        const unreadCounts = {};
+        participantIds.forEach(id => {
+            unreadCounts[id] = 0;
+        });
+
         try {
             const newChatRef = doc(collection(db, 'chats'));
             await setDoc(newChatRef, {
@@ -76,9 +79,10 @@ const CreateGroupModal = ({ onClose, onGroupCreated }) => {
                 createdBy: currentUser.uid,
                 lastMessage: {
                     text: `${currentUser.displayName || 'Користувач'} створив(ла) групу "${groupName}"`,
-                    senderId: 'system', // Системне повідомлення
+                    senderId: 'system',
                 },
                 lastUpdatedAt: serverTimestamp(),
+                unreadCounts: unreadCounts, // <-- ДОДАНО НОВЕ ПОЛЕ
             });
             onGroupCreated(newChatRef.id);
         } catch (error) {

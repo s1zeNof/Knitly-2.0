@@ -1,38 +1,50 @@
-import { useState, useEffect, useCallback } from 'react'; // Додаємо useCallback
+import { useState, useEffect, useCallback } from 'react';
 import { db } from '../firebase';
-import { collection, query, where, getDocs, orderBy } from 'firebase/firestore';
+import { collection, query, where, orderBy, onSnapshot, limit } from 'firebase/firestore';
 
-export const useUserTracks = (userId) => {
+export const useUserTracks = (userId, options = {}) => {
+    const { orderByField = 'createdAt', orderByDirection = 'desc', limit: queryLimit } = options;
+    
     const [tracks, setTracks] = useState([]);
     const [loading, setLoading] = useState(true);
 
-    // useCallback, щоб уникнути зайвих перезавантажень
-    const fetchTracks = useCallback(async () => {
+    const fetchTracks = useCallback(() => {
         if (!userId) {
+            setTracks([]);
             setLoading(false);
-            return;
+            return () => {};
         }
         setLoading(true);
-        try {
-            const tracksQuery = query(
-                collection(db, "tracks"),
-                where("authorId", "==", userId),
-                orderBy("createdAt", "desc")
-            );
-            const tracksSnapshot = await getDocs(tracksQuery);
-            const userTracks = tracksSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-            setTracks(userTracks);
-        } catch (error) {
-            console.error("Error fetching tracks:", error);
-        } finally {
-            setLoading(false);
+        
+        let tracksQuery = query(
+            collection(db, "tracks"),
+            where("authorId", "==", userId)
+        );
+
+        if(orderByField && orderByDirection) {
+            tracksQuery = query(tracksQuery, orderBy(orderByField, orderByDirection));
         }
-    }, [userId]);
+
+        if(queryLimit) {
+            tracksQuery = query(tracksQuery, limit(queryLimit));
+        }
+
+        const unsubscribe = onSnapshot(tracksQuery, (snapshot) => {
+            const userTracks = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            setTracks(userTracks);
+            setLoading(false);
+        }, (error) => {
+            console.error("Помилка завантаження треків:", error);
+            setLoading(false);
+        });
+
+        return unsubscribe;
+    }, [userId, orderByField, orderByDirection, queryLimit]);
 
     useEffect(() => {
-        fetchTracks();
+        const unsubscribe = fetchTracks();
+        return () => unsubscribe();
     }, [fetchTracks]);
 
-    // Повертаємо не тільки дані, але й функцію для їх оновлення
-    return { tracks, loading, setTracks };
+    return { tracks, loading };
 };
