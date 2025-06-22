@@ -3,7 +3,6 @@
     from { transform: translateY(100%); }
     to { transform: translateY(0); }
 }
-/* --- ВИПРАВЛЕННЯ 1: Анімація закриття --- */
 @keyframes slide-down-panel {
     from { transform: translateY(0); }
     to { transform: translateY(100%); }
@@ -17,10 +16,8 @@
     display: flex;
     flex-direction: column;
     transform: translateY(100%);
-    /* Анімація появи */
     animation: slide-up-panel 0.4s ease-out forwards;
 }
-/* Застосовуємо анімацію закриття */
 .now-playing-panel.closing {
     animation: slide-down-panel 0.4s ease-in forwards;
 }
@@ -48,8 +45,6 @@
     overflow: hidden; 
 }
 
-
-/* --- ВИПРАВЛЕННЯ 2: Нові, надійні стилі для каруселі --- */
 .cover-carousel {
     display: flex;
     align-items: center;
@@ -71,7 +66,6 @@
     object-fit: cover;
     box-shadow: 0 10px 30px rgba(0,0,0,0.3);
     transition: transform 0.5s ease-out, opacity 0.5s ease-out;
-    /* Початковий стан - невидимий */
     transform: scale(0);
     opacity: 0;
 }
@@ -107,7 +101,6 @@
     z-index: 1;
 }
 
-/* --- Решта стилів без змін --- */
 .track-details {
     text-align: center;
     margin: 2rem 0 1.5rem 0;
@@ -161,5 +154,15 @@
     background: none; border: none; color: var(--color-text-secondary);
     cursor: pointer; display: flex; align-items: center;
     gap: 0.5rem; font-size: 0.9rem;
+    transition: color 0.2s ease;
 }
 .action-btn:hover { color: var(--color-text-primary); }
+
+/* --- НОВІ СТИЛІ ДЛЯ ЛАЙКІВ --- */
+.action-btn.liked {
+    color: var(--color-accent);
+}
+.action-btn.liked svg {
+    fill: var(--color-accent);
+    stroke: var(--color-accent);
+}

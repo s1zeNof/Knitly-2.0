@@ -5,11 +5,13 @@ import { query, collection, where, getDocs, doc, updateDoc, arrayUnion, arrayRem
 import { useUserContext } from './UserContext';
 import TrackList from './TrackList';
 import PlaylistTab from './PlaylistTab';
+import LikedTracks from './LikedTracks'; // <<< ІМПОРТУЄМО ОНОВЛЕНИЙ КОМПОНЕНТ
 
 import default_picture from './img/Default-Images/default-picture.svg';
 import verifiedIcon from './img/Profile-Settings/verified_icon-lg-bl.svg';
 import './Profile.css';
 
+// Іконки (без змін)
 const MusicIcon = () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>;
 const FeedIcon = () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 6h16M4 12h16M4 18h16"/></svg>;
 const PlaylistIcon = () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M8 6h13"/><path d="M8 12h13"/><path d="M8 18h13"/><path d="M3 6h.01"/><path d="M3 12h.01"/><path d="M3 18h.01"/></svg>;
@@ -94,7 +96,6 @@ const UserProfile = () => {
         const chatId = [currentUser.uid, profileUser.uid].sort().join('_');
         const chatRef = doc(db, 'chats', chatId);
 
-        // Створюємо об'єкт лічильників
         const unreadCounts = {
             [currentUser.uid]: 0,
             [profileUser.uid]: 0
@@ -108,7 +109,7 @@ const UserProfile = () => {
             ],
             lastMessage: null,
             lastUpdatedAt: serverTimestamp(),
-            unreadCounts: unreadCounts, // <-- ДОДАНО НОВЕ ПОЛЕ
+            unreadCounts: unreadCounts, 
         };
 
         try {
@@ -125,10 +126,27 @@ const UserProfile = () => {
     const renderTabContent = () => {
         if (!profileUser) return null;
         switch (activeTab) {
-            case 'music': return <TrackList userId={profileUser.uid} />;
-            case 'playlists': return <PlaylistTab userId={profileUser.uid} />;
-            case 'feed': return <div className="page-profile-tab-placeholder">Стрічка цього користувача буде тут.</div>;
-            default: return null;
+            // --- ЗМІНА: Оновлюємо вигляд вкладки "Музика" ---
+            case 'music': 
+                return (
+                    <div>
+                        <div className="profile-section">
+                            <h3 className="profile-section-title">Завантажені треки</h3>
+                            <TrackList userId={profileUser.uid} />
+                        </div>
+                        <div className="profile-section">
+                            <h3 className="profile-section-title">Вподобана музика</h3>
+                            {/* Передаємо об'єкт користувача, чий профіль переглядаємо */}
+                            <LikedTracks user={profileUser} />
+                        </div>
+                    </div>
+                );
+            case 'playlists': 
+                return <PlaylistTab userId={profileUser.uid} />;
+            case 'feed': 
+                return <div className="page-profile-tab-placeholder">Стрічка цього користувача буде тут.</div>;
+            default: 
+                return null;
         }
     };
 

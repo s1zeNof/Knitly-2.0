@@ -1,5 +1,8 @@
 import React, { useState } from 'react';
 import { usePlayerContext } from './PlayerContext';
+import { useUserContext } from './UserContext'; // <<< 1. ІМПОРТУЄМО КОНТЕКСТ КОРИСТУВАЧА
+import { db } from './firebase'; // <<< 2. ІМПОРТУЄМО БАЗУ ДАНИХ
+import { doc, runTransaction, increment, arrayUnion, arrayRemove } from 'firebase/firestore'; // <<< 3. ІМПОРТУЄМО ФУНКЦІЇ FIRESTORE
 import DynamicWaveform from './DynamicWaveform';
 import './NowPlayingPanel.css';
 
@@ -16,23 +19,57 @@ const OptionsIcon = () => <svg width="24" height="24" viewBox="0 0 24 24"><path 
 
 
 const NowPlayingPanel = ({ isOpen, onClose }) => {
-    const { 
+    const { user: currentUser, refreshUser } = useUserContext(); // <<< ОТРИМУЄМО КОРИСТУВАЧА
+    const {
         currentTrack, isPlaying, togglePlayPause, duration, currentTime,
-        playNext, playPrev, queue, history
+        playNext, playPrev, queue, history, showNotification
     } = usePlayerContext();
-
-    // --- ВИПРАВЛЕННЯ 1: Логіка для анімації закриття ---
     const [isAnimatingOut, setIsAnimatingOut] = useState(false);
+    const [processingLike, setProcessingLike] = useState(false); // <<< СТАН ДЛЯ БЛОКУВАННЯ КНОПКИ
 
-    const handleClose = () => {
-        setIsAnimatingOut(true);
+    // --- НОВА ФУНКЦІЯ ДЛЯ ЛАЙКІВ ---
+    const handleLikeToggle = async () => {
+        if (!currentUser || !currentTrack) {
+            showNotification("Будь ласка, увійдіть, щоб оцінити трек.", "error");
+            return;
+        }
+        if (processingLike) return;
+
+        setProcessingLike(true);
+
+        const trackRef = doc(db, 'tracks', currentTrack.id);
+        const userRef = doc(db, 'users', currentUser.uid);
+        const isCurrentlyLiked = currentUser.likedTracks?.includes(currentTrack.id);
+
+        try {
+            await runTransaction(db, async (transaction) => {
+                const trackDoc = await transaction.get(trackRef);
+                if (!trackDoc.exists()) throw "Трек не знайдено!";
+                
+                const newLikesCount = (trackDoc.data().likesCount || 0) + (isCurrentlyLiked ? -1 : 1);
+                transaction.update(trackRef, { likesCount: newLikesCount });
+
+                if (isCurrentlyLiked) {
+                    transaction.update(userRef, { likedTracks: arrayRemove(currentTrack.id) });
+                } else {
+                    transaction.update(userRef, { likedTracks: arrayUnion(currentTrack.id) });
+                }
+            });
+            await refreshUser(); // Оновлюємо дані користувача, щоб побачити зміни
+        } catch (error) {
+            console.error("Помилка зміни лайку:", error);
+            showNotification("Не вдалося оцінити трек.", "error");
+        } finally {
+            setProcessingLike(false);
+        }
     };
 
+
+    const handleClose = () => setIsAnimatingOut(true);
     const handleAnimationEnd = () => {
-        // Коли анімація закриття завершилась, викликаємо onClose, щоб прибрати компонент
         if (isAnimatingOut) {
             onClose();
-            setIsAnimatingOut(false); // Скидаємо стан на майбутнє
+            setIsAnimatingOut(false);
         }
     };
 
@@ -43,17 +80,17 @@ const NowPlayingPanel = ({ isOpen, onClose }) => {
         return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
     };
 
-    // --- ВИПРАВЛЕННЯ 2: Більш надійна логіка для каруселі ---
     const carouselTracks = currentTrack ? [
         ...(history || []).slice(-2),
         currentTrack,
         ...(queue || []).slice(0, 2)
     ] : [];
 
-    // Знаходимо індекс активного треку в масиві каруселі
     const activeIndex = currentTrack ? carouselTracks.findIndex(t => t.id === currentTrack.id) : -1;
 
-    // Компонент не рендериться, якщо не відкритий або немає треку
+    // --- ПЕРЕВІРЯЄМО, ЧИ ПОТОЧНИЙ ТРЕК Є В СПИСКУ ЛАЙКІВ КОРИСТУВАЧА ---
+    const isLiked = currentUser?.likedTracks?.includes(currentTrack?.id);
+
     if (!isOpen || !currentTrack) return null;
 
     return (
@@ -62,13 +99,11 @@ const NowPlayingPanel = ({ isOpen, onClose }) => {
             onAnimationEnd={handleAnimationEnd}
         >
             <div className="panel-header">
-                {/* Викликаємо нашу функцію для анімації закриття */}
                 <button onClick={handleClose} className="panel-close-btn"><ChevronDownIcon /></button>
             </div>
             <div className="panel-content">
                 <div className="cover-carousel">
                     {carouselTracks.map((track, index) => {
-                         // Розраховуємо позицію кожної обкладинки відносно активної
                          const diff = index - activeIndex;
                          let positionClass = '';
                          if (diff === 0) positionClass = 'active';
@@ -76,11 +111,11 @@ const NowPlayingPanel = ({ isOpen, onClose }) => {
                          else if (diff === -2) positionClass = 'prev-2';
                          else if (diff === 1) positionClass = 'next-1';
                          else if (diff === 2) positionClass = 'next-2';
-                         else positionClass = 'hidden'; // Ховаємо занадто далекі обкладинки
+                         else positionClass = 'hidden';
 
                          return (
                             <img 
-                                key={`${track.id}-${index}`} // Більш унікальний ключ
+                                key={`${track.id}-${index}`}
                                 src={track.coverArtUrl || 'https://placehold.co/280x280/181818/333333?text=K'} 
                                 alt={track.title} 
                                 className={`carousel-artwork ${positionClass}`}
@@ -111,7 +146,14 @@ const NowPlayingPanel = ({ isOpen, onClose }) => {
                 <div className="comment-placeholder">Drop a comment...</div>
 
                 <div className="actions-bar">
-                    <button className="action-btn"><HeartIcon/> <span>{currentTrack.likesCount || 0}</span></button>
+                    {/* --- ДОДАНО ЛОГІКУ ДЛЯ КНОПКИ ЛАЙКА --- */}
+                    <button 
+                        className={`action-btn ${isLiked ? 'liked' : ''}`} 
+                        onClick={handleLikeToggle}
+                        disabled={processingLike}
+                    >
+                        <HeartIcon/> <span>{currentTrack.likesCount || 0}</span>
+                    </button>
                     <button className="action-btn"><CommentIcon/> <span>0</span></button>
                     <button className="action-btn"><ShareIcon/></button>
                     <button className="action-btn"><OptionsIcon/></button>
