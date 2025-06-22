@@ -1,6 +1,6 @@
-import React, { createContext, useState, useContext, useRef, useEffect } from 'react';
-import { db } from './firebase'; // Імпортуємо db
-import { doc, updateDoc, increment } from 'firebase/firestore'; // Імпортуємо потрібні функції
+import React, { createContext, useState, useContext, useRef, useEffect, useCallback } from 'react';
+import { db } from './firebase';
+import { doc, updateDoc, increment } from 'firebase/firestore';
 
 const PlayerContext = createContext();
 
@@ -14,12 +14,24 @@ export const PlayerProvider = ({ children }) => {
     const [history, setHistory] = useState([]);
     const [notification, setNotification] = useState({ message: '', type: 'info' });
 
+    // --- ЗМІНА: Додаємо crossOrigin, щоб уникнути помилок CORS з WaveSurfer ---
     const audioRef = useRef(new Audio());
+    audioRef.current.crossOrigin = 'anonymous';
 
-    const showNotification = (message, type = 'info') => {
-        setNotification({ message, type });
-        setTimeout(() => setNotification({ message: '', type: 'info' }), 3000);
-    };
+
+    const playNext = useCallback(() => {
+        if (queue.length > 0) {
+            const nextTrack = queue[0];
+            if (currentTrack) setHistory(prev => [currentTrack, ...prev].slice(0, 20));
+            setCurrentTrack(nextTrack);
+            setQueue(prevQueue => prevQueue.slice(1));
+            setIsPlaying(true);
+        } else {
+            setIsPlaying(false);
+            audioRef.current.currentTime = 0;
+            setCurrentTime(0);
+        }
+    }, [queue, currentTrack]);
 
     useEffect(() => {
         const audio = audioRef.current;
@@ -27,21 +39,16 @@ export const PlayerProvider = ({ children }) => {
         const setAudioTime = () => setCurrentTime(audio.currentTime);
         const handleEnded = () => playNext();
 
-        audio.addEventListener('loadedmetadata', setAudioData);
+        audio.addEventListener('loadeddata', setAudioData); // Використовуємо 'loadeddata' для надійності
         audio.addEventListener('timeupdate', setAudioTime);
         audio.addEventListener('ended', handleEnded);
-        audio.crossOrigin = "anonymous";
 
         return () => {
-            audio.removeEventListener('loadedmetadata', setAudioData);
+            audio.removeEventListener('loadeddata', setAudioData);
             audio.removeEventListener('timeupdate', setAudioTime);
             audio.removeEventListener('ended', handleEnded);
         };
-    }, []);
-
-    useEffect(() => {
-        audioRef.current.volume = volume;
-    }, [volume]);
+    }, [playNext]);
 
     useEffect(() => {
         if (currentTrack?.trackUrl) {
@@ -57,68 +64,56 @@ export const PlayerProvider = ({ children }) => {
              audioRef.current.pause();
         }
     }, [currentTrack, isPlaying]);
+    
+    useEffect(() => {
+        audioRef.current.volume = volume;
+    }, [volume]);
 
-    const handlePlayPause = (track) => {
+    const handlePlayPause = useCallback((track) => {
         if (currentTrack?.id === track.id) {
-            setIsPlaying(!isPlaying);
+            setIsPlaying(prev => !prev);
         } else {
-            // --- ОНОВЛЕНО: ЛОГІКА ПІДРАХУНКУ ПРОСЛУХОВУВАНЬ ---
-            if (track.id) {
-                const trackRef = doc(db, 'tracks', track.id);
-                // Ми не чекаємо на завершення (await), щоб не блокувати відтворення
-                updateDoc(trackRef, {
-                    playCount: increment(1)
-                }).catch(err => console.error("Failed to increment play count:", err));
-            }
-            // --- КІНЕЦЬ ОНОВЛЕННЯ ---
-
             if (currentTrack) {
-                setHistory(prev => [currentTrack, ...prev]);
+                setHistory(prev => [currentTrack, ...prev].slice(0, 20));
             }
             setCurrentTrack(track);
             setIsPlaying(true);
+            const trackRef = doc(db, 'tracks', track.id);
+            updateDoc(trackRef, { playCount: increment(1) }).catch(err => console.error(err));
         }
-    };
+    }, [currentTrack]);
     
-    const togglePlayPause = () => {
+    const togglePlayPause = useCallback(() => {
         if (currentTrack) {
-            setIsPlaying(!isPlaying);
+            setIsPlaying(prev => !prev);
         }
-    };
+    }, [currentTrack]);
     
-    const seek = (time) => {
-        if (audioRef.current) {
-            audioRef.current.currentTime = time;
+    const seek = useCallback((time) => {
+        if (audioRef.current && isFinite(time)) {
+            audioRef.current.currentTime = parseFloat(time);
+            setCurrentTime(parseFloat(time)); 
         }
-    };
+    }, []);
 
-    const playNext = () => {
-        if (queue.length > 0) {
-            const nextTrack = queue[0];
-            if(currentTrack) setHistory(prev => [currentTrack, ...prev]);
-            setCurrentTrack(nextTrack);
-            setQueue(prevQueue => prevQueue.slice(1));
-            setIsPlaying(true);
-        } else {
-            setIsPlaying(false);
-        }
-    };
-
-    const playPrev = () => {
-        if (currentTime > 5) {
+    const playPrev = useCallback(() => {
+        if (currentTime > 3) {
             seek(0);
-            return;
-        }
-        if (history.length > 0) {
+        } else if (history.length > 0) {
             const prevTrack = history[0];
-            if(currentTrack) setQueue(prev => [currentTrack, ...prev]);
-            setCurrentTrack(prevTrack);
+            if (currentTrack) setQueue(prev => [currentTrack, ...prev]);
             setHistory(prevHistory => prevHistory.slice(1));
+            setCurrentTrack(prevTrack);
             setIsPlaying(true);
         }
-    };
+    }, [history, currentTrack, seek, currentTime]);
     
-    const addToQueue = (track) => {
+    const showNotification = useCallback((message, type = 'info') => {
+        setNotification({ message, type });
+        setTimeout(() => setNotification({ message: '', type: 'info' }), 3000);
+    }, []);
+    
+    const addToQueue = useCallback((track) => {
         setQueue(prevQueue => {
             if (prevQueue.find(item => item.id === track.id) || currentTrack?.id === track.id) {
                  showNotification(`Трек "${track.title}" вже у черзі або грає.`, 'error');
@@ -127,18 +122,20 @@ export const PlayerProvider = ({ children }) => {
             showNotification(`Трек "${track.title}" додано в чергу`);
             return [...prevQueue, track];
         });
-    };
+    }, [currentTrack, showNotification]);
 
-    const removeFromQueue = (trackIndex) => {
+    const removeFromQueue = useCallback((trackIndex) => {
         const trackToRemove = queue[trackIndex];
         setQueue(prevQueue => prevQueue.filter((_, index) => index !== trackIndex));
         showNotification(`Трек "${trackToRemove.title}" видалено з черги`);
-    };
+    }, [queue, showNotification]);
 
     const value = {
-        currentTrack, isPlaying, duration, currentTime, volume, queue,
+        currentTrack, isPlaying, duration, currentTime, volume, queue, history,
         handlePlayPause, togglePlayPause, seek, setVolume, addToQueue,
         removeFromQueue, playNext, playPrev, showNotification, notification,
+        // --- ОСНОВНА ЗМІНА: Передаємо сам аудіо-елемент ---
+        audioElement: audioRef.current,
     };
 
     return (
