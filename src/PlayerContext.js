@@ -1,4 +1,4 @@
-import React, { createContext, useState, useContext, useRef, useEffect, useCallback } from 'react';
+import React, { createContext, useState, useContext, useRef, useEffect, useCallback, useMemo } from 'react';
 import { db } from './firebase';
 import { doc, updateDoc, increment } from 'firebase/firestore';
 
@@ -14,10 +14,8 @@ export const PlayerProvider = ({ children }) => {
     const [history, setHistory] = useState([]);
     const [notification, setNotification] = useState({ message: '', type: 'info' });
 
-    // --- ЗМІНА: Додаємо crossOrigin, щоб уникнути помилок CORS з WaveSurfer ---
     const audioRef = useRef(new Audio());
     audioRef.current.crossOrigin = 'anonymous';
-
 
     const playNext = useCallback(() => {
         if (queue.length > 0) {
@@ -39,7 +37,7 @@ export const PlayerProvider = ({ children }) => {
         const setAudioTime = () => setCurrentTime(audio.currentTime);
         const handleEnded = () => playNext();
 
-        audio.addEventListener('loadeddata', setAudioData); // Використовуємо 'loadeddata' для надійності
+        audio.addEventListener('loadeddata', setAudioData);
         audio.addEventListener('timeupdate', setAudioTime);
         audio.addEventListener('ended', handleEnded);
 
@@ -130,13 +128,32 @@ export const PlayerProvider = ({ children }) => {
         showNotification(`Трек "${trackToRemove.title}" видалено з черги`);
     }, [queue, showNotification]);
 
-    const value = {
-        currentTrack, isPlaying, duration, currentTime, volume, queue, history,
-        handlePlayPause, togglePlayPause, seek, setVolume, addToQueue,
-        removeFromQueue, playNext, playPrev, showNotification, notification,
-        // --- ОСНОВНА ЗМІНА: Передаємо сам аудіо-елемент ---
+    // <<< ОСНОВНА ОПТИМІЗАЦІЯ >>>
+    // Мемоізуємо об'єкт value, щоб уникнути зайвих ре-рендерів у дочірніх компонентах.
+    // Тепер він буде оновлюватися тільки, коли зміняться його залежності.
+    const value = useMemo(() => ({
+        currentTrack, 
+        isPlaying, 
+        duration, 
+        currentTime, 
+        volume, 
+        queue, 
+        history, 
+        notification,
         audioElement: audioRef.current,
-    };
+        handlePlayPause, 
+        togglePlayPause, 
+        seek, 
+        setVolume, 
+        addToQueue,
+        removeFromQueue, 
+        playNext, 
+        playPrev, 
+        showNotification
+    }), [
+        currentTrack, isPlaying, duration, currentTime, volume, queue, history, notification, 
+        handlePlayPause, togglePlayPause, seek, setVolume, addToQueue, removeFromQueue, playNext, playPrev, showNotification
+    ]);
 
     return (
         <PlayerContext.Provider value={value}>

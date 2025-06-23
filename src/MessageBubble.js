@@ -21,7 +21,8 @@ const MessageBubble = ({
     selectionMode,
     isDeleting,
     deleteAnimationClass,
-    isSavedContext = false
+    isSavedContext = false,
+    onReaction
 }) => {
     const { user: currentUser } = useUserContext();
     const { handlePlayPause } = usePlayerContext();
@@ -49,6 +50,14 @@ const MessageBubble = ({
         onLongPress(message);
     };
     
+    const handleDoubleClick = (e) => {
+        e.preventDefault();
+        if (onReaction) {
+            // Викликаємо реакцію зі стандартним ID для "сердечка"
+            onReaction(message, 'unicode_❤️');
+        }
+    };
+    
     const showSenderInfo = isSavedContext || (!isSent && isGroup);
 
     return (
@@ -57,6 +66,7 @@ const MessageBubble = ({
             data-message-id={message.id}
             onClick={handleClick}
             onContextMenu={handleLongPressOrRightClick}
+            onDoubleClick={handleDoubleClick}
         >
             {selectionMode && (
                 <div className="selection-checkbox">
@@ -97,7 +107,6 @@ const MessageBubble = ({
                         </div>
                     )}
 
-                    {/* --- НОВИЙ БЛОК ДЛЯ АЛЬБОМІВ --- */}
                     {message.type === 'album' && (
                         <div className="album-message-card">
                             <img src={message.content.coverArtUrl || default_picture} alt={message.content.title} />
@@ -116,6 +125,39 @@ const MessageBubble = ({
                         </span>
                     </div>
                 </div>
+
+                {/* <<< ОСНОВНЕ ВИПРАВЛЕННЯ ТУТ >>> */}
+                {message.reactions && Object.keys(message.reactions).length > 0 && (
+                    <div className="reactions-container">
+                        {Object.entries(message.reactions).map(([reactionId, reactionData]) => {
+                            // Перевіряємо, що дані реакції існують і мають масив uids
+                            if (!reactionData || !reactionData.uids || reactionData.uids.length === 0) return null;
+
+                            // Тепер правильно отримуємо масив користувачів
+                            const uids = reactionData.uids;
+                            const userHasReacted = currentUser ? uids.includes(currentUser.uid) : false;
+                            const isCustom = !reactionId.startsWith('unicode_');
+                            
+                            return (
+                                <div
+                                    key={reactionId}
+                                    className={`reaction-badge ${userHasReacted ? 'user-reacted' : ''}`}
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        if (onReaction) onReaction(message, reactionId, isCustom ? reactionData.url : null);
+                                    }}
+                                >
+                                    {isCustom ? (
+                                        <img src={reactionData.url} alt={reactionId} className="reaction-emoji-custom" />
+                                    ) : (
+                                        <span className="reaction-emoji">{reactionId.substring(8)}</span>
+                                    )}
+                                    <span className="reaction-count">{uids.length}</span>
+                                </div>
+                            );
+                        })}
+                    </div>
+                )}
             </div>
         </div>
     );

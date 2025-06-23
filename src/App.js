@@ -1,6 +1,5 @@
 import React from 'react';
-// <<< КРОК 1.1: ІМПОРТУЄМО useLocation
-import { BrowserRouter as Router, Route, Routes, useLocation } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from 'react-query';
 import { UserProvider } from './UserContext';
 import { PlayerProvider, usePlayerContext } from './PlayerContext';
@@ -18,23 +17,21 @@ import CreateAlbum from './CreateAlbum';
 import PlaylistPage from './PlaylistPage';
 import MessagesPage from './MessagesPage';
 import Player from './Player';
+import CreateEmojiPack from './CreateEmojiPack';
 
 import './App.css';
 
 const queryClient = new QueryClient();
 
-const AppContent = () => {
-    const { notification } = usePlayerContext();
-    const location = useLocation(); // <<< КРОК 1.2: ОТРИМУЄМО ПОТОЧНИЙ ШЛЯХ
-
-    // Перевіряємо, чи ми на сторінці повідомлень
-    const isMessagesPage = location.pathname.startsWith('/messages');
+// Створюємо компонент-обгортку, щоб мати доступ до контексту
+const AppLayout = () => {
+    const { notification, currentTrack } = usePlayerContext();
+    const isPlayerVisible = !!currentTrack;
 
     return (
         <>
-            {/* <<< КРОК 1.3: ДОДАЄМО УМОВНИЙ СТИЛЬ */}
-            <div style={{ paddingBottom: isMessagesPage ? '0px' : '90px' }}>
-                <Header />
+            <Header />
+            <main className="app-main-content">
                 <Routes>
                     <Route path="/" element={<Home />} />
                     <Route path="/login" element={<Login />} />
@@ -47,9 +44,11 @@ const AppContent = () => {
                     <Route path="/playlist/:playlistId" element={<PlaylistPage />} />
                     <Route path="/messages" element={<MessagesPage />} />
                     <Route path="/userlist" element={<UserList />} />
+                    <Route path="/create-emoji-pack" element={<CreateEmojiPack />} />
                 </Routes>
-            </div>
-            <Player />
+            </main>
+            
+            <Player className={isPlayerVisible ? 'visible' : ''} />
             
             {notification.message && (
                 <div className={`toast-notification ${notification.type}`}>
@@ -66,7 +65,7 @@ const App = () => {
             <UserProvider>
                 <PlayerProvider>
                     <Router>
-                        <AppContent />
+                        <AppLayout />
                     </Router>
                 </PlayerProvider>
             </UserProvider>

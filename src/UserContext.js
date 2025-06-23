@@ -15,12 +15,12 @@ export const UserProvider = ({ children }) => {
             const userRef = doc(db, 'users', user.uid);
             const userDoc = await getDoc(userRef);
             if (userDoc.exists()) {
-                // <<< ЗМІНА: Переконуємось, що chatFolders завантажуються при оновленні
                 const userData = userDoc.data();
                 setUser({ 
                     uid: user.uid, 
                     ...userData,
-                    chatFolders: userData.chatFolders || [] // Гарантуємо, що поле існує
+                    chatFolders: userData.chatFolders || [],
+                    subscribedPackIds: userData.subscribedPackIds || [] // Гарантуємо, що поле існує
                 });
             }
         } catch (error) {
@@ -35,12 +35,12 @@ export const UserProvider = ({ children }) => {
                 const userDoc = await getDoc(userRef);
 
                 if (userDoc.exists()) {
-                    // <<< ЗМІНА: Додаємо завантаження chatFolders для існуючого користувача
                     const userData = userDoc.data();
                     setUser({ 
                         uid: authUser.uid, 
                         ...userData,
-                        chatFolders: userData.chatFolders || [] // Важливо для старих користувачів
+                        chatFolders: userData.chatFolders || [],
+                        subscribedPackIds: userData.subscribedPackIds || [] // Для існуючих користувачів
                     });
                 } else {
                     const nickname = authUser.email ? authUser.email.split('@')[0].replace(/[^a-z0-9_.]/g, '') : `user${Date.now()}`;
@@ -54,7 +54,8 @@ export const UserProvider = ({ children }) => {
                         following: [],
                         likedTracks: [],
                         createdAt: serverTimestamp(),
-                        chatFolders: [] // <<< ЗМІНА: Додаємо порожнє поле для нового користувача
+                        chatFolders: [],
+                        subscribedPackIds: [] // <<< ДОДАНО НОВЕ ПОЛЕ ДЛЯ НОВИХ КОРИСТУВАЧІВ
                     };
                     await setDoc(userRef, newUser);
                     setUser(newUser);

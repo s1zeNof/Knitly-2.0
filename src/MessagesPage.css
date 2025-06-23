@@ -1,15 +1,23 @@
 /* Базовий контейнер сторінки */
 .messages-page-container {
     display: flex;
-    height: calc(100vh - 70px);
+    /* <<< ЗМІНА: Висота тепер розраховується з урахуванням глобальної змінної >>> */
+    height: calc(100dvh - 70px - var(--player-height, 0px));
     background-color: var(--color-bg-deep);
+    transition: height 0.4s ease-in-out; 
+}
+
+/* <<< ЗМІНА: vh на dvh >>> */
+.messages-page-container.player-visible {
+    height: calc(100dvh - 70px - 90px);
 }
 
 .messages-page-loading {
     display: flex;
     align-items: center;
     justify-content: center;
-    height: calc(100vh - 70px);
+    /* <<< ЗМІНА: vh на dvh >>> */
+    height: calc(100dvh - 70px);
     font-size: 1.2rem;
     color: var(--color-text-secondary);
 }
@@ -28,7 +36,7 @@
 }
 
 .folder-icon-item {
-    position: relative; /* <-- ДОДАНО: Для позиціонування значка */
+    position: relative;
     background-color: var(--color-bg-light);
     border: 2px solid transparent;
     border-radius: 50%;
@@ -84,7 +92,7 @@
     scrollbar-width: none;
 }
 .mobile-tab-item {
-    position: relative; /* <-- ДОДАНО: Для позиціонування значка */
+    position: relative;
     display: inline-flex;
     align-items: center;
     gap: 0.5rem;
@@ -108,7 +116,7 @@
 .chat-area-grid {
     flex-grow: 1;
     display: grid;
-    grid-template-columns: 320px 1fr 320px;
+    grid-template-columns: 320px 1fr; /* Забрав третю колонку, бо її не було в коді */
     overflow: hidden;
 }
 
@@ -188,7 +196,6 @@
     margin-left: 0.5rem;
 }
 
-/* --- НОВІ СТИЛІ ДЛЯ ЗНАЧКА НА ПАПЦІ --- */
 .folder-unread-badge {
     position: absolute;
     top: 2px;
@@ -205,7 +212,6 @@
     font-weight: 700;
     border: 2px solid var(--color-bg-medium);
 }
-/* Модифікатор для мобільної версії, якщо потрібен інший вигляд */
 .folder-unread-badge.mobile {
     position: static;
     margin-left: 0.5rem;
@@ -216,7 +222,6 @@
     width: auto;
 }
 
-/* Вікно активного чату (решта без змін) */
 .chat-window { display: flex; flex-direction: column; height: 100%; }
 .chat-header {
     display: flex; align-items: center; gap: 1rem;
@@ -235,33 +240,25 @@
 }
 .chat-header h3 { margin: 0; font-size: 1.1rem; cursor: pointer; }
 .messages-area {
-    flex-grow: 1; overflow-y: auto; padding: 0.5rem;
-    display: flex; flex-direction: column; gap: 1rem;
+    flex-grow: 1; overflow-y: auto; padding: 1rem 0.5rem;
+    display: flex; flex-direction: column; gap: 0.25rem;
 }
-.message-wrapper { display: flex; gap: 0.75rem; max-width: 80%; }
-.message-wrapper.sent { align-self: flex-end; flex-direction: row-reverse; }
-.message-wrapper.received { align-self: flex-start; }
-.message-avatar {
-    width: 32px; height: 32px; border-radius: 50%;
-    object-fit: cover; align-self: flex-end;
+
+.message-input-container {
+    display: flex;
+    flex-direction: column;
+    border-top: 1px solid var(--color-border);
+    background-color: var(--color-bg-medium);
+    flex-shrink: 0;
 }
-.message-content-wrapper { display: flex; flex-direction: column; }
-.message-wrapper.sent .message-content-wrapper { align-items: flex-end; }
-.message-wrapper.received .message-content-wrapper { align-items: flex-start; }
-.sender-name {
-    font-size: 0.8rem; font-weight: 600; color: var(--color-text-secondary);
-    margin: 0 0.75rem 0.25rem;
+.message-input-area {
+    padding: 1rem 1.5rem;
+    border-top: none;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
 }
-.message-bubble { padding: 0.75rem 1rem; border-radius: 1.25rem; word-wrap: break-word; }
-.message-bubble p { margin: 0; }
-.message-wrapper.sent .message-bubble {
-    background-color: var(--color-accent); color: white;
-    border-bottom-right-radius: 0.25rem;
-}
-.message-wrapper.received .message-bubble {
-    background-color: var(--color-bg-light); border-bottom-left-radius: 0.25rem;
-}
-.message-input-area { padding: 1rem 1.5rem; border-top: 1px solid var(--color-border); flex-shrink: 0; display: flex; }
+
 .message-input-form { display: flex; gap: 1rem;  width: 100%;}
 .message-input-form input {
     flex-grow: 1; background-color: var(--color-bg-light); border: 1px solid var(--color-border);
@@ -277,46 +274,7 @@
     transition: background-color 0.2s;
 }
 .message-input-form button:disabled { background-color: var(--color-disabled); cursor: not-allowed; }
-.music-sharing-sidebar {
-    background-color: var(--color-bg-medium); border-left: 1px solid var(--color-border);
-    display: flex; flex-direction: column; overflow-y: hidden;
-}
-.music-sharing-list { overflow-y: auto; padding: 0.5rem; }
-.music-share-item { display: flex; align-items: center; gap: 0.75rem; padding: 0.5rem; border-radius: 0.375rem; }
-.music-share-item img {
-    width: 40px; height: 40px; object-fit: cover;
-    border-radius: 4px; flex-shrink: 0;
-}
-.music-share-info .track-title, .music-share-info .track-author {
-    margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-}
-.music-share-info .track-title { font-size: 0.9rem; font-weight: 500; }
-.music-share-info .track-author { font-size: 0.8rem; color: var(--color-text-secondary); }
-.share-button {
-    background: var(--color-bg-light); border: 1px solid var(--color-border); color: var(--color-text-primary);
-    padding: 0.4rem 0.8rem; border-radius: 0.5rem; cursor: pointer;
-    font-size: 0.8rem; font-weight: 500; margin-left: auto;
-}
-.share-button:hover { background-color: var(--color-border); }
-.share-button:disabled { opacity: 0.5; cursor: not-allowed; }
-.message-bubble.track-message { background: transparent; padding: 0; max-width: 350px; width: 100%; }
-.track-message-card {
-    display: flex; align-items: center; gap: 1rem; background-color: var(--color-bg-light);
-    padding: 0.75rem; border-radius: 0.75rem; border: 1px solid var(--color-border);
-}
-.message-wrapper.sent .track-message-card { border: 1px solid var(--color-accent); }
-.track-message-card img {
-    width: 60px; height: 60px; object-fit: cover;
-    border-radius: 0.375rem; flex-shrink: 0;
-}
-.track-message-info { flex-grow: 1; overflow: hidden; }
-.track-message-info .track-title { font-weight: 600; }
-.track-message-info .track-author { color: var(--color-text-secondary); font-size: 0.9rem; }
-.play-track-button {
-    background: var(--color-accent); color: white; border: none;
-    width: 40px; height: 40px; border-radius: 50%; flex-shrink: 0;
-    display: flex; align-items: center; justify-content: center; cursor: pointer;
-}
+
 .chat-placeholder {
     display: flex; flex-direction: column; align-items: center;
     justify-content: center; text-align: center; height: 100%;
@@ -343,35 +301,11 @@
     width: 24px;
     height: 24px;
 }
-.message-input-container {
-    display: flex;
-    flex-direction: column;
-    border-top: 1px solid var(--color-border);
-    background-color: var(--color-bg-medium);
-}
-.messages-area {
-    flex-grow: 1; 
-    overflow-y: auto; 
-    padding: 0rem;
-    display: flex; 
-    flex-direction: column; 
-    gap: 0.25rem;
-}
-.message-input-area {
-    padding: 1rem 1.5rem;
-    border-top: none;
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-}
+
 .message-wrapper.highlight {
     animation: highlight-anim 1.5s ease-out;
 }
 
-
-/* ... (всі існуючі стилі залишаються) ... */
-
-/* Стилі для аватара чату "Збережене" */
 .saved-messages-avatar {
     width: 50px;
     height: 50px;
@@ -388,7 +322,6 @@
     color: white;
 }
 
-/* Зменшена версія для хедера */
 .saved-messages-avatar.header {
     width: 40px;
     height: 40px;
@@ -398,7 +331,6 @@
     height: 22px;
 }
 
-/* Іконка-заглушка для пустого чату "Збережене" */
 .chat-placeholder .placeholder-icon {
     width: 80px;
     height: 80px;
@@ -406,19 +338,20 @@
     margin-bottom: 1.5rem;
 }
 
-
-/* ... (решта існуючих стилів) ... */
-
 @keyframes highlight-anim {
     0% { background-color: rgba(45, 223, 184, 0.4); }
     100% { background-color: transparent; }
 }
+
 /* Адаптивність */
 @media (max-width: 1024px) {
     .chat-area-grid { grid-template-columns: 280px 1fr; }
-    .music-sharing-sidebar { display: none; }
 }
 @media (max-width: 768px) {
+    /* <<< ЗМІНА: vh на dvh >>> */
+    .messages-page-container.player-visible {
+        height: calc(100dvh - 70px - 70px);
+    }
     .folders-icon-sidebar { display: none; }
     .folder-tabs-mobile { display: block; }
     .main-chat-wrapper { height: 100%; }
@@ -451,8 +384,5 @@
     .back-button-mobile {
         display: flex;
         align-items: center;
-    }
-    .music-sharing-sidebar {
-        display: none;
     }
 }

@@ -27,6 +27,8 @@ body {
   background-color: var(--color-bg-deep);
   color: var(--color-text-primary);
   overflow-x: hidden; /* Запобігаємо горизонтальному скролу */
+  padding-bottom: var(--player-height, 0px);
+    transition: padding-bottom 0.4s ease-in-out;
 }
 
 a {

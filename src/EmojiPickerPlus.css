@@ -1,0 +1,124 @@
+.picker-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 4000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(0,0,0,0.3);
+}
+
+.picker-container {
+    width: 400px;
+    height: 500px;
+    max-width: 90vw;
+    max-height: 70vh;
+    background-color: rgba(30, 30, 30, 0.75);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-radius: 1rem;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    animation: fadeInScalePicker 0.3s ease-out;
+}
+
+@keyframes fadeInScalePicker {
+    from { opacity: 0; transform: scale(0.9); }
+    to { opacity: 1; transform: scale(1); }
+}
+
+.picker-header {
+    padding: 0.5rem;
+    border-bottom: 1px solid var(--color-border);
+    flex-shrink: 0;
+}
+
+.picker-tabs {
+    display: flex;
+    gap: 0.5rem;
+    overflow-x: auto;
+    padding: 0.25rem;
+}
+/* Сховати скролбар вкладок */
+.picker-tabs::-webkit-scrollbar { display: none; }
+.picker-tabs { -ms-overflow-style: none; scrollbar-width: none; }
+
+
+.picker-tab {
+    width: 44px;
+    height: 44px;
+    flex-shrink: 0;
+    background-color: transparent;
+    border: 2px solid transparent;
+    border-radius: 0.5rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    transition: all 0.2s ease;
+}
+
+.picker-tab:hover {
+    background-color: var(--color-bg-light);
+}
+
+.picker-tab.active {
+    background-color: var(--color-bg-medium);
+    border-color: var(--color-accent);
+}
+
+.picker-tab img {
+    width: 32px;
+    height: 32px;
+    object-fit: contain;
+}
+
+.picker-content {
+    flex-grow: 1;
+    overflow-y: hidden; /* Важливо для emoji-picker-react */
+    position: relative;
+}
+
+.picker-content aside.EmojiPickerReact {
+    border: none !important;
+    background-color: transparent !important;
+    width: 100% !important;
+    height: 100% !important;
+}
+
+.picker-content .EmojiPickerReact * {
+    background-color: transparent !important;
+}
+
+.custom-emoji-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(64px, 1fr));
+    gap: 0.75rem;
+    padding: 1rem;
+    height: 100%;
+    overflow-y: auto;
+}
+
+.custom-emoji-btn {
+    background: none;
+    border: none;
+    height: fit-content;
+    cursor: pointer;
+    padding: 0.5rem;
+    border-radius: 0.375rem;
+    transition: background-color 0.2s;
+}
+
+.custom-emoji-btn:hover {
+    background-color: var(--color-bg-light);
+}
+
+.custom-emoji-btn img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}

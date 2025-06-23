@@ -8,14 +8,16 @@ import { Country, City } from 'country-state-city';
 import Select from 'react-select';
 import EmojiPicker from 'emoji-picker-react';
 import FolderEditModal from './FolderEditModal';
+import EmojiPacksSettings from './EmojiPacksSettings'; // <<< ІМПОРТ НОВОГО КОМПОНЕНТА
 import './Settings.css';
 
 // Іконки
 const UserIcon = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>;
 const PrivacyIcon = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>;
 const FolderIcon = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>;
-const OptionsIcon = () => <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="2"></circle><circle cx="19" cy="12" r="2"></circle><circle cx="5" cy="12" r="2"></circle></svg>;
 const ChatIcon = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>;
+// <<< НОВА ІКОНКА ДЛЯ ЕМОДЖІ >>>
+const EmojiIcon = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"></circle><path d="M8 14s1.5 2 4 2 4-2 4-2"></path><line x1="9" y1="9" x2="9.01" y2="9"></line><line x1="15" y1="9" x2="15.01" y2="9"></line></svg>;
 
 
 const Settings = () => {
@@ -192,9 +194,8 @@ const Settings = () => {
         setDeleteAnimation(animationId);
         const element = previewRefs.current[animationId];
         if (element) {
-            // Force animation restart by removing and re-adding the class
             element.classList.remove(animationId);
-            void element.offsetWidth; // Trigger a reflow
+            void element.offsetWidth; 
             element.classList.add(animationId);
         }
     };
@@ -288,7 +289,7 @@ const Settings = () => {
                             <div className="folder-item-actions">
                                 <button onClick={() => handleOpenEditModal(folder)}>Редагувати</button>
                                 <button>Видалити</button>
-                                <button className="drag-handle"><OptionsIcon /></button>
+                                {/* <button className="drag-handle"><OptionsIcon /></button> */}
                             </div>
                         </div>
                     ))
@@ -351,16 +352,21 @@ const Settings = () => {
                 <aside className="settings-sidebar">
                     <button className={activeTab === 'profile' ? 'active' : ''} onClick={() => setActiveTab('profile')}><UserIcon /> Профіль</button>
                     <button className={activeTab === 'chat' ? 'active' : ''} onClick={() => setActiveTab('chat')}><ChatIcon /> Чати</button>
+                    {/* <<< НОВА КНОПКА В МЕНЮ >>> */}
+                    <button className={activeTab === 'emoji' ? 'active' : ''} onClick={() => setActiveTab('emoji')}><EmojiIcon /> Емоджі-паки</button>
                     <button className={activeTab === 'privacy' ? 'active' : ''} onClick={() => setActiveTab('privacy')}><PrivacyIcon /> Приватність</button>
                     <button className={activeTab === 'folders' ? 'active' : ''} onClick={() => setActiveTab('folders')}><FolderIcon /> Папки чатів</button>
                 </aside>
                 <main className="settings-main-content">
                     {activeTab === 'profile' && renderProfileTab()}
                     {activeTab === 'chat' && renderChatTab()}
+                    {/* <<< РЕНДЕР НОВОЇ ВКЛАДКИ >>> */}
+                    {activeTab === 'emoji' && <EmojiPacksSettings />}
                     {activeTab === 'privacy' && renderPrivacyTab()}
                     {activeTab === 'folders' && renderFoldersTab()}
                     
-                    {activeTab !== 'folders' && (
+                    {/* <<< ОНОВЛЕНА УМОВА ДЛЯ КНОПКИ ЗБЕРЕЖЕННЯ >>> */}
+                    {activeTab !== 'folders' && activeTab !== 'emoji' && (
                         <div className="settings-actions">
                             <button className="button-primary" onClick={handleSaveChanges} disabled={isSaving || !!nicknameError}>
                                 {isSaving ? "Збереження..." : "Зберегти зміни"}
