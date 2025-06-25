@@ -3,6 +3,7 @@ import { useUserContext } from './UserContext';
 import { usePlayerContext } from './PlayerContext';
 import default_picture from './img/Default-Images/default-picture.svg';
 import './MessageBubble.css';
+import ImageWithLoader from './ImageWithLoader'; // Додано імпорт
 
 const PlayIcon = () => <svg height="24" width="24" viewBox="0 0 24 24"><path fill="currentColor" d="M8 5v14l11-7z"></path></svg>;
 const CheckmarkIcon = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M20 6L9 17l-5-5"></path></svg>;
@@ -83,7 +84,7 @@ const MessageBubble = ({
                     </div>
                 )}
 
-                <div className={`message-bubble ${message.type === 'track' || message.type === 'album' ? `${message.type}-message` : ''}`}>
+                <div className={`message-bubble ${message.type === 'track' || message.type === 'album' || message.type === 'image' ? `${message.type}-message` : ''}`}>
                     {message.type === 'text' && <p>{message.content}</p>}
                     
                     {message.type === 'track' && (
@@ -97,7 +98,6 @@ const MessageBubble = ({
                         </div>
                     )}
 
-                    {/* --- НОВИЙ БЛОК ДЛЯ АЛЬБОМІВ --- */}
                     {message.type === 'album' && (
                         <div className="album-message-card">
                             <img src={message.content.coverArtUrl || default_picture} alt={message.content.title} />
@@ -107,6 +107,17 @@ const MessageBubble = ({
                                 <p className="album-author">{message.content.artistName}</p>
                             </div>
                         </div>
+                    )}
+
+                    {message.type === 'image' && (
+                        <ImageWithLoader
+                            src={message.content}
+                            alt="Надіслане зображення"
+                            className="chat-image-preview"
+                            isUploading={message.isUploading}
+                            uploadProgress={message.uploadProgress} // Передаємо прогрес
+                            error={message.error} // Передаємо стан помилки
+                        />
                     )}
 
                     <div className="message-metadata">

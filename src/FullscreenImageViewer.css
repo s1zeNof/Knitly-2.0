@@ -1,0 +1,72 @@
+.fullscreen-viewer-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.85); /* Darker overlay */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000; /* Ensure it's above other modals like image editor */
+  cursor: pointer; /* Indicate that clicking overlay closes it */
+}
+
+.fullscreen-viewer-content {
+  position: relative;
+  max-width: 90vw;
+  max-height: 90vh;
+  display: flex; /* For centering image if it's smaller than max dimensions */
+  align-items: center;
+  justify-content: center;
+  cursor: default; /* Reset cursor for content area */
+}
+
+.fullscreen-viewer-content img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain; /* Show the whole image, don't crop */
+  border-radius: 4px; /* Optional: slight rounding */
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5); /* Subtle shadow for depth */
+}
+
+.close-viewer-button {
+  position: absolute;
+  top: -10px; /* Position outside the image slightly - було -15px */
+  right: -10px; /* Було -15px */
+  background-color: rgba(40, 40, 40, 0.8); /* Залишаю, якщо змінні теми недоступні */
+  /* background-color: rgba(var(--color-bg-rgb, 40, 40, 40), 0.8); */ /* Якщо є змінні */
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 35px;
+  height: 35px;
+  font-size: 24px;
+  line-height: 35px; /* Center the times symbol */
+  text-align: center;
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.2s ease;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+}
+
+.close-viewer-button:hover {
+  background-color: rgba(60, 60, 60, 0.9); /* Залишаю */
+  /* background-color: rgba(var(--color-bg-rgb-darker, 60, 60, 60), 0.9); */ /* Якщо є змінні */
+  transform: scale(1.1);
+}
+
+/* Animation for opening (optional) */
+@keyframes zoomIn {
+  from {
+    transform: scale(0.8);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.fullscreen-viewer-content {
+  animation: zoomIn 0.3s ease-out;
+}

@@ -33,13 +33,42 @@
 .attachment-menu-desktop ul { list-style: none; margin: 0; padding: 0; }
 .attachment-menu-desktop li {
     display: flex; align-items: center; gap: 1rem;
-    padding: 0.75rem 1rem; border-radius: 0.375rem; cursor: pointer;
-    color: var(--color-text-primary); transition: background-color 0.2s; width: 220px;
+    /* padding: 0.75rem 1rem; Ensure label padding matches this if li has no padding */
+    border-radius: 0.375rem; cursor: pointer;
+    /* color: var(--color-text-primary); */ /* Колір тепер встановлюється на label або span всередині */
+    transition: background-color 0.2s; width: 220px;
 }
-.attachment-menu-desktop li:hover { background-color: var(--color-border); }
+.attachment-menu-desktop li:hover:not(.disabled) { background-color: var(--color-border); }
 .attachment-menu-desktop li.disabled { color: var(--color-disabled); cursor: not-allowed; }
 .attachment-menu-desktop li.disabled:hover { background-color: transparent; }
 .attachment-menu-desktop svg { width: 22px; height: 22px; }
+
+/* Style for file input label inside li */
+.attachment-menu-desktop li label.attachment-file-label {
+    display: flex;
+    align-items: center;
+    gap: 1rem; /* Match li gap */
+    padding: 0.75rem 1rem; /* Match li padding */
+    width: 100%;
+    height: 100%;
+    cursor: pointer;
+    border-radius: 0.375rem; /* Match li border-radius */
+    color: var(--color-text-primary); /* Колір для тексту в label */
+}
+.attachment-menu-desktop li:hover label.attachment-file-label:not([disabled]) {
+    /* background-color: var(--color-border); /* This is handled by li:hover */
+}
+.attachment-menu-desktop li label.attachment-file-label[disabled] {
+    cursor: not-allowed;
+    color: var(--color-disabled); /* Колір для тексту в disabled label */
+}
+.attachment-menu-desktop li span { /* Для елементів, які не є label */
+    color: var(--color-text-primary);
+}
+.attachment-menu-desktop li.disabled span {
+    color: var(--color-disabled);
+}
+
 
 /* --- НИЖНЯ ПАНЕЛЬ ДЛЯ МОБІЛЬНИХ --- */
 .attachment-sheet-mobile {
@@ -68,8 +97,24 @@
 .mobile-item {
     display: flex; flex-direction: column; align-items: center;
     gap: 0.5rem; flex-shrink: 0; cursor: pointer;
+    /* Make the div itself the clickable area if it doesn't contain a label */
 }
+.mobile-item label.attachment-file-label-mobile {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem; /* Match .mobile-item gap */
+    cursor: pointer;
+    text-decoration: none; /* Remove underline from label acting as link */
+    color: inherit; /* Inherit text color */
+    width: 100%; /* Ensure label takes full width of the item */
+}
+
 .mobile-item.disabled { cursor: not-allowed; filter: grayscale(80%); opacity: 0.6; }
+.mobile-item.disabled label.attachment-file-label-mobile {
+    cursor: not-allowed;
+}
+
 .mobile-item-icon {
     width: 60px; height: 60px; border-radius: 50%;
     display: flex; align-items: center; justify-content: center; color: white;
@@ -77,7 +122,7 @@
 .mobile-item-icon svg { width: 28px; height: 28px; }
 .mobile-item-label { font-size: 0.8rem; color: var(--color-text-secondary); }
 
-/* Кольори для іконок */
+/* Кольори для іконок (залишаємо як є, якщо вони узгоджені або є акцентами) */
 .mobile-item-icon.color-blue { background-color: #3897f0; }
 .mobile-item-icon.color-cyan { background-color: #00bcd4; }
 .mobile-item-icon.color-sky { background-color: #5ac8fa; }

@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useUserContext } from './UserContext';
 import { usePlayerContext } from './PlayerContext';
-import { db } from './firebase';
+import { db, storage } from './firebase'; // Додано storage
 import { collection, query, where, onSnapshot, orderBy, doc, addDoc, serverTimestamp, updateDoc, getDocs, writeBatch, arrayUnion, arrayRemove, deleteDoc, getDoc, increment } from 'firebase/firestore';
+import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage"; // Додано імпорти для Storage
 import { useLocation, useNavigate } from 'react-router-dom';
 import { getIconComponent } from './FolderIcons';
 import './MessagesPage.css';
@@ -21,6 +22,7 @@ import StoragePanel from './StoragePanel';
 import BookmarkIcon from './BookmarkIcon';
 import ForwardModal from './ForwardModal';
 import ShareMusicModal from './ShareMusicModal';
+import ImageEditorModal from './ImageEditorModal'; // Додано імпорт
 
 const AllChatsIcon = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>;
 const PersonalIcon = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>;
@@ -53,6 +55,7 @@ const MessagesPage = () => {
     const [isStoragePanelOpen, setStoragePanelOpen] = useState(false);
     const [forwardingMessages, setForwardingMessages] = useState(null);
     const [isShareMusicModalOpen, setShareMusicModalOpen] = useState(false);
+    const [imageForEditing, setImageForEditing] = useState(null); // State for image editor
     const messagesEndRef = useRef(null);
     const location = useLocation();
     const navigate = useNavigate();
@@ -470,11 +473,120 @@ const MessagesPage = () => {
         }
     };
 
-    const handleSelectAttachment = (type) => {
+    const handleSelectAttachment = (type, event) => {
         if (type === 'music') {
             setShareMusicModalOpen(true);
+        } else if (type === 'photo') {
+            const file = event.target.files[0];
+            if (file && file.type.startsWith('image/')) {
+                const reader = new FileReader();
+                reader.onloadend = () => {
+                    setImageForEditing(reader.result);
+                };
+                reader.readAsDataURL(file);
+            }
+            event.target.value = null; // Reset file input
         }
+        // TODO: Add video handling
         setIsAttachmentMenuOpen(false);
+    };
+
+    const handleEditedImageSave = async (imageBlob) => {
+        if (!selectedConversationId || selectedConversationId === 'saved_messages' || !imageBlob) {
+            showNotification('Помилка: не вибрано чат або немає зображення.', 'error');
+            setImageForEditing(null);
+            return;
+        }
+
+        const chatRef = doc(db, 'chats', selectedConversationId);
+        const messagesRef = collection(chatRef, 'messages');
+        const tempId = `temp_${Date.now()}`; // Generate a temporary ID for optimistic UI
+        const tempLocalUrl = URL.createObjectURL(imageBlob);
+
+        // Optimistically add message with local blob URL and uploading state
+        const optimisticMessageData = {
+            id: tempId, // Use tempId for key in UI list
+            senderId: currentUser.uid,
+            type: 'image',
+            content: tempLocalUrl,
+            timestamp: new Date(), // Use client-side date for optimistic timestamp
+            isUploading: true,
+            uploadProgress: 0,
+        };
+
+        // Add to local state immediately for optimistic update
+        setMessages(prevMessages => [...prevMessages, optimisticMessageData]);
+        setImageForEditing(null); // Close editor
+
+        try {
+            const filePath = `chat_images/${selectedConversationId}/${Date.now()}_${currentUser.uid}.jpg`;
+            const storageRef = ref(storage, filePath);
+            const uploadTask = uploadBytesResumable(storageRef, imageBlob);
+
+            uploadTask.on('state_changed',
+                (snapshot) => {
+                    const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                    // Update progress in local state for the specific message
+                    setMessages(prevMessages => prevMessages.map(msg =>
+                        msg.id === tempId ? { ...msg, uploadProgress: progress } : msg
+                    ));
+                },
+                (error) => {
+                    console.error("Помилка завантаження зображення:", error);
+                    showNotification('Не вдалося завантажити зображення.', 'error');
+                    // Remove optimistic message or mark as failed
+                    setMessages(prevMessages => prevMessages.map(msg =>
+                        msg.id === tempId ? { ...msg, isUploading: false, error: true, content: 'Помилка завантаження' } : msg
+                    ));
+                },
+                async () => {
+                    const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+
+                    const finalMessageData = {
+                        senderId: currentUser.uid,
+                        type: 'image',
+                        content: downloadURL,
+                        timestamp: serverTimestamp(), // Use server timestamp for final message
+                        isUploading: false,
+                        deletedFor: [],
+                    };
+
+                    // Add final message to Firestore
+                    const newDocRef = await addDoc(messagesRef, finalMessageData);
+
+                    // Update local messages: remove temp message, add final one (or update if IDs match)
+                    setMessages(prevMessages => {
+                        const existingMsgIndex = prevMessages.findIndex(msg => msg.id === tempId);
+                        if (existingMsgIndex > -1) {
+                             // Update existing message with Firestore data
+                            const updatedMessages = [...prevMessages];
+                            updatedMessages[existingMsgIndex] = { ...finalMessageData, id: newDocRef.id, timestamp: new Date() }; // Use new Date for immediate sortability
+                            return updatedMessages;
+                        }
+                        // This case should ideally not happen if optimistic update worked correctly
+                        return [...prevMessages.filter(msg => msg.id !== tempId), { ...finalMessageData, id: newDocRef.id, timestamp: new Date() }];
+                    });
+
+                    const updates = {
+                        lastMessage: { text: '🖼️ Зображення', senderId: currentUser.uid, messageId: newDocRef.id },
+                        lastUpdatedAt: serverTimestamp()
+                    };
+                    selectedConversation.participants.forEach(participantId => {
+                        if (participantId !== currentUser.uid) {
+                            updates[`unreadCounts.${participantId}`] = increment(1);
+                        }
+                    });
+                    await updateDoc(chatRef, updates);
+                    // showNotification('Зображення надіслано!', 'info'); // Already handled by progress/completion
+                }
+            );
+        } catch (error) {
+            console.error("Помилка підготовки до завантаження:", error);
+            showNotification('Не вдалося підготувати зображення до відправки.', 'error');
+            setMessages(prevMessages => prevMessages.map(msg =>
+                msg.id === tempId ? { ...msg, isUploading: false, error: true, content: 'Помилка відправки' } : msg
+            ));
+        }
     };
 
     const handleShareContent = async (item, type) => {
@@ -708,6 +820,13 @@ const MessagesPage = () => {
                 onClose={() => setShareMusicModalOpen(false)}
                 onShare={handleShareContent}
             />
+            {imageForEditing && (
+                <ImageEditorModal
+                    src={imageForEditing}
+                    onClose={() => setImageForEditing(null)}
+                    onSave={handleEditedImageSave}
+                />
+            )}
         </div>
     );
 };

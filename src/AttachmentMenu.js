@@ -22,20 +22,25 @@ const AttachmentMenu = ({ isOpen, onClose, onSelectAttachment }) => {
     }, [isOpen, onClose]);
 
     if (!isOpen) return null;
+
+    const handleFileSelect = (event, type) => {
+        onSelectAttachment(type, event); // Pass the event for file input types
+        // onClose(); // Close is handled by handleClickOutside or by selecting non-file item
+    };
     
     const desktopItems = [
-        { icon: <PhotoIcon />, label: 'Фото або відео', action: () => alert('Photo'), disabled: true },
-        { icon: <MusicIcon />, label: 'Музика', action: () => onSelectAttachment('music'), disabled: false },
-        { icon: <FileIcon />, label: 'Файл', action: () => alert('File'), disabled: true },
-        { icon: <PollIcon />, label: 'Створити опитування', action: () => alert('Poll'), disabled: true },
+        { type: 'photo', icon: <PhotoIcon />, label: 'Фото або відео', inputType: 'file', accept: 'image/*,video/*', disabled: false },
+        { type: 'music', icon: <MusicIcon />, label: 'Музика', action: () => onSelectAttachment('music'), disabled: false },
+        { type: 'document', icon: <FileIcon />, label: 'Файл', inputType: 'file', accept: '*', disabled: false },
+        { type: 'poll', icon: <PollIcon />, label: 'Створити опитування', action: () => alert('Poll'), disabled: true },
     ];
 
     const mobileItems = [
-        { icon: <PhotoIcon />, label: 'Галерея', action: () => alert('Photo'), disabled: true, color: 'blue' },
-        { icon: <MusicIcon />, label: 'Музика', action: () => onSelectAttachment('music'), disabled: false, color: 'red' },
-        { icon: <FileIcon />, label: 'Файл', action: () => alert('File'), disabled: true, color: 'sky' },
-        { icon: <LocationIcon />, label: 'Розташув.', action: () => {}, disabled: true, color: 'green' },
-        { icon: <PollIcon />, label: 'Опитування', action: () => alert('Poll'), disabled: true, color: 'yellow' },
+        { type: 'photo', icon: <PhotoIcon />, label: 'Галерея', inputType: 'file', accept: 'image/*,video/*', disabled: false, color: 'blue' },
+        { type: 'music', icon: <MusicIcon />, label: 'Музика', action: () => onSelectAttachment('music'), disabled: false, color: 'red' },
+        { type: 'document', icon: <FileIcon />, label: 'Файл', inputType: 'file', accept: '*', disabled: false, color: 'sky' },
+        { type: 'location', icon: <LocationIcon />, label: 'Розташув.', action: () => {}, disabled: true, color: 'green' },
+        { type: 'poll', icon: <PollIcon />, label: 'Опитування', action: () => alert('Poll'), disabled: true, color: 'yellow' },
     ];
 
     return (
@@ -44,10 +49,26 @@ const AttachmentMenu = ({ isOpen, onClose, onSelectAttachment }) => {
                 <div className="attachment-menu-desktop">
                     <ul>
                         {desktopItems.map(item => (
-                            <li key={item.label} className={item.disabled ? 'disabled' : ''} onClick={!item.disabled ? item.action : undefined}>
-                                {item.icon}
-                                <span>{item.label}</span>
-                            </li>
+                            item.inputType === 'file' ? (
+                                <li key={item.label} className={item.disabled ? 'disabled' : ''}>
+                                    <label className="attachment-file-label">
+                                        <input
+                                            type="file"
+                                            accept={item.accept}
+                                            style={{ display: 'none' }}
+                                            onChange={(e) => handleFileSelect(e, item.type)}
+                                            disabled={item.disabled}
+                                        />
+                                        {item.icon}
+                                        <span>{item.label}</span>
+                                    </label>
+                                </li>
+                            ) : (
+                                <li key={item.label} className={item.disabled ? 'disabled' : ''} onClick={!item.disabled ? () => { item.action(); onClose(); } : undefined}>
+                                    {item.icon}
+                                    <span>{item.label}</span>
+                                </li>
+                            )
                         ))}
                     </ul>
                 </div>
@@ -55,12 +76,30 @@ const AttachmentMenu = ({ isOpen, onClose, onSelectAttachment }) => {
                      <div className="attachment-sheet-handle"></div>
                      <div className="attachment-sheet-scroll">
                         {mobileItems.map(item => (
-                            <div key={item.label} className={`mobile-item ${item.disabled ? 'disabled' : ''}`} onClick={!item.disabled ? item.action : undefined}>
-                                <div className={`mobile-item-icon color-${item.color}`}>
-                                    {item.icon}
+                             item.inputType === 'file' ? (
+                                <div key={item.label} className={`mobile-item ${item.disabled ? 'disabled' : ''}`}>
+                                    <label className="attachment-file-label-mobile">
+                                        <input
+                                            type="file"
+                                            accept={item.accept}
+                                            style={{ display: 'none' }}
+                                            onChange={(e) => handleFileSelect(e, item.type)}
+                                            disabled={item.disabled}
+                                        />
+                                        <div className={`mobile-item-icon color-${item.color}`}>
+                                            {item.icon}
+                                        </div>
+                                        <span className="mobile-item-label">{item.label}</span>
+                                    </label>
                                 </div>
-                                <span className="mobile-item-label">{item.label}</span>
-                            </div>
+                            ) : (
+                                <div key={item.label} className={`mobile-item ${item.disabled ? 'disabled' : ''}`} onClick={!item.disabled ? () => { item.action(); onClose(); } : undefined}>
+                                    <div className={`mobile-item-icon color-${item.color}`}>
+                                        {item.icon}
+                                    </div>
+                                    <span className="mobile-item-label">{item.label}</span>
+                                </div>
+                            )
                         ))}
                     </div>
                 </div>

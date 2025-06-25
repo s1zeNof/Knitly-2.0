@@ -129,7 +129,45 @@
     height: 14px;
 }
 
-.message-bubble.track-message { background: transparent; padding: 0; max-width: 350px; width: 100%; }
+.message-bubble.track-message,
+.message-bubble.album-message,
+.message-bubble.image-message {
+    background: transparent;
+    padding: 0;
+    max-width: 350px;
+    width: 100%;
+}
+
+/* Стилі для ImageWithLoader всередині image-message */
+.message-bubble.image-message .image-with-loader-container {
+    border-radius: 0.75rem;
+    overflow: hidden;
+    background-color: var(--color-bg-light); /* Фон для контейнера зображення */
+}
+.message-wrapper.sent .message-bubble.image-message .image-with-loader-container {
+    background-color: var(--color-accent); /* Фон для відправлених зображень, якщо потрібно */
+     /* Якщо фон акцентний, то лоадер і текст помилки можуть потребувати інших кольорів */
+}
+
+
+.message-bubble.image-message .chat-image-preview img {
+    display: block; /* Забезпечує правильне відображення */
+    max-width: 100%; /* Зображення не вилазить за межі контейнера */
+    height: auto;   /* Зберігає пропорції */
+    max-height: 300px; /* Обмеження висоти для прев'ю в чаті */
+    object-fit: cover; /* Гарно вписує зображення */
+    cursor: pointer; /* TODO: Додати обробник для відкриття повного зображення */
+}
+
+.message-bubble.image-message .image-with-loader-container.uploading .chat-image-preview img {
+    opacity: 0.6;
+}
+.message-bubble.image-message .image-with-loader-container .upload-indicator {
+    /* Ці стилі вже є в ImageWithLoader.css, але можна тут їх перекрити за потреби */
+    /* Наприклад, якщо потрібен інший вигляд індикатора завантаження саме в повідомленні */
+}
+
+
 .track-message-card {
     display: flex; align-items: center; gap: 1rem; background-color: var(--color-bg-light);
     padding: 0.75rem; border-radius: 0.75rem; border: 1px solid var(--color-border);
@@ -205,6 +243,8 @@
 }
 /* --- КІНЕЦЬ НОВИХ СТИЛІВ --- */
 
+
+/* Існуючі стилі для reply-preview-bubble та forwarded-header залишаються тут */
 .reply-preview-bubble {
     border-left: 2px solid var(--color-accent);
     padding: 4px 8px;
