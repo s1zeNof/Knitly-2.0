@@ -8,7 +8,7 @@ const WalletIcon = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentCol
 const LocationIcon = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>;
 const MusicIcon = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>;
 
-const AttachmentMenu = ({ isOpen, onClose, onSelectAttachment }) => {
+const AttachmentMenu = ({ isOpen, onClose, onSelectAttachment, onOpenImageEditor }) => {
     const menuRef = useRef(null);
 
     useEffect(() => {
@@ -23,15 +23,20 @@ const AttachmentMenu = ({ isOpen, onClose, onSelectAttachment }) => {
 
     if (!isOpen) return null;
     
+    const handlePhotoVideoClick = () => {
+        onOpenImageEditor();
+        onClose(); // Закриваємо меню після кліку
+    };
+
     const desktopItems = [
-        { icon: <PhotoIcon />, label: 'Фото або відео', action: () => alert('Photo'), disabled: true },
+        { icon: <PhotoIcon />, label: 'Фото або відео', action: handlePhotoVideoClick, disabled: false },
         { icon: <MusicIcon />, label: 'Музика', action: () => onSelectAttachment('music'), disabled: false },
         { icon: <FileIcon />, label: 'Файл', action: () => alert('File'), disabled: true },
         { icon: <PollIcon />, label: 'Створити опитування', action: () => alert('Poll'), disabled: true },
     ];
 
     const mobileItems = [
-        { icon: <PhotoIcon />, label: 'Галерея', action: () => alert('Photo'), disabled: true, color: 'blue' },
+        { icon: <PhotoIcon />, label: 'Галерея', action: handlePhotoVideoClick, disabled: false, color: 'blue' },
         { icon: <MusicIcon />, label: 'Музика', action: () => onSelectAttachment('music'), disabled: false, color: 'red' },
         { icon: <FileIcon />, label: 'Файл', action: () => alert('File'), disabled: true, color: 'sky' },
         { icon: <LocationIcon />, label: 'Розташув.', action: () => {}, disabled: true, color: 'green' },

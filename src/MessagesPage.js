@@ -12,6 +12,7 @@ import CreateGroupModal from './CreateGroupModal';
 import GroupInfoPanel from './GroupInfoPanel';
 import ConfirmationModal from './ConfirmationModal';
 import AttachmentMenu from './AttachmentMenu';
+import ImageUploadEditor from './ImageUploadEditor'; // Імпорт нового компонента
 import MessageBubble from './MessageBubble';
 import MessageContextMenu from './MessageContextMenu';
 import SelectionHeader from './SelectionHeader';
@@ -53,6 +54,7 @@ const MessagesPage = () => {
     const [isStoragePanelOpen, setStoragePanelOpen] = useState(false);
     const [forwardingMessages, setForwardingMessages] = useState(null);
     const [isShareMusicModalOpen, setShareMusicModalOpen] = useState(false);
+    const [isImageEditorOpen, setIsImageEditorOpen] = useState(false); // Стан для редактора
     const messagesEndRef = useRef(null);
     const location = useLocation();
     const navigate = useNavigate();
@@ -477,6 +479,62 @@ const MessagesPage = () => {
         setIsAttachmentMenuOpen(false);
     };
 
+    const handleOpenImageEditor = () => {
+        setIsImageEditorOpen(true);
+    };
+
+    const handleImageUpload = async (imageDataUrl) => {
+        // Тут буде логіка відправки зображення як повідомлення
+        // Наприклад, створення нового повідомлення типу "image" з imageDataUrl як content
+        // eslint-disable-next-line no-console
+        console.log('Image to upload:', imageDataUrl.substring(0, 50) + "..."); // Логуємо частину для перевірки
+
+        if (!selectedConversationId || selectedConversationId === 'saved_messages' || !currentUser) {
+            showNotification('Неможливо відправити зображення.', 'error');
+            return;
+        }
+
+        const chatRef = doc(db, 'chats', selectedConversationId);
+        const messagesRef = collection(chatRef, 'messages');
+
+        const messageData = {
+            senderId: currentUser.uid,
+            type: 'image', // Новий тип повідомлення
+            content: imageDataUrl, // base64 зображення
+            timestamp: serverTimestamp(),
+            deletedFor: [],
+        };
+
+        if (replyingTo) {
+            messageData.replyTo = {
+                messageId: replyingTo.id,
+                senderName: (selectedConversation.participantInfo.find(p => p.uid === replyingTo.senderId)?.displayName || 'User'),
+                text: replyingTo.type === 'track' ? `🎵 ${replyingTo.content.title}` : replyingTo.content,
+            };
+        }
+
+        try {
+            const newDocRef = await addDoc(messagesRef, messageData);
+            const updates = {
+                lastMessage: { text: '📷 Фотографія', senderId: currentUser.uid, messageId: newDocRef.id },
+                lastUpdatedAt: serverTimestamp()
+            };
+            selectedConversation.participants.forEach(participantId => {
+                if (participantId !== currentUser.uid) {
+                    updates[`unreadCounts.${participantId}`] = increment(1);
+                }
+            });
+            await updateDoc(chatRef, updates);
+            showNotification('Фото надіслано!', 'info');
+            setReplyingTo(null); // Скидаємо reply після відправки
+        } catch (error) {
+            console.error("Помилка відправки зображення:", error);
+            showNotification('Не вдалося надіслати фото.', 'error');
+        }
+        setIsImageEditorOpen(false); // Закриваємо редактор
+    };
+
+
     const handleShareContent = async (item, type) => {
         if (!selectedConversationId || selectedConversationId === 'saved_messages') {
             showNotification('Оберіть чат для відправки.', 'error');
@@ -694,7 +752,18 @@ const MessagesPage = () => {
                 checkboxLabel={`Видалити для ${companionName}`}
             />
             <ConfirmationModal isOpen={multiDeleteModal} onClose={() => setMultiDeleteModal(false)} onConfirm={handleDeleteSelected} title={`Видалити ${selectedMessages.length} повідомлень?`} message="Ця дія є незворотною." confirmText="Видалити" />
-            <AttachmentMenu isOpen={isAttachmentMenuOpen} onClose={() => setIsAttachmentMenuOpen(false)} onSelectAttachment={handleSelectAttachment} />
+            <AttachmentMenu
+                isOpen={isAttachmentMenuOpen}
+                onClose={() => setIsAttachmentMenuOpen(false)}
+                onSelectAttachment={handleSelectAttachment}
+                onOpenImageEditor={handleOpenImageEditor} // Передаємо функцію
+            />
+            {isImageEditorOpen && (
+                <ImageUploadEditor
+                    onUpload={handleImageUpload}
+                    onClose={() => setIsImageEditorOpen(false)}
+                />
+            )}
             <StoragePanel isOpen={isStoragePanelOpen} onClose={() => setStoragePanelOpen(false)} />
             <ForwardModal 
                 isOpen={!!forwardingMessages}

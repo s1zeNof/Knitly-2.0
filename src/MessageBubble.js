@@ -26,8 +26,14 @@ const MessageBubble = ({
     const { user: currentUser } = useUserContext();
     const { handlePlayPause } = usePlayerContext();
     const clickTimeoutRef = useRef(null);
+    const [isImageModalOpen, setIsImageModalOpen] = React.useState(false);
+
 
     const handleClick = (e) => {
+        if (message.type === 'image' && !selectionMode) {
+            setIsImageModalOpen(true);
+            return;
+        }
         if (selectionMode) {
             onTap(message);
             return;
@@ -51,73 +57,89 @@ const MessageBubble = ({
     
     const showSenderInfo = isSavedContext || (!isSent && isGroup);
 
+    const ImageModal = ({ src, onClose }) => (
+        <div className="image-modal-overlay" onClick={onClose}>
+            <div className="image-modal-content" onClick={(e) => e.stopPropagation()}>
+                <img src={src} alt="Full size" />
+                <button onClick={onClose} className="close-modal-button">&times;</button>
+            </div>
+        </div>
+    );
+
     return (
-        <div
-            className={`message-wrapper ${isSent ? 'sent' : 'received'} ${isSelected ? 'selected' : ''} ${isDeleting ? deleteAnimationClass : ''}`}
-            data-message-id={message.id}
-            onClick={handleClick}
-            onContextMenu={handleLongPressOrRightClick}
-        >
-            {selectionMode && (
-                <div className="selection-checkbox">
-                    {isSelected && <CheckmarkIcon />}
-                </div>
-            )}
-
-            {(isSavedContext || !isSent) && <img src={senderInfo?.photoURL || default_picture} alt="avatar" className="message-avatar"/>}
-            
-            <div className="message-content-wrapper">
-                {showSenderInfo && <p className="sender-name">{senderInfo?.displayName}</p>}
-                
-                {message.replyTo && (
-                    <div className="reply-preview-bubble">
-                        <p className="reply-sender">{message.replyTo.senderName}</p>
-                        <p className="reply-text">{message.replyTo.text}</p>
+        <>
+            <div
+                className={`message-wrapper ${isSent ? 'sent' : 'received'} ${isSelected ? 'selected' : ''} ${isDeleting ? deleteAnimationClass : ''}`}
+                data-message-id={message.id}
+                onClick={handleClick}
+                onContextMenu={handleLongPressOrRightClick}
+            >
+                {selectionMode && (
+                    <div className="selection-checkbox">
+                        {isSelected && <CheckmarkIcon />}
                     </div>
                 )}
 
-                {message.forwardedFrom && !isSavedContext && (
-                    <div className="forwarded-header">
-                        <ForwardIcon />
-                        Переслано від {message.forwardedFrom.name}
-                    </div>
-                )}
+                {(isSavedContext || !isSent) && <img src={senderInfo?.photoURL || default_picture} alt="avatar" className="message-avatar"/>}
 
-                <div className={`message-bubble ${message.type === 'track' || message.type === 'album' ? `${message.type}-message` : ''}`}>
-                    {message.type === 'text' && <p>{message.content}</p>}
+                <div className="message-content-wrapper">
+                    {showSenderInfo && <p className="sender-name">{senderInfo?.displayName}</p>}
                     
-                    {message.type === 'track' && (
-                        <div className="track-message-card">
-                            <img src={message.content.coverArtUrl || default_picture} alt={message.content.title} />
-                            <div className="track-message-info">
-                                <p className="track-title">{message.content.title}</p>
-                                <p className="track-author">{message.content.authorName}</p>
-                            </div>
-                            <button className="play-track-button" onClick={() => handlePlayPause(message.content)}><PlayIcon /></button>
+                    {message.replyTo && (
+                        <div className="reply-preview-bubble">
+                            <p className="reply-sender">{message.replyTo.senderName}</p>
+                            <p className="reply-text">{message.replyTo.text}</p>
                         </div>
                     )}
 
-                    {/* --- НОВИЙ БЛОК ДЛЯ АЛЬБОМІВ --- */}
-                    {message.type === 'album' && (
-                        <div className="album-message-card">
-                            <img src={message.content.coverArtUrl || default_picture} alt={message.content.title} />
-                            <div className="album-message-info">
-                                <p className="album-label">АЛЬБОМ</p>
-                                <p className="album-title">{message.content.title}</p>
-                                <p className="album-author">{message.content.artistName}</p>
-                            </div>
+                    {message.forwardedFrom && !isSavedContext && (
+                        <div className="forwarded-header">
+                            <ForwardIcon />
+                            Переслано від {message.forwardedFrom.name}
                         </div>
                     )}
 
-                    <div className="message-metadata">
-                        {message.isEdited && <span className="edited-label">(ред.)</span>}
-                        <span className="timestamp">
-                            { (message.timestamp || message.savedAt)?.toDate().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }
-                        </span>
+                    <div className={`message-bubble ${message.type === 'track' || message.type === 'album' || message.type === 'image' ? `${message.type}-message` : ''}`}>
+                        {message.type === 'text' && <p>{message.content}</p>}
+
+                        {message.type === 'image' && (
+                            <img src={message.content} alt="Надіслане зображення" className="message-image-content" />
+                        )}
+
+                        {message.type === 'track' && (
+                            <div className="track-message-card">
+                                <img src={message.content.coverArtUrl || default_picture} alt={message.content.title} />
+                                <div className="track-message-info">
+                                    <p className="track-title">{message.content.title}</p>
+                                    <p className="track-author">{message.content.authorName}</p>
+                                </div>
+                                <button className="play-track-button" onClick={() => handlePlayPause(message.content)}><PlayIcon /></button>
+                            </div>
+                        )}
+
+                        {/* --- НОВИЙ БЛОК ДЛЯ АЛЬБОМІВ --- */}
+                        {message.type === 'album' && (
+                            <div className="album-message-card">
+                                <img src={message.content.coverArtUrl || default_picture} alt={message.content.title} />
+                                <div className="album-message-info">
+                                    <p className="album-label">АЛЬБОМ</p>
+                                    <p className="album-title">{message.content.title}</p>
+                                    <p className="album-author">{message.content.artistName}</p>
+                                </div>
+                            </div>
+                        )}
+
+                        <div className="message-metadata">
+                            {message.isEdited && <span className="edited-label">(ред.)</span>}
+                            <span className="timestamp">
+                                { (message.timestamp || message.savedAt)?.toDate().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }
+                            </span>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
+            {isImageModalOpen && <ImageModal src={message.content} onClose={() => setIsImageModalOpen(false)} />}
+        </>
     );
 };
 
