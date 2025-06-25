@@ -22,38 +22,57 @@ const MessageBubble = ({
     isDeleting,
     deleteAnimationClass,
     isSavedContext = false,
-    onReaction
+    onReaction,
+    onMediaClick // New prop for opening media viewer
 }) => {
     const { user: currentUser } = useUserContext();
     const { handlePlayPause } = usePlayerContext();
-    const clickTimeoutRef = useRef(null);
+    // clickTimeoutRef is removed as single click logic is changing
 
-    const handleClick = (e) => {
-        if (selectionMode) {
-            onTap(message);
+    const isMediaMessage = message.type === 'image' || message.type === 'video' || message.type === 'image_gif';
+
+    const handleWrapperClick = (e) => {
+        if (isMediaMessage && e.target.closest('.chat-image, .chat-video')) {
+            // If the click is on the media itself, let handleMediaClick handle it.
+            // This check helps prevent context menu from opening on a single media click.
             return;
         }
-        if (clickTimeoutRef.current) {
-            clearTimeout(clickTimeoutRef.current);
-            clickTimeoutRef.current = null;
+        if (selectionMode) {
+            onTap(message); // Toggle selection if in selection mode
         } else {
-            clickTimeoutRef.current = setTimeout(() => {
-                onContextMenu(e, message);
-                clickTimeoutRef.current = null;
-            }, 250);
+            // For non-media messages OR clicks on bubble but NOT on media:
+            // Open context menu on single click (Telegram desktop like)
+            onContextMenu(e, message);
+        }
+    };
+
+    const handleMediaClick = (e) => {
+        e.stopPropagation(); // Prevent other click handlers on wrapper if any
+        if (isMediaMessage && onMediaClick) {
+            onMediaClick(message.content.url, message.type);
         }
     };
 
     const handleLongPressOrRightClick = (e) => {
         e.preventDefault();
-        if (selectionMode) return;
-        onLongPress(message);
+        e.stopPropagation(); // Important to prevent triggering wrapper click
+        if (selectionMode && !isMediaMessage) {
+            // If in selection mode and it's not media, a long press might still toggle.
+            // Or, always open context menu on long press. For simplicity, let's unify:
+            onContextMenu(e, message); // Always open context menu on long press / right click
+            if (!selectionMode) onLongPress(message); // Enter selection mode if not already in it
+        } else if (!selectionMode) {
+            onContextMenu(e, message);
+            onLongPress(message); // Enter selection mode
+        } else { // In selection mode, and it IS a media message or general right click
+             onContextMenu(e, message);
+        }
     };
     
     const handleDoubleClick = (e) => {
         e.preventDefault();
+        e.stopPropagation();
         if (onReaction) {
-            // Викликаємо реакцію зі стандартним ID для "сердечка"
             onReaction(message, 'unicode_❤️');
         }
     };
@@ -64,7 +83,7 @@ const MessageBubble = ({
         <div
             className={`message-wrapper ${isSent ? 'sent' : 'received'} ${isSelected ? 'selected' : ''} ${isDeleting ? deleteAnimationClass : ''}`}
             data-message-id={message.id}
-            onClick={handleClick}
+            onClick={handleWrapperClick} // Changed from handleClick
             onContextMenu={handleLongPressOrRightClick}
             onDoubleClick={handleDoubleClick}
         >

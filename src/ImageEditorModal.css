@@ -50,6 +50,7 @@
     font-size: 14px;
     font-weight: 500;
     transition: background-color 0.2s ease;
+    font-family: 'Inter', sans-serif; /* Ensure buttons use the theme font */
 }
 
 .editor-button-cancel {
@@ -61,7 +62,7 @@
 }
 
 .editor-button-sd {
-    background-color: #007bff; /* Blue for SD */
+    background-color: #007bff; /* Blue for SD - consider Knitly theme color */
     color: white;
     margin-left: 10px;
 }
@@ -70,18 +71,70 @@
 }
 
 .editor-button-hd {
-    background-color: #28a745; /* Green for HD */
+    background-color: #8a2be2; /* Knitly Purple for HD (example) */
     color: white;
     margin-left: 10px;
 }
 .editor-button-hd:hover {
-    background-color: #1e7e34;
+    background-color: #7b24cb; /* Darker Knitly Purple */
 }
 
 
 /* The FilerobotImageEditor component will be a child here.
    Its internal styling will largely define its appearance.
    We might need to add more specific styles if the theme prop isn't enough. */
+
+/* Attempt to style Filerobot Carousel Arrows */
+/* These selectors are best-guesses. Actual classes might differ.
+   It's assumed FilerobotImageEditor's root might have a class like `FIE_root` or similar,
+   or the modal content class can be used as a parent selector.
+   The effectiveness of these rules depends heavily on Filerobot's internal DOM structure and styling.
+*/
+
+.image-editor-modal-content .FIE_carousel-btn, /* Generic if they use a common class */
+.image-editor-modal-content div[class*="carousel-arrow"],
+.image-editor-modal-content div[class*="carousel-button"],
+.image-editor-modal-content button[class*="carousel"] {
+    background: transparent !important;
+    border: none !important;
+    opacity: 1 !important;
+    box-shadow: none !important;
+    color: #ffffff !important; /* Try to color the icon via text color if it's a font icon */
+}
+
+.image-editor-modal-content .FIE_carousel-btn svg,
+.image-editor-modal-content div[class*="carousel-arrow"] svg,
+.image-editor-modal-content div[class*="carousel-button"] svg,
+.image-editor-modal-content button[class*="carousel"] svg {
+    fill: #ffffff !important; /* Primary color for SVG icon fill */
+    stroke: #ffffff !important; /* Primary color for SVG icon stroke, if applicable */
+}
+
+/* If arrows are pseudo-elements on those buttons */
+.image-editor-modal-content .FIE_carousel-btn::before,
+.image-editor-modal-content .FIE_carousel-btn::after,
+.image-editor-modal-content div[class*="carousel-arrow"]::before,
+.image-editor-modal-content div[class*="carousel-arrow"]::after {
+    color: #ffffff !important; /* Make text content (like '>', '<') white */
+    background: transparent !important;
+    opacity: 1 !important;
+    font-size: 24px; /* Example size */
+}
+
+/* Targeting potential styled-component generated classes based on user's feedback (very brittle) */
+/* sc-1nr0bka-4 and sc-1nr0bka-3 are too specific and will break. */
+/* A more general approach if specific classes like FIE_carousel-prev-button are used: */
+.image-editor-modal-content .FIE_carousel-prev-button,
+.image-editor-modal-content .FIE_carousel-next-button {
+    background-color: transparent !important;
+    opacity: 1 !important;
+    border: none !important;
+}
+
+.image-editor-modal-content .FIE_carousel-prev-button svg,
+.image-editor-modal-content .FIE_carousel-next-button svg {
+    fill: #ffffff !important; /* White arrows */
+}
 
 /* Example of how you might target Filerobot's UI for basic overrides if necessary,
    but prefer using the `theme` prop first.

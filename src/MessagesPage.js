@@ -24,6 +24,7 @@ import ForwardModal from './ForwardModal';
 import ShareMusicModal from './ShareMusicModal';
 import EmojiPickerPlus from './EmojiPickerPlus';
 import ImageEditorModal from './ImageEditorModal';
+import MediaViewerModal from './MediaViewerModal'; // Import MediaViewerModal
 
 const AllChatsIcon = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>;
 const PersonalIcon = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>;
