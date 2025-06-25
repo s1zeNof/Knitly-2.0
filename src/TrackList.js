@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { Link } from 'react-router-dom'; // <<< ІМПОРТ LINK
 import { usePlayerContext } from './PlayerContext';
 import { useUserContext } from './UserContext';
 import { useUserTracks } from './hooks/useUserTracks';
 import { db, storage } from './firebase';
-import { doc, deleteDoc, updateDoc, arrayUnion, arrayRemove, increment, getDoc, collection, query, where, getDocs, runTransaction } from 'firebase/firestore'; // Імпортуємо runTransaction
+import { doc, deleteDoc, updateDoc, arrayUnion, arrayRemove, increment, getDoc, collection, query, where, getDocs, runTransaction } from 'firebase/firestore'; 
 import { ref, deleteObject } from 'firebase/storage';
 import './TrackList.css';
 import AnimatedCounter from './AnimatedCounter';
@@ -79,13 +80,11 @@ const TrackList = ({ userId, initialTracks = null, isLoading: isLoadingInitial =
                 const currentLikes = trackDoc.data().likesCount || 0;
 
                 if (isLiked) {
-                    // Unlike: зменшуємо лічильник, тільки якщо він більший за 0
                     if (currentLikes > 0) {
                         transaction.update(trackRef, { likesCount: increment(-1) });
                     }
                     transaction.update(userRef, { likedTracks: arrayRemove(trackId) });
                 } else {
-                    // Like: просто збільшуємо
                     transaction.update(trackRef, { likesCount: increment(1) });
                     transaction.update(userRef, { likedTracks: arrayUnion(trackId) });
                 }
@@ -180,12 +179,18 @@ const TrackList = ({ userId, initialTracks = null, isLoading: isLoadingInitial =
                         const isLiked = currentUser?.likedTracks?.includes(track.id);
                         return (
                             <div key={track.id} className="track-item-list">
-                                <img src={track.coverArtUrl || DEFAULT_COVER_URL} alt={track.title} className="track-cover-list"/>
+                                {/* <<< ЗМІНА: Додано Link навколо зображення >>> */}
+                                <Link to={`/track/${track.id}`}>
+                                    <img src={track.coverArtUrl || DEFAULT_COVER_URL} alt={track.title} className="track-cover-list"/>
+                                </Link>
                                 <button className="play-button-list" onClick={() => handlePlayPause(track)}>
                                     {isPlaying && currentTrack?.id === track.id ? <PauseIcon /> : <PlayIcon />}
                                 </button>
                                 <div className="track-info-list">
-                                    <p className="track-title-list">{track.title}</p>
+                                    {/* <<< ЗМІНА: Додано Link навколо назви >>> */}
+                                    <Link to={`/track/${track.id}`} className="track-title-list-link">
+                                        <p className="track-title-list">{track.title}</p>
+                                    </Link>
                                     <p className="track-artist-list">{track.authorName}</p>
                                 </div>
                                 <div className="track-stats-list">
@@ -237,7 +242,8 @@ const TrackList = ({ userId, initialTracks = null, isLoading: isLoadingInitial =
                                         {isPlaying && currentTrack?.id === track.id ? <PauseIcon /> : <PlayIcon />}
                                     </div>
                                 </div>
-                                <p className="track-title-grid">{track.title}</p>
+                                {/* <<< ЗМІНА: Додано Link навколо назви >>> */}
+                                <Link to={`/track/${track.id}`}><p className="track-title-grid">{track.title}</p></Link>
                                 <div className="track-card-footer">
                                     <div className="track-stats-grid">
                                         <span className="stat-item"><HeadsetIcon/> <AnimatedCounter count={track.playCount || 0} /></span>

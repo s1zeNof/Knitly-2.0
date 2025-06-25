@@ -18,6 +18,7 @@ import PlaylistPage from './PlaylistPage';
 import MessagesPage from './MessagesPage';
 import Player from './Player';
 import CreateEmojiPack from './CreateEmojiPack';
+import TrackPage from './TrackPage'; // <<< ІМПОРТ НОВОГО КОМПОНЕНТА
 
 import './App.css';
 
@@ -45,6 +46,8 @@ const AppLayout = () => {
                     <Route path="/messages" element={<MessagesPage />} />
                     <Route path="/userlist" element={<UserList />} />
                     <Route path="/create-emoji-pack" element={<CreateEmojiPack />} />
+                    {/* <<< ДОДАНО НОВИЙ МАРШРУТ >>> */}
+                    <Route path="/track/:trackId" element={<TrackPage />} />
                 </Routes>
             </main>
             

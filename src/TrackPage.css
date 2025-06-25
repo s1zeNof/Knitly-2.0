@@ -1,0 +1,356 @@
+/* --- Загальна структура сторінки треку --- */
+.track-page-container {
+    padding-bottom: 5rem;
+}
+
+.track-page-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 50vh;
+    font-size: 1.2rem;
+    color: var(--color-text-secondary);
+}
+
+/* --- Хедер сторінки --- */
+.track-page-header {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 2rem;
+    padding: 3rem 4rem;
+    min-height: 340px;
+    background: linear-gradient(105deg, #4f4f4f 0%, #2e2e2e 100%);
+    overflow: hidden;
+}
+
+.track-header-info {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    z-index: 2;
+}
+
+.track-page-play-button {
+    flex-shrink: 0;
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    border: none;
+    background-color: var(--color-accent);
+    color: white;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.2s;
+}
+
+.track-page-play-button:hover {
+    transform: scale(1.08);
+}
+
+.track-header-details h1 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin: 0;
+    color: var(--color-text-primary);
+}
+
+.track-header-details a {
+    font-size: 1.2rem;
+    color: var(--color-text-secondary);
+    text-decoration: none;
+}
+.track-header-details a:hover {
+    color: var(--color-text-primary);
+}
+
+.track-header-cover {
+    width: 250px;
+    height: 250px;
+    object-fit: cover;
+    border-radius: 0.5rem;
+    z-index: 2;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+}
+
+
+
+.track-header-waveform {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+    opacity: 0.2; /* Зробив трохи виднішим */
+    pointer-events: auto;
+    
+}
+/* Робимо клікабельним, якщо всередині є інтерактивний елемент */
+.track-header-waveform > div { 
+    pointer-events: auto;
+    height: 100% !important;
+}
+
+/* --- Тіло сторінки (основний контент) --- */
+.track-page-body {
+    display: grid;
+    grid-template-columns: 1fr 320px;
+    gap: 3rem;
+    padding: 2rem 4rem;
+    max-width: 1440px;
+    margin: 0 auto;
+}
+
+.track-main-content {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+/* --- Панель дій та картка автора --- */
+.track-actions-bar {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid var(--color-border);
+}
+
+.action-button {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background-color: var(--color-bg-light);
+    border: 1px solid var(--color-border);
+    color: var(--color-text-primary);
+    padding: 0.6rem 1.2rem;
+    border-radius: 0.375rem;
+    font-weight: 500;
+    cursor: pointer;
+}
+.action-button.disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+.action-button svg {
+    width: 20px;
+    height: 20px;
+    color: var(--color-text-secondary);
+}
+
+.track-author-card {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.track-author-card img {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.track-author-info {
+    flex-grow: 1;
+}
+.track-author-info a {
+    font-weight: 600;
+    font-size: 1.1rem;
+}
+.track-author-info span {
+    display: block;
+    color: var(--color-text-secondary);
+    font-size: 0.9rem;
+}
+
+.follow-button {
+    background-color: transparent;
+    border: 1px solid var(--color-border);
+    color: var(--color-text-primary);
+    padding: 0.6rem 1.2rem;
+    border-radius: 0.375rem;
+    font-weight: 500;
+}
+.follow-button.disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* --- СТИЛІ ДЛЯ НОВИХ БЛОКІВ --- */
+.track-content-section {
+    padding-top: 2rem;
+    border-top: 1px solid var(--color-border);
+}
+.track-content-section:first-of-type {
+    border-top: none;
+    padding-top: 0;
+}
+.track-content-section h3 {
+    margin: 0 0 1.5rem 0;
+    font-size: 1.5rem;
+    font-weight: 700;
+}
+.more-button {
+    width: 100%;
+    text-align: center;
+    background-color: var(--color-bg-light);
+    border: 1px solid var(--color-border);
+    color: var(--color-text-primary);
+    padding: 0.75rem;
+    border-radius: 0.5rem;
+    margin-top: 1rem;
+    cursor: pointer;
+    font-weight: 600;
+}
+.more-button:hover {
+    background-color: var(--color-border);
+}
+
+.albums-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 1.5rem;
+}
+.album-card {
+    background-color: var(--color-bg-medium);
+    padding: 1rem;
+    border-radius: 0.5rem;
+    transition: background-color 0.2s;
+}
+.album-card:hover {
+    background-color: #2a2a2a;
+}
+.album-card img {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    object-fit: cover;
+    border-radius: 0.375rem;
+    margin-bottom: 0.75rem;
+}
+.album-title {
+    font-weight: 600;
+    margin: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.album-year {
+    color: var(--color-text-secondary);
+    font-size: 0.9rem;
+    margin: 0.25rem 0 0;
+}
+/* --- КІНЕЦЬ НОВИХ СТИЛІВ --- */
+
+
+/* Опис та коментарі */
+.track-description {
+    line-height: 1.6;
+    color: var(--color-text-secondary);
+}
+.track-comments-section h4 {
+    font-size: 1.2rem;
+    margin-bottom: 1rem;
+}
+.comment-input-placeholder {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+.comment-input-placeholder img {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+}
+.comment-input-placeholder input {
+    flex-grow: 1;
+    background-color: var(--color-bg-light);
+    border: 1px solid var(--color-border);
+    border-radius: 2rem;
+    padding: 0.75rem 1rem;
+    color: var(--color-text-primary);
+}
+
+/* --- Сайдбар --- */
+.track-sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+.sidebar-module {
+    background-color: var(--color-bg-medium);
+    border: 1px solid var(--color-border);
+    padding: 1.5rem;
+    border-radius: 0.75rem;
+}
+.sidebar-module h5 {
+    margin: 0 0 1rem 0;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--color-text-secondary);
+    text-transform: uppercase;
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    color: var(--color-text-primary);
+}
+
+.tags-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+.tag-item {
+    background-color: var(--color-bg-light);
+    border: 1px solid var(--color-border);
+    padding: 0.25rem 0.75rem;
+    border-radius: 1rem;
+    font-size: 0.85rem;
+}
+.sidebar-placeholder {
+    font-size: 0.9rem;
+    color: var(--color-text-secondary);
+}
+
+
+/* --- Адаптивність --- */
+@media (max-width: 1024px) {
+    .track-page-body {
+        grid-template-columns: 1fr;
+    }
+    .track-sidebar {
+        order: -1;
+    }
+}
+@media (max-width: 768px) {
+    .track-page-header {
+        flex-direction: column;
+        text-align: center;
+        padding: 2rem 1.5rem;
+        min-height: auto;
+    }
+    .track-header-info {
+        flex-direction: column;
+    }
+    .track-header-details h1 {
+        font-size: 2rem;
+    }
+    .track-header-cover {
+        width: 180px;
+        height: 180px;
+    }
+    .track-header-waveform {
+        display: none;
+    }
+    .track-page-body {
+        padding: 1.5rem;
+    }
+}
