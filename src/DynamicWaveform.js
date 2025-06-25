@@ -6,58 +6,58 @@ const DynamicWaveform = () => {
     const waveformRef = useRef(null);
     const wavesurferRef = useRef(null);
     
-    // --- ОСНОВНА ЗМІНА: Отримуємо аудіо-елемент з контексту ---
     const { audioElement, currentTrack, seek } = usePlayerContext();
 
-    // Ефект для ініціалізації WaveSurfer та прив'язки до аудіо-елемента
     useEffect(() => {
-        // Перевіряємо, чи є контейнер для хвилі та аудіо-елемент
-        if (!waveformRef.current || !audioElement) return;
+        // Ensure the waveform container div and the audio element are available.
+        // Also, ensure there's a track URL to load. If not, WaveSurfer has nothing to display.
+        if (!waveformRef.current || !audioElement || !currentTrack?.trackUrl) {
+            // If there's an existing wavesurfer instance, destroy it as there's no track to display
+            if (wavesurferRef.current) {
+                wavesurferRef.current.destroy();
+                wavesurferRef.current = null;
+            }
+            return;
+        }
 
-        // Створюємо екземпляр WaveSurfer
+        // If an instance already exists (e.g. from a previous track), destroy it first.
+        if (wavesurferRef.current) {
+            wavesurferRef.current.destroy();
+        }
+
+        // Create a new WaveSurfer instance
         const wavesurfer = WaveSurfer.create({
             container: waveformRef.current,
-            // --- КЛЮЧОВИЙ МОМЕНТ: Використовуємо існуючий аудіо-елемент ---
-            media: audioElement,
+            media: audioElement, // Use the existing audio element from PlayerContext
             waveColor: '#555',
             progressColor: '#a855f7',
             barWidth: 3,
             barRadius: 2,
             height: 80,
-            cursorWidth: 0, // Курсор не потрібен, бо прогрес буде показуватись кольором
-            interact: true,
+            cursorWidth: 0, // Cursor not needed as progress is shown by color
+            interact: true, // Allow user interaction (seeking)
         });
 
         wavesurferRef.current = wavesurfer;
 
-        // --- ВИПРАВЛЕННЯ ПРОКРУТКИ: Використовуємо подію 'interaction' ---
-        // Вона спрацьовує на будь-який клік або перетягування
+        // Handle interaction (click/drag on waveform) for seeking
         const handleInteraction = (newTime) => {
-            // WaveSurfer дає час напряму, коли прив'язаний до media
-            seek(newTime);
+            seek(newTime); // Call seek function from PlayerContext
         };
         wavesurfer.on('interaction', handleInteraction);
         
-        // Функція очищення при демонтуванні компонента
+        // Cleanup function when the component unmounts or dependencies change
         return () => {
             wavesurfer.un('interaction', handleInteraction);
             wavesurfer.destroy();
+            wavesurferRef.current = null; // Ensure ref is cleared
         };
-    }, [audioElement, seek]); // Ефект залежить від аудіо-елемента та функції seek
+    }, [audioElement, seek, currentTrack?.trackUrl]); // Dependencies: re-run if these change
 
-    // Ефект для завантаження візуалізації нового треку
-    useEffect(() => {
-        if (wavesurferRef.current && currentTrack?.trackUrl) {
-            // Ми не викликаємо .load(URL) знову. 
-            // WaveSurfer сам "слухає" зміни в `audioElement.src`
-            // і автоматично оновлює візуалізацію.
-            // Це гарантує, що ми не створюємо другий плеєр.
-        }
-    }, [currentTrack?.trackUrl]); // Залежить тільки від URL треку
-
-    // Компонент тепер не потребує відстеження isPlaying або currentTime,
-    // оскільки WaveSurfer, прив'язаний до media, робить це автоматично.
-    // Це вирішує проблему, що хвиля "не рухалась".
+    // The WaveSurfer instance, when created with an active `media` element that has a `src`,
+    // should automatically load and display the waveform.
+    // Playback state (play/pause/time updates) should also be automatically synced
+    // because WaveSurfer's MediaElement backend listens to the media element's events.
 
     return <div ref={waveformRef} style={{ width: '100%' }} />;
 };
