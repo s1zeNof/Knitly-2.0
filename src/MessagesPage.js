@@ -22,7 +22,9 @@ import StoragePanel from './StoragePanel';
 import BookmarkIcon from './BookmarkIcon';
 import ForwardModal from './ForwardModal';
 import ShareMusicModal from './ShareMusicModal';
-import ImageEditorModal from './ImageEditorModal'; // Додано імпорт
+import ImageEditorModal from './ImageEditorModal';
+import EmojiPicker from 'emoji-picker-react'; // Імпорт EmojiPicker
+import './EmojiPicker.css'; // Стилі для EmojiPicker
 
 const AllChatsIcon = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>;
 const PersonalIcon = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>;
@@ -30,6 +32,8 @@ const NewGroupIcon = () => <svg width="24" height="24" viewBox="0 0 24 24" fill=
 const SendIcon = () => <svg height="24" width="24" viewBox="0 0 24 24" fill="currentColor"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"></path></svg>;
 const BackArrowIcon = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M15 19l-7-7 7-7"></path></svg>;
 const PaperclipIcon = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path></svg>;
+const SmileIcon = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"></circle><path d="M8 14s1.5 2 4 2 4-2 4-2"></path><line x1="9" y1="9" x2="9.01" y2="9"></line><line x1="15" y1="9" x2="15.01" y2="9"></line></svg>;
+
 
 const MessagesPage = () => {
     const { user: currentUser, authLoading } = useUserContext();
@@ -55,8 +59,11 @@ const MessagesPage = () => {
     const [isStoragePanelOpen, setStoragePanelOpen] = useState(false);
     const [forwardingMessages, setForwardingMessages] = useState(null);
     const [isShareMusicModalOpen, setShareMusicModalOpen] = useState(false);
-    const [imageForEditing, setImageForEditing] = useState(null); // State for image editor
+    const [imageForEditing, setImageForEditing] = useState(null);
+    const [showEmojiPicker, setShowEmojiPicker] = useState(false); // Стан для EmojiPicker
     const messagesEndRef = useRef(null);
+    const emojiPickerRef = useRef(null); // Ref для EmojiPicker
+    const emojiButtonRef = useRef(null); // Ref для кнопки Emoji
     const location = useLocation();
     const navigate = useNavigate();
     
@@ -163,6 +170,23 @@ const MessagesPage = () => {
     }, [messages, selectedConversationId, selectedConversation, loadingMessages]);
 
     useEffect(() => { messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages]);
+
+    // Закриття EmojiPicker при кліку поза ним
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (showEmojiPicker &&
+                emojiPickerRef.current &&
+                !emojiPickerRef.current.contains(event.target) &&
+                emojiButtonRef.current &&
+                !emojiButtonRef.current.contains(event.target)) {
+                setShowEmojiPicker(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, [showEmojiPicker]);
 
     const allFolders = useMemo(() => [
         { id: 'all', name: 'Усі', icon: 'all', component: <AllChatsIcon /> },
@@ -633,6 +657,10 @@ const MessagesPage = () => {
     
     const handleFormSubmit = (e) => { e.preventDefault(); sendMessage(); };
 
+    const onEmojiClick = (emojiData, event) => {
+        setNewMessage(prevMessage => prevMessage + emojiData.emoji);
+    };
+
     const filteredConversations = useMemo(() => {
         let finalConvos = [];
         if (activeFolderId === 'all') {
@@ -777,7 +805,26 @@ const MessagesPage = () => {
                             {selectedConversation.id !== 'saved_messages' && (
                                 <div className="message-input-container">
                                     {replyingTo && <ReplyPreview message={replyingTo} onCancel={() => setReplyingTo(null)} />}
+                                    {showEmojiPicker && (
+                                        <div ref={emojiPickerRef} className="emoji-picker-container-messages-page">
+                                            <EmojiPicker
+                                                onEmojiClick={onEmojiClick}
+                                                autoFocusSearch={false}
+                                                emojiStyle="native"
+                                                height={350}
+                                                searchDisabled
+                                                previewConfig={{showPreview: false}}
+                                            />
+                                        </div>
+                                    )}
                                     <div className="message-input-area">
+                                        <button
+                                            ref={emojiButtonRef}
+                                            className="emoji-button"
+                                            onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+                                        >
+                                            <SmileIcon />
+                                        </button>
                                         <button className="attachment-button" onClick={() => setIsAttachmentMenuOpen(true)}><PaperclipIcon /></button>
                                         <form onSubmit={handleFormSubmit} className="message-input-form">
                                             <input type="text" placeholder="Напишіть повідомлення..." value={newMessage} onChange={(e) => setNewMessage(e.target.value)} />

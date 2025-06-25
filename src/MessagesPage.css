@@ -343,6 +343,36 @@
     width: 24px;
     height: 24px;
 }
+
+/* Стилі для кнопки Emoji та контейнера EmojiPicker */
+.emoji-button {
+    background: none;
+    border: none;
+    padding: 0; /* Забрати внутрішні відступи, якщо вони є від батьківського елемента */
+    margin: 0 8px 0 0; /* Відступ справа від кнопки emoji, зліва від поля вводу */
+    cursor: pointer;
+    color: var(--color-icon);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.emoji-button:hover {
+    color: var(--color-icon-hover);
+}
+.emoji-button svg {
+    width: 22px;
+    height: 22px;
+}
+
+.emoji-picker-container-messages-page {
+    position: absolute;
+    bottom: 65px; /* Висота поля вводу + невеликий відступ */
+    left: 10px; /* Або right, залежно від дизайну */
+    z-index: 1050; /* Має бути вище за інші елементи, але нижче за модальні вікна */
+    /* Тінь та інші стилі можна взяти з EmojiPicker.css або додати тут */
+}
+
+
 .message-input-container {
     display: flex;
     flex-direction: column;
