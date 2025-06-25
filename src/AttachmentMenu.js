@@ -23,15 +23,19 @@ const AttachmentMenu = ({ isOpen, onClose, onSelectAttachment }) => {
 
     if (!isOpen) return null;
     
+    const handlePhotoVideoSelect = () => {
+        onSelectAttachment('photoOrVideo');
+    };
+
     const desktopItems = [
-        { icon: <PhotoIcon />, label: 'Фото або відео', action: () => alert('Photo'), disabled: true },
+        { icon: <PhotoIcon />, label: 'Фото або відео', action: handlePhotoVideoSelect, disabled: false },
         { icon: <MusicIcon />, label: 'Музика', action: () => onSelectAttachment('music'), disabled: false },
         { icon: <FileIcon />, label: 'Файл', action: () => alert('File'), disabled: true },
         { icon: <PollIcon />, label: 'Створити опитування', action: () => alert('Poll'), disabled: true },
     ];
 
     const mobileItems = [
-        { icon: <PhotoIcon />, label: 'Галерея', action: () => alert('Photo'), disabled: true, color: 'blue' },
+        { icon: <PhotoIcon />, label: 'Галерея', action: handlePhotoVideoSelect, disabled: false, color: 'blue' },
         { icon: <MusicIcon />, label: 'Музика', action: () => onSelectAttachment('music'), disabled: false, color: 'red' },
         { icon: <FileIcon />, label: 'Файл', action: () => alert('File'), disabled: true, color: 'sky' },
         { icon: <LocationIcon />, label: 'Розташув.', action: () => {}, disabled: true, color: 'green' },
@@ -40,7 +44,7 @@ const AttachmentMenu = ({ isOpen, onClose, onSelectAttachment }) => {
 
     return (
         <div className="attachment-overlay" onClick={onClose}>
-            <div className="attachment-menu-container" ref={menuRef}>
+            <div className="attachment-menu-container" ref={menuRef} onClick={e => e.stopPropagation()}> {/* Added stopPropagation */}
                 <div className="attachment-menu-desktop">
                     <ul>
                         {desktopItems.map(item => (

@@ -317,3 +317,75 @@
     object-fit: contain;
     margin-right: 0.3rem;
 }
+
+/* Styles for Image Messages */
+.message-bubble.image-message {
+    padding: 0; /* Remove padding for image container */
+    background-color: transparent; /* Or a specific color if image doesn't fill */
+    /* box-shadow: none; */ /* Or a custom shadow for images - let's keep bubble shadow for consistency */
+    border-radius: 1.25rem; /* Keep original bubble radius */
+    overflow: hidden; /* Important to contain the image within rounded corners */
+    max-width: 320px; /* Max width for images in bubble, can be adjusted */
+}
+
+.image-message-content {
+    position: relative; /* For HD badge positioning */
+    display: block; /* To make it behave like a block for width/height */
+    /* max-width: 320px; /* Max width for images in bubble */
+    /* max-height: 300px; /* Max height for images in bubble */
+    border-radius: 1.25rem; /* Match bubble radius */
+    overflow: hidden; /* Ensure image stays within bounds */
+    cursor: pointer; /* Indicate it's clickable for larger preview */
+}
+
+.chat-image {
+    display: block;
+    max-width: 100%; /* Make image responsive within its container */
+    max-height: 300px; /* Limit height to prevent overly tall images */
+    height: auto;   /* Maintain aspect ratio */
+    object-fit: cover;
+    border-radius: 1.25rem; /* Match bubble radius if image is the only content */
+}
+
+.hd-badge {
+    position: absolute;
+    bottom: 8px; /* Adjusted for better padding from edge */
+    right: 8px;  /* Adjusted for better padding from edge */
+    background-color: rgba(0, 0, 0, 0.65);
+    color: white;
+    font-size: 0.65rem; /* Smaller badge */
+    font-weight: bold;
+    padding: 2px 6px;
+    border-radius: 4px;
+    line-height: 1;
+    pointer-events: none; /* So it doesn't interfere with image click */
+}
+
+/* Styles for Video Messages */
+.message-bubble.video-message {
+    padding: 0;
+    background-color: transparent;
+    border-radius: 1.25rem;
+    overflow: hidden;
+    max-width: 350px; /* Max width for videos, can be adjusted */
+}
+
+.video-message-content {
+    position: relative;
+    display: block;
+    border-radius: 1.25rem;
+    overflow: hidden;
+    background-color: #000; /* Black background for video player */
+}
+
+.chat-video {
+    display: block;
+    width: 100%; /* Make video responsive */
+    max-height: 300px; /* Limit height */
+    border-radius: 1.25rem; /* Match bubble, though controls might overlay */
+}
+
+/* Styles for GIF messages (if specific styling needed beyond .image-message-content) */
+.chat-gif {
+    /* Add any GIF-specific styles here, e.g., if you want different max-width */
+}

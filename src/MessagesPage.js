@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useUserContext } from './UserContext';
 import { usePlayerContext } from './PlayerContext';
-import { db } from './firebase';
+import { db, storage } from './firebase'; // Added storage
+import { ref as storageRef, uploadBytesResumable, getDownloadURL } from "firebase/storage"; // Firebase storage functions
 import { collection, query, where, onSnapshot, orderBy, doc, addDoc, serverTimestamp, updateDoc, getDocs, writeBatch, arrayUnion, arrayRemove, deleteDoc, getDoc, increment, runTransaction } from 'firebase/firestore';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { getIconComponent } from './FolderIcons';
@@ -22,6 +23,7 @@ import BookmarkIcon from './BookmarkIcon';
 import ForwardModal from './ForwardModal';
 import ShareMusicModal from './ShareMusicModal';
 import EmojiPickerPlus from './EmojiPickerPlus';
+import ImageEditorModal from './ImageEditorModal';
 
 const AllChatsIcon = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>;
 const PersonalIcon = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>;
@@ -32,7 +34,6 @@ const PaperclipIcon = () => <svg viewBox="0 0 24 24" fill="none" stroke="current
 
 const MessagesPage = () => {
     const { user: currentUser, authLoading } = useUserContext();
-    // <<< ЗМІНА: Отримуємо currentTrack з PlayerContext, щоб знати, чи активний плеєр >>>
     const { showNotification, currentTrack } = usePlayerContext();
     const [conversations, setConversations] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -56,13 +57,17 @@ const MessagesPage = () => {
     const [forwardingMessages, setForwardingMessages] = useState(null);
     const [isShareMusicModalOpen, setShareMusicModalOpen] = useState(false);
     const [isFullPickerOpen, setIsFullPickerOpen] = useState(false);
+    const [isImageEditorOpen, setIsImageEditorOpen] = useState(false);
+    const [imageForEditor, setImageForEditor] = useState(null);
+    const [uploadProgress, setUploadProgress] = useState(0);
+    const [showUploadOverlay, setShowUploadOverlay] = useState(false);
+    const fileInputRef = useRef(null);
     const messagesEndRef = useRef(null);
     const location = useLocation();
     const navigate = useNavigate();
 
-    // <<< ЗМІНА: Створюємо змінну, яка показує, чи видимий плеєр >>>
     const isPlayerVisible = !!currentTrack;
-    
+
     const getCompanion = (convo) => {
         if (!convo || !convo.participantInfo || !currentUser) return null;
         return convo.participantInfo.find(p => p.uid !== currentUser.uid);
@@ -103,40 +108,24 @@ const MessagesPage = () => {
             setMessages([]);
             return;
         }
-
         setLoadingMessages(true);
         let messagesQuery;
-
         if (selectedConversationId === 'saved_messages') {
-            messagesQuery = query(
-                collection(db, 'users', currentUser.uid, 'savedMessages'), 
-                orderBy('savedAt', 'asc')
-            );
+            messagesQuery = query(collection(db, 'users', currentUser.uid, 'savedMessages'), orderBy('savedAt', 'asc'));
         } else {
-            messagesQuery = query(
-                collection(db, 'chats', selectedConversationId, 'messages'), 
-                orderBy('timestamp', 'asc')
-            );
+            messagesQuery = query(collection(db, 'chats', selectedConversationId, 'messages'), orderBy('timestamp', 'asc'));
         }
-
         const unsubscribe = onSnapshot(messagesQuery, (querySnapshot) => {
-            const msgs = querySnapshot.docs
-                .map(doc => ({ id: doc.id, ...doc.data() }))
-                .filter(msg => !msg.deletedFor?.includes(currentUser.uid));
+            const msgs = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })).filter(msg => !msg.deletedFor?.includes(currentUser.uid));
             setMessages(msgs);
             setLoadingMessages(false);
-        }, (error) => {
-            console.error("Помилка завантаження повідомлень:", error);
-            setLoadingMessages(false);
-        });
-
+        }, (error) => { console.error("Помилка завантаження повідомлень:", error); setLoadingMessages(false); });
         return () => unsubscribe();
     }, [selectedConversationId, currentUser?.uid]);
     
     useEffect(() => {
         const validatePinsAndSyncLastMessage = async () => {
             if (!selectedConversation || loadingMessages || selectedConversation.id === 'saved_messages') return;
-
             const existingMessageIds = new Set(messages.map(msg => msg.id));
             if (selectedConversation.pinnedMessages?.length > 0) {
                 const validPins = selectedConversation.pinnedMessages.filter(pin => existingMessageIds.has(pin.messageId));
@@ -144,15 +133,17 @@ const MessagesPage = () => {
                     await updateDoc(doc(db, 'chats', selectedConversation.id), { pinnedMessages: validPins });
                 }
             }
-            
             const actualLastMessageInState = messages.length > 0 ? messages[messages.length - 1] : null;
             const displayedLastMessage = selectedConversation.lastMessage;
-
             if (actualLastMessageInState) {
                 if (displayedLastMessage?.messageId !== actualLastMessageInState.id) {
                     const chatRef = doc(db, 'chats', selectedConversationId);
                     const newLastMessage = {
-                        text: actualLastMessageInState.type === 'track' ? `🎵 ${actualLastMessageInState.content.title}` : actualLastMessageInState.content,
+                        text: actualLastMessageInState.type === 'track' ? `🎵 ${actualLastMessageInState.content.title}` :
+                              (actualLastMessageInState.type === 'image' ? `📷 Фото ${actualLastMessageInState.content.originalName || ''}` :
+                              (actualLastMessageInState.type === 'video' ? `📹 Відео ${actualLastMessageInState.content.originalName || ''}` :
+                              (actualLastMessageInState.type === 'image_gif' ? `🖼️ GIF ${actualLastMessageInState.content.originalName || ''}` :
+                              actualLastMessageInState.content))),
                         senderId: actualLastMessageInState.senderId,
                         messageId: actualLastMessageInState.id
                     };
@@ -176,7 +167,6 @@ const MessagesPage = () => {
     const folderUnreadCounts = useMemo(() => {
         if (!currentUser?.uid) return {};
         const counts = {};
-
         allFolders.forEach(folder => {
             let unreadChats = 0;
             if (folder.id === 'all') {
@@ -193,92 +183,51 @@ const MessagesPage = () => {
     }, [conversations, currentUser, allFolders]);
     
     const savedMessagesChat = useMemo(() => ({
-        id: 'saved_messages',
-        groupName: 'Збережене',
-        lastMessage: { text: 'Ваші нотатки та файли' },
-        isVirtual: true
+        id: 'saved_messages', groupName: 'Збережене', lastMessage: { text: 'Ваші нотатки та файли' }, isVirtual: true
     }), []);
 
     const handleSelectConversation = async (convoId) => {
         if (selectionMode) exitSelectionMode();
         setSelectedConversationId(convoId);
-
         if (convoId !== 'saved_messages' && currentUser?.uid) {
             const chatRef = doc(db, 'chats', convoId);
-            try {
-                await updateDoc(chatRef, {
-                    [`unreadCounts.${currentUser.uid}`]: 0
-                });
-            } catch (error) {
-                console.error("Помилка обнулення лічильника:", error);
-            }
+            try { await updateDoc(chatRef, { [`unreadCounts.${currentUser.uid}`]: 0 }); }
+            catch (error) { console.error("Помилка обнулення лічильника:", error); }
         }
     };
     
     const handleMessageReaction = async (message, reactionId, customUrl = null) => {
         if (!selectedConversationId || selectedConversationId === 'saved_messages' || !currentUser) return;
-    
         const messageRef = doc(db, 'chats', selectedConversationId, 'messages', message.id);
-    
         try {
             await runTransaction(db, async (transaction) => {
                 const messageDoc = await transaction.get(messageRef);
                 if (!messageDoc.exists()) throw "Повідомлення не знайдено!";
-    
                 const data = messageDoc.data();
                 const reactions = (typeof data.reactions === 'object' && data.reactions !== null && !Array.isArray(data.reactions)) ? data.reactions : {};
-                
                 const reactionData = reactions[reactionId] || { uids: [] };
                 const currentUserUid = currentUser.uid;
                 const userIndex = reactionData.uids.indexOf(currentUserUid);
-    
-                if (userIndex > -1) {
-                    reactionData.uids.splice(userIndex, 1);
-                } else {
-                    reactionData.uids.push(currentUserUid);
-                }
-    
-                if (customUrl) {
-                    reactionData.url = customUrl;
-                }
-    
-                if (reactionData.uids.length > 0) {
-                    reactions[reactionId] = reactionData;
-                } else {
-                    delete reactions[reactionId];
-                }
-    
+                if (userIndex > -1) { reactionData.uids.splice(userIndex, 1); } else { reactionData.uids.push(currentUserUid); }
+                if (customUrl) { reactionData.url = customUrl; }
+                if (reactionData.uids.length > 0) { reactions[reactionId] = reactionData; } else { delete reactions[reactionId]; }
                 transaction.update(messageRef, { reactions });
             });
-        } catch (error) {
-            console.error("Помилка додавання реакції:", error);
-            showNotification("Не вдалося поставити реакцію.", "error");
-        }
+        } catch (error) { console.error("Помилка додавання реакції:", error); showNotification("Не вдалося поставити реакцію.", "error"); }
     };
     
     const handleEmojiSelect = (emoji, isCustom = false) => {
         if (contextMenu.message) {
-            let reactionId;
-            let customUrl = null;
-
-            if (isCustom) {
-                reactionId = `${emoji.packId}_${emoji.name}`;
-                customUrl = emoji.url;
-            } else {
-                reactionId = `unicode_${emoji}`;
-            }
-
+            let reactionId; let customUrl = null;
+            if (isCustom) { reactionId = `${emoji.packId}_${emoji.name}`; customUrl = emoji.url; }
+            else { reactionId = `unicode_${emoji}`; }
             handleMessageReaction(contextMenu.message, reactionId, customUrl);
         }
         setContextMenu({ show: false, x: 0, y: 0, message: null });
         setIsFullPickerOpen(false);
     };
 
-    const handleOpenFullPicker = () => {
-        setContextMenu({ show: false, x: 0, y: 0, message: contextMenu.message });
-        setIsFullPickerOpen(true);
-    };
-
+    const handleOpenFullPicker = () => { setContextMenu({ show: false, x: 0, y: 0, message: contextMenu.message }); setIsFullPickerOpen(true); };
     const exitSelectionMode = () => { setSelectionMode(false); setSelectedMessages([]); };
     const handleLongPress = (message) => { if (!selectionMode) { setSelectionMode(true); setSelectedMessages([message.id]); } };
     const handleToggleSelect = (message) => {
@@ -292,7 +241,11 @@ const MessagesPage = () => {
         const chatRef = doc(db, "chats", selectedConversationId);
         const currentPins = selectedConversation.pinnedMessages || [];
         const pinData = {
-            messageId: message.id, content: message.type === 'track' ? `🎵 ${message.content.title}` : message.content,
+            messageId: message.id,
+            content: message.type === 'track' ? `🎵 ${message.content.title}` :
+                     (message.type === 'image' ? `📷 Фото ${message.content.originalName || ''}` :
+                     (message.type === 'video' ? `📹 Відео ${message.content.originalName || ''}` :
+                     (message.type === 'image_gif' ? `🖼️ GIF ${message.content.originalName || ''}` : message.content))),
             senderName: selectedConversation.participantInfo.find(p => p.uid === message.senderId)?.displayName || 'User',
             timestamp: message.timestamp
         };
@@ -318,7 +271,7 @@ const MessagesPage = () => {
         setContextMenu({ show: false, x: 0, y: 0, message: null });
         switch (action) {
             case 'reply': setReplyingTo(message); break;
-            case 'edit': setEditingMessage(message); setNewMessage(message.content); break;
+            case 'edit': if (message.type === 'text') { setEditingMessage(message); setNewMessage(message.content); } else { showNotification("Редагувати можна лише текстові повідомлення.", "info");} break;
             case 'delete': setDeleteModal({ isOpen: true, message: message }); break;
             case 'forward': setForwardingMessages([message]); break;
             case 'pin': handlePinMessage(message); break;
@@ -326,71 +279,183 @@ const MessagesPage = () => {
         }
     };
     
-    const handleConfirmDelete = async (deleteForBoth) => {
-        // ... (код без змін)
-    };
-    
-    const handleDeleteSelected = async () => {
-        // ... (код без змін)
-    };
+    const handleConfirmDelete = async (deleteForBoth) => { /* ... (код без змін) */ };
+    const handleDeleteSelected = async () => { /* ... (код без змін) */ };
 
-    const sendMessage = async () => {
-        // ... (код без змін)
+    const sendMessage = async (messageContent, messageType = 'text', additionalData = {}) => {
+        if (!currentUser || !selectedConversationId || selectedConversationId === 'saved_messages') {
+            showNotification("Неможливо відправити повідомлення: чат не вибрано.", "error"); return;
+        }
+        if (messageType === 'text' && !messageContent.trim() && !editingMessage) return;
+
+        const conversationRef = doc(db, 'chats', selectedConversationId);
+        const messagesColRef = collection(db, 'chats', selectedConversationId, 'messages');
+        let contentToSend = messageContent;
+
+        if (messageType === 'image') {
+            contentToSend = { url: messageContent, originalName: additionalData.originalName, quality: additionalData.quality, width: additionalData.width, height: additionalData.height, mimeType: additionalData.mimeType };
+        } else if (messageType === 'video' || messageType === 'image_gif') {
+            contentToSend = { url: messageContent, originalName: additionalData.originalName, mimeType: additionalData.mimeType };
+        } else if (messageType === 'track') {
+            contentToSend = messageContent; // Already an object
+        }
+
+        const messageData = {
+            senderId: currentUser.uid, type: messageType, timestamp: serverTimestamp(), reactions: {}, isEdited: false,
+            replyTo: replyingTo ? {
+                messageId: replyingTo.id,
+                senderName: (replyingTo.senderId === currentUser.uid ? currentUser.displayName : getCompanion(selectedConversation)?.displayName) || 'Користувач',
+                text: replyingTo.type === 'track' ? `🎵 ${replyingTo.content.title}` :
+                      (replyingTo.type === 'image' ? `📷 Фото ${replyingTo.content.originalName || ''}` :
+                      (replyingTo.type === 'video' ? `📹 Відео ${replyingTo.content.originalName || ''}` :
+                      (replyingTo.type === 'image_gif' ? `🖼️ GIF ${replyingTo.content.originalName || ''}` : replyingTo.content))),
+            } : null,
+        };
+        messageData.content = contentToSend;
+
+        try {
+            if (editingMessage && editingMessage.type === 'text' && messageType === 'text') {
+                const messageRef = doc(db, 'chats', selectedConversationId, 'messages', editingMessage.id);
+                await updateDoc(messageRef, { content: contentToSend, isEdited: true });
+                setNewMessage(''); setEditingMessage(null);
+            } else if (!editingMessage) {
+                await addDoc(messagesColRef, messageData);
+                if (messageType === 'text') setNewMessage('');
+            }
+
+            let lastMessageText = 'Нове повідомлення';
+            if (messageType === 'text') { lastMessageText = contentToSend; }
+            else if (messageType === 'image') { lastMessageText = `📷 Фото ${additionalData.originalName || ''}`; }
+            else if (messageType === 'video') { lastMessageText = `📹 Відео ${additionalData.originalName || ''}`; }
+            else if (messageType === 'image_gif') { lastMessageText = `🖼️ GIF ${additionalData.originalName || ''}`; }
+            else if (messageType === 'track') { lastMessageText = `🎵 ${contentToSend.title}`; }
+
+            await updateDoc(conversationRef, {
+                lastMessage: { text: lastMessageText, senderId: currentUser.uid },
+                lastUpdatedAt: serverTimestamp(),
+                [`unreadCounts.${currentUser.uid}`]: 0,
+                ...Object.fromEntries(selectedConversation.participants.filter(uid => uid !== currentUser.uid).map(uid => [`unreadCounts.${uid}`, increment(1)]))
+            });
+            if (replyingTo) setReplyingTo(null);
+        } catch (error) { console.error("Помилка відправки повідомлення:", error); showNotification("Не вдалося відправити повідомлення.", "error"); }
     };
     
-    const handleConfirmForward = async (destinationChatId) => {
-        // ... (код без змін)
-    };
+    const handleConfirmForward = async (destinationChatId) => { /* ... (код без змін) */ };
 
     const handleSelectAttachment = (type) => {
-        if (type === 'music') {
-            setShareMusicModalOpen(true);
-        }
         setIsAttachmentMenuOpen(false);
+        if (type === 'music') { setShareMusicModalOpen(true); }
+        else if (type === 'photoOrVideo') { if (fileInputRef.current) { fileInputRef.current.click(); } }
     };
 
-    const handleShareContent = async (item, type) => {
-        // ... (код без змін)
+    const handleFileSelected = (event) => {
+        const file = event.target.files[0];
+        if (file) {
+            if (file.type.startsWith('image/') && !file.type.startsWith('image/gif')) {
+                setImageForEditor(file); setIsImageEditorOpen(true);
+            } else if (file.type.startsWith('video/') || file.type.startsWith('image/gif')) {
+                handleDirectFileUpload(file, file.type.startsWith('video/') ? 'video' : 'image_gif');
+            } else { showNotification("Непідтримуваний тип файлу. Можна завантажувати лише фото, відео та GIF.", "error"); }
+        }
+        if (fileInputRef.current) { fileInputRef.current.value = ""; }
     };
-    
-    const handleFormSubmit = (e) => { e.preventDefault(); sendMessage(); };
+
+    const handleDirectFileUpload = async (file, fileType) => {
+        if (!currentUser || !selectedConversationId || selectedConversationId === 'saved_messages') {
+            showNotification("Неможливо завантажити файл: чат не вибрано.", "error"); return;
+        }
+        const fileExtension = file.name.split('.').pop();
+        const baseName = file.name.substring(0, file.name.lastIndexOf('.'));
+        const uniquePrefix = `${fileType}_${Date.now()}`;
+        const fileName = `${uniquePrefix}_${baseName}.${fileExtension}`.replace(/[^a-zA-Z0-9._-]/g, '_');
+        const filePath = `chat_attachments/${selectedConversationId}/${currentUser.uid}/${fileName}`;
+        const fileRef = storageRef(storage, filePath);
+        const uploadTask = uploadBytesResumable(fileRef, file);
+        setShowUploadOverlay(true); setUploadProgress(0);
+
+        uploadTask.on('state_changed',
+            (snapshot) => { setUploadProgress((snapshot.bytesTransferred / snapshot.totalBytes) * 100); },
+            (error) => {
+                console.error(`Помилка завантаження ${fileType}:`, error);
+                showNotification(`Не вдалося завантажити ${fileType === 'video' ? 'відео' : 'GIF'}.`, "error");
+                setShowUploadOverlay(false); setUploadProgress(0);
+            },
+            async () => {
+                try {
+                    const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+                    sendMessage(downloadURL, fileType, { originalName: file.name, mimeType: file.type });
+                    setShowUploadOverlay(false); setUploadProgress(0);
+                } catch (error) {
+                    console.error(`Помилка отримання URL ${fileType}:`, error);
+                    showNotification(`Не вдалося отримати URL ${fileType === 'video' ? 'відео' : 'GIF'}.`, "error");
+                    setShowUploadOverlay(false); setUploadProgress(0);
+                }
+            }
+        );
+    };
+
+    const base64ToBlob = (base64, mimeType) => {
+        const byteCharacters = atob(base64.split(',')[1]);
+        const byteNumbers = new Array(byteCharacters.length);
+        for (let i = 0; i < byteCharacters.length; i++) { byteNumbers[i] = byteCharacters.charCodeAt(i); }
+        const byteArray = new Uint8Array(byteNumbers);
+        return new Blob([byteArray], { type: mimeType });
+    };
+
+    const handleImageEditorSave = async (editedImageObject, quality) => {
+        if (!currentUser || !selectedConversationId || selectedConversationId === 'saved_messages') {
+            showNotification("Неможливо відправити зображення: чат не вибрано.", "error"); return;
+        }
+        const { imageBase64, name: originalName, mimeType, width, height } = editedImageObject;
+        if (!imageBase64) { showNotification("Помилка: не вдалося отримати дані зображення.", "error"); return; }
+        const blob = base64ToBlob(imageBase64, mimeType);
+        const uniquePrefix = `img_${Date.now()}`;
+        const fileName = `${uniquePrefix}_${originalName || 'image.png'}`.replace(/[^a-zA-Z0-9._-]/g, '_');
+        const filePath = `chat_attachments/${selectedConversationId}/${currentUser.uid}/${fileName}`;
+        const imageFileRef = storageRef(storage, filePath);
+        const uploadTask = uploadBytesResumable(imageFileRef, blob);
+        setShowUploadOverlay(true); setUploadProgress(0);
+
+        uploadTask.on('state_changed',
+            (snapshot) => { setUploadProgress((snapshot.bytesTransferred / snapshot.totalBytes) * 100); },
+            (error) => {
+                console.error("Помилка завантаження фото:", error); showNotification("Не вдалося завантажити фото.", "error");
+                setShowUploadOverlay(false); setUploadProgress(0);
+            },
+            async () => {
+                try {
+                    const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+                    sendMessage(downloadURL, 'image', { originalName: editedImageObject.name || 'image.png', quality: quality, width: editedImageObject.width, height: editedImageObject.height, mimeType: editedImageObject.mimeType });
+                    setShowUploadOverlay(false); setUploadProgress(0);
+                } catch (error) {
+                    console.error("Помилка отримання URL завантаження:", error); showNotification("Не вдалося отримати URL фото.", "error");
+                    setShowUploadOverlay(false); setUploadProgress(0);
+                }
+            }
+        );
+    };
+
+    const handleShareContent = async (item, type) => { /* ... (код без змін) */ };
+    const handleFormSubmit = (e) => { e.preventDefault(); if (editingMessage && editingMessage.type !== 'text') return; sendMessage(newMessage, 'text'); };
 
     const filteredConversations = useMemo(() => {
         let finalConvos = [];
-        if (activeFolderId === 'all') {
-            finalConvos = [savedMessagesChat, ...conversations];
-        } else if (activeFolderId === 'personal') {
-            finalConvos = [savedMessagesChat, ...conversations.filter(c => !c.isGroup)];
-        } else {
+        if (activeFolderId === 'all') { finalConvos = [savedMessagesChat, ...conversations]; }
+        else if (activeFolderId === 'personal') { finalConvos = [savedMessagesChat, ...conversations.filter(c => !c.isGroup)]; }
+        else {
             const activeFolder = currentUser?.chatFolders?.find(f => f.id === activeFolderId);
             if (activeFolder) {
                 const folderChats = conversations.filter(c => activeFolder.includedChats.includes(c.id));
-                if (activeFolder.includedChats.includes('saved_messages')) {
-                    finalConvos = [savedMessagesChat, ...folderChats];
-                } else {
-                    finalConvos = folderChats;
-                }
-            } else {
-                 finalConvos = [savedMessagesChat, ...conversations];
-            }
+                if (activeFolder.includedChats.includes('saved_messages')) { finalConvos = [savedMessagesChat, ...folderChats]; }
+                else { finalConvos = folderChats; }
+            } else { finalConvos = [savedMessagesChat, ...conversations]; }
         }
         return finalConvos;
     }, [conversations, activeFolderId, currentUser, savedMessagesChat]);
 
     const handleGroupCreated = (newChatId) => { setCreateGroupModalOpen(false); navigate('/messages', { state: { conversationId: newChatId } }); };
-
-    const openInfoPanel = () => {
-        if (selectedConversationId === 'saved_messages') {
-            setStoragePanelOpen(true);
-        } else if (selectedConversation?.isGroup) {
-            setInfoPanelOpenFor(selectedConversation);
-        }
-    };
-
-    const handleForwardSelected = () => {
-        const messagesToForward = messages.filter(msg => selectedMessages.includes(msg.id));
-        setForwardingMessages(messagesToForward);
-    };
+    const openInfoPanel = () => { if (selectedConversationId === 'saved_messages') { setStoragePanelOpen(true); } else if (selectedConversation?.isGroup) { setInfoPanelOpenFor(selectedConversation); } };
+    const handleForwardSelected = () => { const messagesToForward = messages.filter(msg => selectedMessages.includes(msg.id)); setForwardingMessages(messagesToForward); };
     
     if (authLoading || loading) return <div className="messages-page-loading">Завантаження...</div>;
     const companion = getCompanion(selectedConversation);
@@ -433,7 +498,6 @@ const MessagesPage = () => {
                                 const convoName = isSavedChat ? 'Збережене' : (convo.isGroup ? convo.groupName : currentCompanion?.displayName);
                                 const convoPhoto = isSavedChat ? null : (convo.isGroup ? convo.groupPhotoURL || default_picture : currentCompanion?.photoURL);
                                 const unreadCount = isSavedChat ? 0 : (convo.unreadCounts?.[currentUser.uid] || 0);
-
                                 return (
                                 <div key={convo.id} className={`conversation-item ${selectedConversationId === convo.id ? 'active' : ''}`} onClick={() => handleSelectConversation(convo.id)}>
                                     <div className="conversation-item-main">
@@ -443,11 +507,7 @@ const MessagesPage = () => {
                                             <p className="conversation-last-message">{convo.lastMessage?.text || ' '}</p>
                                         </div>
                                     </div>
-                                    {unreadCount > 0 && (
-                                        <span className="unread-badge">
-                                            {unreadCount > 99 ? '99+' : unreadCount}
-                                        </span>
-                                    )}
+                                    {unreadCount > 0 && <span className="unread-badge">{unreadCount > 99 ? '99+' : unreadCount}</span>}
                                 </div>);
                             })) : (<p className="no-conversations">Чати не знайдено</p>)}
                         </div>
@@ -474,7 +534,6 @@ const MessagesPage = () => {
                                     const senderInfo = selectedConversation.id === 'saved_messages'
                                         ? { displayName: msg.originalSender?.name, photoURL: msg.originalSender?.photoURL }
                                         : (isSent ? currentUser : (selectedConversation.isGroup ? selectedConversation.participantInfo.find(p => p.uid === msg.senderId) : companion));
-                                    
                                     return (
                                         <MessageBubble
                                             key={msg.id} message={msg} isGroup={selectedConversation.isGroup} 
@@ -496,7 +555,6 @@ const MessagesPage = () => {
                                 )}
                                 <div ref={messagesEndRef} />
                             </div>
-
                             {selectedConversation.id !== 'saved_messages' && (
                                 <div className="message-input-container">
                                     {replyingTo && <ReplyPreview message={replyingTo} onCancel={() => setReplyingTo(null)} />}
@@ -504,58 +562,32 @@ const MessagesPage = () => {
                                         <button className="attachment-button" onClick={() => setIsAttachmentMenuOpen(true)}><PaperclipIcon /></button>
                                         <form onSubmit={handleFormSubmit} className="message-input-form">
                                             <input type="text" placeholder="Напишіть повідомлення..." value={newMessage} onChange={(e) => setNewMessage(e.target.value)} />
-                                            <button type="submit" disabled={!newMessage.trim()}><SendIcon /></button>
+                                            <button type="submit" disabled={!newMessage.trim() && !editingMessage}><SendIcon /></button> {/* Allow send if editingMessage is present */}
                                         </form>
                                     </div>
                                 </div>
                             )}
                         </>)}
-
                         {!selectedConversation && (<div className="chat-placeholder"><h3>Оберіть чат, щоб розпочати спілкування</h3><p>Або створіть нову групу.</p></div>)}
                     </main>
                 </div>
             </div>
+            <input type="file" ref={fileInputRef} style={{ display: 'none' }} onChange={handleFileSelected} accept="image/*,video/*" />
             {isCreateGroupModalOpen && <CreateGroupModal onClose={() => setCreateGroupModalOpen(false)} onGroupCreated={handleGroupCreated}/>}
-            <MessageContextMenu 
-                {...contextMenu} 
-                onClose={() => setContextMenu({ show: false, x: 0, y: 0, message: null })} 
-                onAction={handleContextMenuAction}
-                onEmojiSelect={handleEmojiSelect}
-                onOpenFullPicker={handleOpenFullPicker}
-                isOwnMessage={contextMenu.message?.senderId === currentUser?.uid} 
-                isUserAdmin={isCurrentUserAdmin} 
-            />
+            <MessageContextMenu {...contextMenu} onClose={() => setContextMenu({ show: false, x: 0, y: 0, message: null })} onAction={handleContextMenuAction} onEmojiSelect={handleEmojiSelect} onOpenFullPicker={handleOpenFullPicker} isOwnMessage={contextMenu.message?.senderId === currentUser?.uid} isUserAdmin={isCurrentUserAdmin} />
             {infoPanelOpenFor && (<GroupInfoPanel conversation={infoPanelOpenFor} currentUser={currentUser} onClose={() => setInfoPanelOpenFor(null)}/>)}
-            <ConfirmationModal 
-                isOpen={deleteModal.isOpen} 
-                onClose={() => setDeleteModal({ isOpen: false, message: null })} 
-                onConfirm={handleConfirmDelete} 
-                title="Видалити повідомлення?" 
-                message="Ви впевнені, що хочете видалити це повідомлення?" 
-                confirmText="Видалити" 
-                showCheckbox={!selectedConversation?.isGroup && selectedConversationId !== 'saved_messages'}
-                checkboxLabel={`Видалити для ${companionName}`}
-            />
+            <ConfirmationModal isOpen={deleteModal.isOpen} onClose={() => setDeleteModal({ isOpen: false, message: null })} onConfirm={handleConfirmDelete} title="Видалити повідомлення?" message="Ви впевнені, що хочете видалити це повідомлення?" confirmText="Видалити" showCheckbox={!selectedConversation?.isGroup && selectedConversationId !== 'saved_messages'} checkboxLabel={`Видалити для ${companionName}`} />
             <ConfirmationModal isOpen={multiDeleteModal} onClose={() => setMultiDeleteModal(false)} onConfirm={handleDeleteSelected} title={`Видалити ${selectedMessages.length} повідомлень?`} message="Ця дія є незворотною." confirmText="Видалити" />
             <AttachmentMenu isOpen={isAttachmentMenuOpen} onClose={() => setIsAttachmentMenuOpen(false)} onSelectAttachment={handleSelectAttachment} />
             <StoragePanel isOpen={isStoragePanelOpen} onClose={() => setStoragePanelOpen(false)} />
-            <ForwardModal 
-                isOpen={!!forwardingMessages}
-                onClose={() => setForwardingMessages(null)}
-                onForward={handleConfirmForward}
-                conversations={conversations}
-                currentUser={currentUser}
-            />
-            <ShareMusicModal 
-                isOpen={isShareMusicModalOpen}
-                onClose={() => setShareMusicModalOpen(false)}
-                onShare={handleShareContent}
-            />
-            {isFullPickerOpen && (
-                <EmojiPickerPlus 
-                    onClose={() => setIsFullPickerOpen(false)}
-                    onEmojiSelect={handleEmojiSelect}
-                />
+            <ForwardModal isOpen={!!forwardingMessages} onClose={() => setForwardingMessages(null)} onForward={handleConfirmForward} conversations={conversations} currentUser={currentUser} />
+            <ShareMusicModal isOpen={isShareMusicModalOpen} onClose={() => setShareMusicModalOpen(false)} onShare={handleShareContent} />
+            {isFullPickerOpen && (<EmojiPickerPlus onClose={() => setIsFullPickerOpen(false)} onEmojiSelect={handleEmojiSelect} />)}
+            {isImageEditorOpen && (<ImageEditorModal isOpen={isImageEditorOpen} imageToEdit={imageForEditor} onClose={() => { setIsImageEditorOpen(false); setImageForEditor(null); }} onSave={handleImageEditorSave} />)}
+            {showUploadOverlay && (
+                <div className="upload-progress-overlay">
+                    <div className="upload-progress-bar" style={{ width: `${uploadProgress}%` }}></div>
+                </div>
             )}
         </div>
     );

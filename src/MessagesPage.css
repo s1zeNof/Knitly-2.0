@@ -386,3 +386,21 @@
         align-items: center;
     }
 }
+
+.upload-progress-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 5px; /* Height of the progress bar container */
+    background-color: rgba(0, 0, 0, 0.1); /* Light background for the container */
+    z-index: 2000; /* Ensure it's above everything */
+    display: flex;
+}
+
+.upload-progress-bar {
+    height: 100%;
+    background-color: #6c5ce7; /* Accent color for the progress bar */
+    transition: width 0.1s linear; /* Smooth animation for width changes */
+    border-radius: 0 2px 2px 0; /* Slight rounding for the end of the bar */
+}

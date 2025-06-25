@@ -82,7 +82,7 @@ const MessageBubble = ({
                 {message.replyTo && (
                     <div className="reply-preview-bubble">
                         <p className="reply-sender">{message.replyTo.senderName}</p>
-                        <p className="reply-text">{message.replyTo.text}</p>
+                        <p className="reply-text" dangerouslySetInnerHTML={{ __html: message.replyTo.text.replace(/\n/g, '<br />') }}></p> {/* Handle potential newlines in reply previews */}
                     </div>
                 )}
 
@@ -93,9 +93,45 @@ const MessageBubble = ({
                     </div>
                 )}
 
-                <div className={`message-bubble ${message.type === 'track' || message.type === 'album' ? `${message.type}-message` : ''}`}>
+                <div className={`message-bubble ${message.type === 'track' || message.type === 'album' || message.type === 'image' ? `${message.type}-message` : ''}`}>
                     {message.type === 'text' && <p>{message.content}</p>}
                     
+                    {message.type === 'image' && message.content && (
+                        <div className="image-message-content">
+                            <img
+                                src={message.content.url}
+                                alt={message.content.originalName || 'Зображення в чаті'}
+                                className="chat-image"
+                                // TODO: Add onClick to open a larger preview modal
+                            />
+                            {message.content.quality === 'HD' && <span className="hd-badge">HD</span>}
+                        </div>
+                    )}
+
+                    {message.type === 'video' && message.content && (
+                        <div className="video-message-content">
+                            <video
+                                src={message.content.url}
+                                controls
+                                className="chat-video"
+                                preload="metadata" // Helps with dimensions and first frame
+                            >
+                                Вашому браузеру не підтримує тег video.
+                            </video>
+                            {/* You could add originalName or other info here if needed */}
+                        </div>
+                    )}
+
+                    {message.type === 'image_gif' && message.content && (
+                        <div className="image-message-content"> {/* Re-use image style for GIFs */}
+                            <img
+                                src={message.content.url}
+                                alt={message.content.originalName || 'GIF анімація'}
+                                className="chat-image chat-gif" // Add chat-gif for specific styling if needed
+                            />
+                        </div>
+                    )}
+
                     {message.type === 'track' && (
                         <div className="track-message-card">
                             <img src={message.content.coverArtUrl || default_picture} alt={message.content.title} />
@@ -119,7 +155,7 @@ const MessageBubble = ({
                     )}
 
                     <div className="message-metadata">
-                        {message.isEdited && <span className="edited-label">(ред.)</span>}
+                        {message.isEdited && message.type === 'text' && <span className="edited-label">(ред.)</span>} {/* Show (ред.) only for text messages */}
                         <span className="timestamp">
                             { (message.timestamp || message.savedAt)?.toDate().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }
                         </span>
