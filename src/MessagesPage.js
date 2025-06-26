@@ -80,7 +80,6 @@ const MessagesPage = () => {
     const navigate = useNavigate();
 
     const isPlayerVisible = !!currentTrack;
-    const playerOffset = isPlayerVisible ? '90px' : '0px';
 
     const getCompanion = (convo) => {
         if (!convo || !convo.participantInfo || !currentUser) return null;
@@ -387,10 +386,7 @@ const MessagesPage = () => {
     };
 
     return (
-        <div 
-            className={`messages-page-container ${!selectedConversationId ? 'no-chat-selected' : ''}`}
-            style={{ '--player-offset': playerOffset }}
-        >
+        <div className={`messages-page-container ${!selectedConversationId ? 'no-chat-selected' : ''} ${isPlayerVisible ? 'player-visible' : ''}`}>
             <aside className="folders-icon-sidebar">
                 {allFolders.map(folder => (<button key={folder.id} className={`folder-icon-item ${activeFolderId === folder.id ? 'active' : ''}`} onClick={() => setActiveFolderId(folder.id)} title={folder.name}> {folder.component || getIconComponent(folder.icon)} {(folderUnreadCounts[folder.id] || 0) > 0 && <span className="folder-unread-badge">{folderUnreadCounts[folder.id] > 99 ? '99+' : folderUnreadCounts[folder.id]}</span>} </button>))}
             </aside>

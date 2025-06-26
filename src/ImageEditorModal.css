@@ -78,6 +78,10 @@
     background-color: #1e7e34;
 }
 
+.bHcoP {
+    display: none !important;
+}
+
 
 /* The FilerobotImageEditor component will be a child here.
    Its internal styling will largely define its appearance.
