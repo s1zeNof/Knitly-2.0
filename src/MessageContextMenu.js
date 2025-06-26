@@ -7,8 +7,10 @@ const EditIcon = () => <svg viewBox="0 0 24 24"><path d="M17 3a2.828 2.828 0 1 1
 const ForwardIcon = () => <svg viewBox="0 0 24 24"><path d="M20 12l-7.5-7.5v4.5H4v6h8.5v4.5L20 12z"/></svg>;
 const PinIcon = () => <svg viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>;
 const DeleteIcon = () => <svg viewBox="0 0 24 24"><path d="M3 6h18m-2 19H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2m-6 5v6m4-6v6"/></svg>;
-// Іконка для відкриття повного пікера
 const PlusIcon = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>;
+
+// --- НОВА ІКОНКА ДЛЯ ВИБОРУ ---
+const SelectIcon = () => <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" fill="currentColor"/></svg>;
 
 const QUICK_REACTIONS = ['❤️', '👍', '👎', '🔥', '😂', '👏'];
 
@@ -68,7 +70,6 @@ const MessageContextMenu = ({ x, y, show, onClose, onAction, onEmojiSelect, onOp
                         {emoji}
                     </button>
                 ))}
-                {/* Ось ця кнопка, якої, ймовірно, не було у вашому файлі */}
                 <button className="quick-reaction-btn open-picker" onClick={onOpenFullPicker}>
                     <PlusIcon />
                 </button>
@@ -77,6 +78,8 @@ const MessageContextMenu = ({ x, y, show, onClose, onAction, onEmojiSelect, onOp
             <div className="context-menu-divider" />
 
             <button className="context-menu-item" onClick={() => onAction('reply', message)}><ReplyIcon /> Відповісти</button>
+            {/* --- ДОДАНО НОВУ КНОПКУ "ВИБРАТИ" --- */}
+            <button className="context-menu-item" onClick={() => onAction('select', message)}><SelectIcon /> Вибрати</button>
             <button className="context-menu-item" onClick={() => onAction('forward', message)}><ForwardIcon /> Переслати</button>
             {isOwnMessage && (
                  <button className="context-menu-item" onClick={() => onAction('edit', message)}><EditIcon /> Редагувати</button>

@@ -8,6 +8,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { getIconComponent } from './FolderIcons';
 import './MessagesPage.css';
 import default_picture from './img/Default-Images/default-picture.svg';
+import ImageViewerModal from './ImageViewerModal'; 
 
 import CreateGroupModal from './CreateGroupModal';
 import GroupInfoPanel from './GroupInfoPanel';
@@ -74,6 +75,7 @@ const MessagesPage = () => {
     const [imageForEditor, setImageForEditor] = useState(null);
     const [uploadProgress, setUploadProgress] = useState(0);
     const [showUploadOverlay, setShowUploadOverlay] = useState(false);
+    const [viewingImage, setViewingImage] = useState(null);
     const fileInputRef = useRef(null);
     const messagesEndRef = useRef(null);
     const location = useLocation();
@@ -235,8 +237,15 @@ const MessagesPage = () => {
             case 'delete': setDeleteModal({ isOpen: true, message: message }); break;
             case 'forward': setForwardingMessages([message]); break;
             case 'pin': handlePinMessage(message); break;
+            case 'select':
+                setSelectionMode(true);
+                setSelectedMessages([message.id]);
+                break;
             default: break;
         }
+    };
+    const handleCloseContextMenu = () => {
+        setContextMenu({ show: false, x: 0, y: 0, message: null });
     };
     const handleConfirmDelete = async (deleteForBoth) => {
         const messageToDelete = deleteModal.message;
@@ -372,6 +381,13 @@ const MessagesPage = () => {
     const handleGroupCreated = (newChatId) => { setCreateGroupModalOpen(false); navigate('/messages', { state: { conversationId: newChatId } }); };
     const openInfoPanel = () => { if (selectedConversationId === 'saved_messages') setStoragePanelOpen(true); else if (selectedConversation?.isGroup) setInfoPanelOpenFor(selectedConversation); };
     const handleForwardSelected = () => { const messagesToForward = messages.filter(msg => selectedMessages.includes(msg.id)); setForwardingMessages(messagesToForward); };
+    const handleOpenImageViewer = (image) => {
+        setViewingImage(image);
+    };
+
+    const handleCloseImageViewer = () => {
+        setViewingImage(null);
+    };
     if (authLoading || loading) return <div className="messages-page-loading">Завантаження...</div>;
     const companion = getCompanion(selectedConversation);
     const isCurrentUserAdmin = selectedConversation?.admins?.includes(currentUser?.uid);
@@ -437,7 +453,25 @@ const MessagesPage = () => {
                                 {loadingMessages ? (<p className="chat-placeholder">Завантаження...</p>) : (messages.map(msg => {
                                     const isSent = msg.senderId === currentUser.uid;
                                     const senderInfo = selectedConversation.id === 'saved_messages' ? { displayName: msg.originalSender?.name, photoURL: msg.originalSender?.photoURL } : (isSent ? currentUser : (selectedConversation.isGroup ? selectedConversation.participantInfo.find(p => p.uid === msg.senderId) : companion));
-                                    return (<MessageBubble key={msg.id} message={msg} isGroup={selectedConversation.isGroup} isSent={selectedConversationId !== 'saved_messages' && isSent} senderInfo={senderInfo} selectionMode={selectionMode} isSelected={selectedMessages.includes(msg.id)} isDeleting={deletingMessages.includes(msg.id)} deleteAnimationClass={currentUser.settings?.chat?.deleteAnimation || 'animation-vortex-out'} onContextMenu={handleContextMenu} onLongPress={handleLongPress} onTap={handleToggleSelect} isSavedContext={selectedConversationId === 'saved_messages'} onReaction={handleMessageReaction} />);
+                                    return (<MessageBubble 
+                                        key={msg.id} 
+                                        message={msg} 
+                                        isGroup={selectedConversation.isGroup} 
+                                        isSent={selectedConversationId !== 'saved_messages' && isSent} 
+                                        senderInfo={senderInfo} 
+                                        selectionMode={selectionMode} 
+                                        isSelected={selectedMessages.includes(msg.id)} 
+                                        isDeleting={deletingMessages.includes(msg.id)} 
+                                        deleteAnimationClass={currentUser.settings?.chat?.deleteAnimation || 'animation-vortex-out'} 
+                                        onContextMenu={handleContextMenu} 
+                                        onLongPress={handleLongPress} 
+                                        onTap={handleToggleSelect} 
+                                        isSavedContext={selectedConversationId === 'saved_messages'} 
+                                        onReaction={handleMessageReaction}
+                                        isContextMenuOpen={contextMenu.show}
+                                        onCloseContextMenu={handleCloseContextMenu}
+                                        onOpenImage={handleOpenImageViewer}
+                                    />);
                                 }))}
                                 {selectedConversationId === 'saved_messages' && messages.length === 0 && !loadingMessages && (<div className="chat-placeholder"> <BookmarkIcon className="placeholder-icon" /> <h3>Збережені повідомлення</h3> <p>Пересилайте сюди повідомлення, щоб зберегти їх. Цей чат бачите тільки ви.</p> </div>)}
                                 <div ref={messagesEndRef} />
@@ -472,6 +506,14 @@ const MessagesPage = () => {
             {isFullPickerOpen && (<EmojiPickerPlus onClose={() => setIsFullPickerOpen(false)} onEmojiSelect={handleEmojiSelect} />)}
             {isImageEditorOpen && (<ImageEditorModal isOpen={isImageEditorOpen} imageToEdit={imageForEditor} onClose={() => { setIsImageEditorOpen(false); setImageForEditor(null); }} onSave={handleImageEditorSave} />)}
             {showUploadOverlay && (<div className="upload-progress-overlay"><div className="upload-progress-bar" style={{ width: `${uploadProgress}%` }}></div></div>)}
+            {viewingImage && (
+                <ImageViewerModal
+                    isOpen={!!viewingImage}
+                    imageUrl={viewingImage.url}
+                    imageAlt={viewingImage.alt}
+                    onClose={handleCloseImageViewer}
+                />
+            )}
         </div>
     );
 };
