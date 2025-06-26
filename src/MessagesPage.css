@@ -1,25 +1,8 @@
 /* Базовий контейнер сторінки */
 .messages-page-container {
     display: flex;
-    /* <<< ЗМІНА: Висота тепер розраховується з урахуванням глобальної змінної >>> */
-    height: calc(100dvh - 70px - var(--player-height, 0px));
+    height: 100%; /* Тепер сторінка просто займає 100% висоти гнучкого батьківського блоку */
     background-color: var(--color-bg-deep);
-    transition: height 0.4s ease-in-out; 
-}
-
-/* <<< ЗМІНА: vh на dvh >>> */
-.messages-page-container.player-visible {
-    height: calc(100dvh - 70px - 90px);
-}
-
-.messages-page-loading {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    /* <<< ЗМІНА: vh на dvh >>> */
-    height: calc(100dvh - 70px);
-    font-size: 1.2rem;
-    color: var(--color-text-secondary);
 }
 
 /* Сайдбар з іконками папок (тільки для ПК) */
@@ -68,7 +51,7 @@
     flex-grow: 1;
     display: flex;
     flex-direction: column;
-    overflow: hidden;
+    overflow: hidden; /* Важливо для обмеження висоти */
 }
 
 /* Горизонтальні вкладки (тільки для мобілок) */
@@ -116,8 +99,9 @@
 .chat-area-grid {
     flex-grow: 1;
     display: grid;
-    grid-template-columns: 320px 1fr; /* Забрав третю колонку, бо її не було в коді */
+    grid-template-columns: 320px 1fr;
     overflow: hidden;
+    min-height: 0; /* Ключове виправлення для flex/grid */
 }
 
 /* Сайдбар зі списком розмов */
@@ -222,11 +206,17 @@
     width: auto;
 }
 
-.chat-window { display: flex; flex-direction: column; height: 100%; }
+/* ОСНОВНІ ЗМІНИ ТУТ */
+.chat-window {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    overflow: hidden; /* Примусово обрізаємо все, що не влазить */
+}
 .chat-header {
     display: flex; align-items: center; gap: 1rem;
     padding: 1rem 1.5rem; border-bottom: 1px solid var(--color-border);
-    flex-shrink: 0;
+    flex-shrink: 0; /* Хедер не має стискатись */
 }
 .back-button-mobile {
     display: none;
@@ -240,16 +230,21 @@
 }
 .chat-header h3 { margin: 0; font-size: 1.1rem; cursor: pointer; }
 .messages-area {
-    flex-grow: 1; overflow-y: auto; padding: 1rem 0.5rem;
-    display: flex; flex-direction: column; gap: 0.25rem;
+    flex-grow: 1; /* Повідомлення займають увесь вільний простір */
+    overflow-y: auto; /* І мають власну прокрутку */
+    padding: 1rem 0.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
 }
+/* КІНЕЦЬ ОСНОВНИХ ЗМІН */
 
 .message-input-container {
     display: flex;
     flex-direction: column;
     border-top: 1px solid var(--color-border);
     background-color: var(--color-bg-medium);
-    flex-shrink: 0;
+    flex-shrink: 0; /* Інпут не має стискатись */
 }
 .message-input-area {
     padding: 1rem 1.5rem;
@@ -348,10 +343,6 @@
     .chat-area-grid { grid-template-columns: 280px 1fr; }
 }
 @media (max-width: 768px) {
-    /* <<< ЗМІНА: vh на dvh >>> */
-    .messages-page-container.player-visible {
-        height: calc(100dvh - 70px - 70px);
-    }
     .folders-icon-sidebar { display: none; }
     .folder-tabs-mobile { display: block; }
     .main-chat-wrapper { height: 100%; }

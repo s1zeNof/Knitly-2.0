@@ -5,13 +5,12 @@ import { query, collection, where, getDocs, doc, updateDoc, arrayUnion, arrayRem
 import { useUserContext } from './UserContext';
 import TrackList from './TrackList';
 import PlaylistTab from './PlaylistTab';
-import LikedTracks from './LikedTracks'; // <<< ІМПОРТУЄМО ОНОВЛЕНИЙ КОМПОНЕНТ
+import LikedTracks from './LikedTracks';
 
 import default_picture from './img/Default-Images/default-picture.svg';
 import verifiedIcon from './img/Profile-Settings/verified_icon-lg-bl.svg';
 import './Profile.css';
 
-// Іконки (без змін)
 const MusicIcon = () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>;
 const FeedIcon = () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 6h16M4 12h16M4 18h16"/></svg>;
 const PlaylistIcon = () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M8 6h13"/><path d="M8 12h13"/><path d="M8 18h13"/><path d="M3 6h.01"/><path d="M3 12h.01"/><path d="M3 18h.01"/></svg>;
@@ -102,10 +101,11 @@ const UserProfile = () => {
         };
 
         const dataToCreate = {
+            isGroup: false,
             participants: [currentUser.uid, profileUser.uid],
             participantInfo: [
-                { uid: currentUser.uid, displayName: currentUser.displayName, photoURL: currentUser.photoURL },
-                { uid: profileUser.uid, displayName: profileUser.displayName, photoURL: profileUser.photoURL }
+                { uid: currentUser.uid, displayName: currentUser.displayName, photoURL: currentUser.photoURL || null },
+                { uid: profileUser.uid, displayName: profileUser.displayName, photoURL: profileUser.photoURL || null }
             ],
             lastMessage: null,
             lastUpdatedAt: serverTimestamp(),
@@ -126,7 +126,6 @@ const UserProfile = () => {
     const renderTabContent = () => {
         if (!profileUser) return null;
         switch (activeTab) {
-            // --- ЗМІНА: Оновлюємо вигляд вкладки "Музика" ---
             case 'music': 
                 return (
                     <div>
@@ -136,7 +135,6 @@ const UserProfile = () => {
                         </div>
                         <div className="profile-section">
                             <h3 className="profile-section-title">Вподобана музика</h3>
-                            {/* Передаємо об'єкт користувача, чий профіль переглядаємо */}
                             <LikedTracks user={profileUser} />
                         </div>
                     </div>
