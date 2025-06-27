@@ -389,3 +389,10 @@
 .chat-gif {
     /* Add any GIF-specific styles here, e.g., if you want different max-width */
 }
+
+.reaction-lottie {
+    width: 28px;
+    height: 28px;
+    margin-right: 0.1rem; 
+    pointer-events: none;
+}
