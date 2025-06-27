@@ -56,6 +56,7 @@ const UploadMusic = () => {
   }, [tagInput, tags]);
 
   const addTag = (tagToAdd) => {
+    // --- ЗМІНА: Прибираємо .toLowerCase(), щоб зберегти оригінальний вигляд ---
     const newTag = `#${tagToAdd.replace(/#/g, '').trim()}`;
     if (newTag.length > 1 && !tags.includes(newTag)) {
       setTags([...tags, newTag]);
@@ -63,6 +64,7 @@ const UploadMusic = () => {
     setTagInput('');
     setSuggestions([]);
   };
+
   const handleTagInputChange = (e) => setTagInput(e.target.value);
   const handleTagKeyDown = (e) => {
     if (e.key === 'Enter' || e.key === 'Tab') {
@@ -128,12 +130,25 @@ const UploadMusic = () => {
           });
         }
 
+        // --- ЗМІНА: Створюємо два масиви тегів ---
+        const tagsForDisplay = tags; // напр. ["#Phonk", "#NightDrive"]
+        const tagsForSearch = tags.map(tag => tag.toLowerCase()); // напр. ["#phonk", "#nightdrive"]
+
         setStatusMessage('Збереження інформації про трек...');
         try {
           await addDoc(collection(db, 'tracks'), {
-            title: trackTitle, description, tags, trackUrl: audioURL, coverArtUrl: coverURL,
-            authorId: user.uid, authorName: user.displayName, authorNickname: user.nickname,
-            createdAt: serverTimestamp(), playCount: 0,
+            title: trackTitle,
+            description,
+            trackUrl: audioURL,
+            coverArtUrl: coverURL,
+            authorId: user.uid,
+            authorName: user.displayName,
+            authorNickname: user.nickname,
+            createdAt: serverTimestamp(),
+            playCount: 0,
+            // --- ЗМІНА: Зберігаємо обидва масиви ---
+            tags: tagsForDisplay,
+            tags_search: tagsForSearch
           });
           setStatusMessage('Трек успішно опубліковано!');
           setTimeout(() => navigate(`/profile`), 2000);

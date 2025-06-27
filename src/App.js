@@ -18,13 +18,13 @@ import PlaylistPage from './PlaylistPage';
 import MessagesPage from './MessagesPage';
 import Player from './Player';
 import CreateEmojiPack from './CreateEmojiPack';
-import TrackPage from './TrackPage'; // <<< ІМПОРТ НОВОГО КОМПОНЕНТА
+import TrackPage from './TrackPage';
+import TagPage from './pages/TagPage'; // --- ІМПОРТ НОВОЇ СТОРІНКИ ---
 
 import './App.css';
 
 const queryClient = new QueryClient();
 
-// Створюємо компонент-обгортку, щоб мати доступ до контексту
 const AppLayout = () => {
     const { notification, currentTrack } = usePlayerContext();
     const isPlayerVisible = !!currentTrack;
@@ -46,8 +46,9 @@ const AppLayout = () => {
                     <Route path="/messages" element={<MessagesPage />} />
                     <Route path="/userlist" element={<UserList />} />
                     <Route path="/create-emoji-pack" element={<CreateEmojiPack />} />
-                    {/* <<< ДОДАНО НОВИЙ МАРШРУТ >>> */}
                     <Route path="/track/:trackId" element={<TrackPage />} />
+                    {/* --- ДОДАНО НОВИЙ МАРШРУТ --- */}
+                    <Route path="/tags/:tagName" element={<TagPage />} />
                 </Routes>
             </main>
             

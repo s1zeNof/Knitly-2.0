@@ -1,0 +1,148 @@
+/* src/pages/TagPage.css */
+
+.tag-page-loader {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 80vh;
+    font-size: 1.5rem;
+    color: var(--color-text-secondary);
+}
+
+.tag-page-container {
+    padding-bottom: 4rem;
+}
+
+/* --- Герой-банер --- */
+.tag-hero-section {
+    height: 350px;
+    background-size: cover;
+    background-position: center;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    align-items: flex-start;
+    padding: 3rem 4rem;
+    color: white;
+}
+.tag-hero-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top, rgba(18, 18, 18, 0.9) 0%, rgba(18, 18, 18, 0.2) 100%);
+}
+.tag-hero-content {
+    position: relative;
+    z-index: 2;
+}
+.tag-name {
+    font-size: 4.5rem;
+    font-weight: 800;
+    margin: 0;
+}
+.tag-metadata {
+    font-size: 1rem;
+    color: var(--color-text-secondary);
+    margin: 0.5rem 0 1.5rem 0.25rem;
+}
+.tag-play-all-button {
+    background-color: var(--color-accent);
+    color: white;
+    border: none;
+    padding: 0.8rem 1.75rem;
+    font-size: 1rem;
+    font-weight: 700;
+    border-radius: 2rem;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    transition: transform 0.2s, filter 0.2s;
+}
+.tag-play-all-button:hover {
+    transform: scale(1.05);
+    filter: brightness(1.1);
+}
+.tag-play-all-button svg {
+    width: 24px;
+    height: 24px;
+}
+
+/* --- Основний контент --- */
+.tag-page-content {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 3rem 4rem;
+}
+.tag-content-section {
+    margin-bottom: 3.5rem;
+}
+.tag-section-title {
+    font-size: 1.75rem;
+    font-weight: 700;
+    margin-bottom: 1.5rem;
+    color: var(--color-text-primary);
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--color-border);
+}
+
+/* --- Заглушки --- */
+.placeholder-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 1.5rem;
+}
+.placeholder-playlist-card {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    background-color: var(--color-bg-light);
+    padding: 1rem;
+    border-radius: 0.5rem;
+    opacity: 0.6;
+}
+.placeholder-artwork {
+    width: 80px;
+    height: 80px;
+    flex-shrink: 0;
+    background-color: var(--color-bg-medium);
+    border-radius: 0.375rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+}
+.placeholder-info p { margin: 0 0 0.25rem 0; font-weight: 600; }
+.placeholder-info span { font-size: 0.9rem; color: var(--color-text-secondary); }
+
+.related-tags-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+.related-tag {
+    background-color: var(--color-bg-light);
+    padding: 0.6rem 1.2rem;
+    border-radius: 2rem;
+    color: var(--color-text-secondary);
+    font-weight: 500;
+    transition: all 0.2s;
+}
+.related-tag:hover {
+    background-color: var(--color-accent);
+    color: white;
+}
+
+/* --- Адаптивність --- */
+@media (max-width: 768px) {
+    .tag-hero-section {
+        padding: 2rem 1.5rem;
+        height: 300px;
+    }
+    .tag-name {
+        font-size: 3rem;
+    }
+    .tag-page-content {
+        padding: 2rem 1.5rem;
+    }
+}

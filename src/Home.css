@@ -1,272 +1,133 @@
-/* Цей стиль застосовується до <body> ТІЛЬКИ на головній сторінці.
-  Він перебиває будь-який фоновий малюнок і встановлює суцільний темний колір.
-*/
+/* --- Загальна структура --- */
 body.home-page-background {
-  background-color: #121212 !important;
-  background-image: none !important;
+    background-color: #121212 !important;
+    background-image: none !important;
 }
-
-/* Загальний контейнер для головної сторінки */
 .home-container {
     display: flex;
-    background-color: #121212; /* Основний темний фон */
-    color: #e0e0e0; /* Світлий текст */
-    min-height: calc(100vh - 70px); /* Висота екрану мінус висота хедера */
+    background-color: #121212;
+    color: #e0e0e0;
+    height: calc(100dvh - 70px);
+    overflow: hidden;
 }
 
-/* --- Лівий та Правий Сайдбари --- */
+/* --- Сайдбари (лівий та правий) --- */
 .left-sidebar, .right-sidebar {
     padding: 20px;
-    background-color: #181818; /* Трохи світліший фон для сайдбарів */
-}
-
-.left-sidebar {
-    width: 240px;
-    border-right: 1px solid #282828;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-}
-
-.right-sidebar {
-    width: 280px;
-    border-left: 1px solid #282828;
-}
-
-/* Навігація в лівому сайдбарі */
-.sidebar-nav {
-    display: flex;
-    flex-direction: column;
-}
-
-.nav-item {
-    color: #b3b3b3;
-    text-decoration: none;
-    padding: 15px 10px;
-    border-radius: 5px;
-    font-weight: bold;
-    display: flex;
-    align-items: center;
-    gap: 15px; /* Відстань між іконкою та текстом */
-    transition: background-color 0.2s, color 0.2s;
-}
-
-.nav-item:hover {
-    background-color: #282828;
-    color: #ffffff;
-}
-
-.nav-item.active {
-    color: #ffffff;
-    background-color: #282828;
-}
-
-
-/* --- Центральний контент --- */
-.main-content {
-    flex-grow: 1; /* Займає весь доступний простір */
-    padding: 20px 40px;
-    overflow-y: auto; /* Дозволяє скролити контент */
-}
-
-.content-header {
-    margin-bottom: 20px;
-}
-
-.feed-tabs {
-    margin-top: 10px;
-}
-
-.tab-button {
-    background: none;
-    border: 1px solid #535353;
-    color: #b3b3b3;
-    padding: 8px 16px;
-    border-radius: 20px;
-    margin-right: 10px;
-    cursor: pointer;
-    transition: background-color 0.2s, color 0.2s;
-}
-
-.tab-button:hover {
-    border-color: #ffffff;
-}
-
-.tab-button.active {
-    background-color: #ffffff;
-    color: #121212;
-    border-color: #ffffff;
-}
-
-/* Картки контенту */
-.content-card {
     background-color: #181818;
-    border-radius: 8px;
-    overflow: hidden;
-    margin-bottom: 25px;
-    border: 1px solid #282828;
+    flex-shrink: 0;
+    height: 100%;
+    overflow-y: auto;
+    box-sizing: border-box;
 }
+.left-sidebar { width: 240px; border-right: 1px solid #282828; display: flex; flex-direction: column; justify-content: space-between; }
+/* .right-sidebar { width: 300px; border-left: 1px solid #282828; } */
 
-.card-image-placeholder {
-    height: 250px;
-    background-size: cover;
-    background-position: center;
-}
-
-.card-body {
-    padding: 20px;
-}
-
-.card-body h3 {
-    margin-top: 0;
-    color: #ffffff;
-}
-
-.listen-now-btn {
-    background-color: #1DB954; /* Зелений акцент, як на референсі */
-    color: white;
-    border: none;
-    padding: 10px 20px;
-    border-radius: 20px;
-    font-weight: bold;
-    cursor: pointer;
-    margin-top: 10px;
-}
-
-/* --- Стилі для блоку профілю в лівому сайдбарі --- */
-.sidebar-profile {
-    margin-top: auto; /* Притискає блок до низу */
-}
-
-.profile-link-card {
+/* Лівий сайдбар */
+.sidebar-user-info {
     display: flex;
     align-items: center;
     gap: 12px;
-    padding: 10px;
-    border-radius: 8px;
+    margin-bottom: 2rem;
     text-decoration: none;
     color: inherit;
-    transition: background-color 0.2s;
-    margin-bottom: 10px;
 }
-
-.profile-link-card:hover {
-    background-color: #282828;
-}
-
-.profile-avatar {
+.sidebar-user-info .profile-avatar {
     width: 40px;
     height: 40px;
     border-radius: 50%;
     object-fit: cover;
 }
+.profile-info { display: flex; flex-direction: column; }
+.profile-name { font-weight: 600; color: #ffffff; }
+.profile-nickname { font-size: 0.9em; color: #b3b3b3; }
+.sidebar-nav { display: flex; flex-direction: column; gap: 0.5rem; }
+.nav-item { color: #b3b3b3; text-decoration: none; padding: 12px 10px; border-radius: 5px; font-weight: 600; font-size: 0.9rem; display: flex; align-items: center; gap: 15px; transition: background-color 0.2s, color 0.2s; }
+.nav-item svg { width: 22px; height: 22px; }
+.nav-item:hover, .nav-item.active { background-color: #282828; color: #ffffff; }
+.sidebar-footer { margin-top: auto; }
+.sidebar-login-prompt { margin-bottom: 2rem; padding: 20px; text-align: center; background-color: #1f1f1f; border-radius: 8px; }
+.login-button { display: block; width: 100%; padding: 10px; margin-top: 15px; background-color: var(--color-accent); color: white; text-decoration: none; border-radius: 20px; font-weight: bold; text-align: center; transition: background-color 0.2s; }
+.login-button:hover { background-color: var(--color-accent-hover); }
 
-.profile-info {
-    display: flex;
-    flex-direction: column;
+/* --- Центральний контент --- */
+.main-content {
+    flex-grow: 1;
+    padding: 1.5rem 2.5rem;
+    overflow-y: auto;
 }
+.feed-title { font-size: 1.8rem; font-weight: 700; margin-bottom: 2rem; }
+.home-loader-container { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: var(--color-text-secondary); }
+.loader-spinner { width: 48px; height: 48px; border: 5px solid var(--color-border); border-bottom-color: var(--color-accent); border-radius: 50%; display: inline-block; animation: rotation 1s linear infinite; }
+@keyframes rotation { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+@keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+.animate-fade-in-up { opacity: 0; animation: fadeInUp 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards; }
 
-.profile-name {
-    font-weight: bold;
-    color: #ffffff;
+/* Картки стрічки */
+.feed-card { background-color: #1f1f1f; border-radius: 0.75rem; margin-bottom: 2rem; border: 1px solid #282828; display: flex; }
+.feed-card.horizontal-card { align-items: center; gap: 1.5rem; padding: 1.5rem; }
+.feed-card.horizontal-card > img { width: 120px; height: 120px; object-fit: cover; border-radius: 0.5rem; flex-shrink: 0; }
+.card-content { flex-grow: 1; }
+.card-content h3 { font-size: 1.1rem; font-weight: 600; margin: 0 0 0.5rem 0; }
+.card-content p { font-size: 0.9rem; color: #b3b3b3; margin: 0 0 1rem 0; line-height: 1.5; }
+.card-content span { font-size: 0.8rem; color: #8a8a8a; }
+.card-button { background-color: var(--color-accent); color: white; border: none; padding: 0.6rem 1.2rem; border-radius: 2rem; font-weight: 600; cursor: pointer; transition: 0.2s; margin-top: auto; }
+.card-button:hover { filter: brightness(1.1); }
+.card-button.follow { background-color: transparent; border: 1px solid #5a5a5a; }
+.card-button.follow:hover { background-color: #282828; }
+
+/* Spotlight Card */
+.spotlight-card { position: relative; padding: 2rem; min-height: 250px; align-items: flex-end; }
+.spotlight-bg { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.spotlight-overlay { position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0) 100%); }
+.spotlight-card .card-content { position: relative; z-index: 2; color: white; }
+.spotlight-card h3 { font-size: 1.5rem; }
+.card-button.light { background-color: white; color: black; }
+
+/* Trending Section */
+.trending-section { margin-bottom: 2rem; }
+.section-title { font-size: 1.2rem; font-weight: 600; color: #b3b3b3; margin-bottom: 1rem; }
+.trending-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; }
+.trending-card { height: 100px; border-radius: 0.5rem; background-size: cover; background-position: center; display: flex; align-items: flex-end; padding: 1rem; position: relative; overflow: hidden; text-decoration: none; transition: transform 0.2s; background-color: #282828; }
+.trending-card:hover { transform: scale(1.05); }
+.trending-card::after { content: ''; position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0) 60%); transition: background 0.3s; }
+.trending-card:hover::after { background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.1) 60%); }
+.trending-card span { position: relative; z-index: 2; font-weight: 700; font-size: 1.1rem; color: white; }
+
+/* --- Адаптивність --- */
+@media (max-width: 1200px) {
+    .right-sidebar { display: none; }
 }
-
-.profile-nickname {
-    font-size: 0.9em;
-    color: #b3b3b3;
-}
-
-/* Стилі для блоку, якщо користувач не залогінений */
-.sidebar-login-prompt {
-    margin-top: auto;
-    padding: 20px;
-    text-align: center;
-    background-color: #181818;
-    border-radius: 8px;
-}
-.login-button {
-    display: block;
-    width: 100%;
-    padding: 10px;
-    margin-top: 15px;
-    background-color: #6f32a8; /* Пурпуровий акцент */
-    color: white;
-    text-decoration: none;
-    border-radius: 20px;
-    font-weight: bold;
-    text-align: center;
-    transition: background-color 0.2s;
-}
-.login-button:hover {
-    background-color: #5c2a91;
-}
-
-
-/* --- Оновлення для правого сайдбару --- */
-/* Застосовуємо стилі до Link, щоб він поводився як наш блок */
-.friend-list .friend-item {
-    display: flex;
-    align-items: center;
-    margin-bottom: 15px;
-    gap: 10px;
-    text-decoration: none;
-    color: inherit;
-    border-radius: 5px;
-    padding: 5px;
-    transition: background-color 0.2s;
-}
-
-.friend-list .friend-item:hover {
-    background-color: #282828;
-}
-
-.friend-item img {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-}
-
-.status-dot {
-    height: 8px;
-    width: 8px;
-    border-radius: 50%;
-    margin-left: auto;
-}
-.status-dot.online { background-color: #1DB954; }
-.status-dot.offline { background-color: #535353; }
-
-
-/* Адаптивність для Home */
-@media (max-width: 1024px) {
-    .right-sidebar {
-        display: none; /* Ховаємо правий сайдбар на планшетах */
-    }
-    .main-content {
-        padding: 1.5rem;
-    }
-}
-
 @media (max-width: 768px) {
-    .home-container {
-        flex-direction: column;
-    }
-    .left-sidebar {
-        width: 100%;
-        border-right: none;
-        border-bottom: 1px solid var(--color-border);
-        flex-direction: row; /* Горизонтальне меню */
-        justify-content: space-around;
-        padding: 0.5rem;
-        box-sizing: border-box;
-    }
+    .home-container { flex-direction: column; height: auto; overflow: visible; }
+    .main-content, .left-sidebar { overflow-y: visible; height: auto; }
+    .left-sidebar { width: 100%; border-right: none; border-bottom: 1px solid var(--color-border); flex-direction: column; }
+    .sidebar-user-info { display: none; }
+    .sidebar-footer { display: none; }
+
+    /* --- ЗМІНА: Стилі для горизонтальної прокрутки навігації --- */
     .sidebar-nav {
-        flex-direction: row;
-        gap: 1rem;
+        flex-direction: row !important;
+        justify-content: flex-start; /* Вирівнюємо по лівому краю */
+        gap: 0.5rem;
+        overflow-x: auto; /* Вмикаємо скрол */
+        white-space: nowrap; /* Забороняємо перенос елементів */
+        -ms-overflow-style: none;  /* IE and Edge */
+        scrollbar-width: none;  /* Firefox */
     }
-    .sidebar-profile {
-        display: none; /* Ховаємо профіль, бо він є в хедері */
+    .sidebar-nav::-webkit-scrollbar {
+        display: none; /* Ховаємо скролбар для Chrome, Safari, etc. */
     }
-    .main-content {
-        padding: 1rem;
+    .nav-item {
+        flex-direction: column;
+        flex-shrink: 0; /* Забороняємо елементам стискатись */
+        font-size: 0.7rem;
+        gap: 4px;
+        padding: 8px;
     }
+    /* --- Кінець змін --- */
+    
+    .main-content { padding: 1.5rem; }
+    .feed-card.horizontal-card { flex-direction: column; align-items: flex-start; }
+    .trending-grid { grid-template-columns: 1fr; }
 }
