@@ -21,6 +21,8 @@ import CreateEmojiPack from './CreateEmojiPack';
 import TrackPage from './TrackPage';
 import TagPage from './pages/TagPage';
 import BottomNavBar from './BottomNavBar'; 
+import EmojiPacksSettings from './EmojiPacksSettings';
+import EditEmojiPack from './EditEmojiPack';
 
 import './App.css';
 
@@ -71,24 +73,24 @@ const AppLayout = () => {
             />
             <main className="app-main-content">
                 <Routes>
-                    <Route path="/" element={<Home />} />
-                    <Route path="/login" element={<Login />} />
-                    <Route path="/register" element={<Register />} />
-                    <Route path="/profile" element={<Profile />} />
-                    <Route path="/user/:userNickname" element={<UserProfile />} />
-                    <Route path="/settings" element={<Settings />} />
-                    <Route path="/upload" element={<UploadMusic />} />
-                    <Route path="/create-album" element={<CreateAlbum />} />
-                    <Route path="/playlist/:playlistId" element={<PlaylistPage />} />
-                    <Route path="/messages" element={<MessagesPage />} />
-                    <Route path="/userlist" element={<UserList />} />
-                    <Route path="/create-emoji-pack" element={<CreateEmojiPack />} />
-                    <Route path="/track/:trackId" element={<TrackPage />} />
-                    <Route 
-                        path="/tags/:tagName" 
-                        element={<TagPage isSidebarOpen={isSidebarOpen} />} 
-                    />
-                </Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+            <Route path="/profile" element={<Profile />} />
+            <Route path="/user/:userNickname" element={<UserProfile />} />
+            <Route path="/settings" element={<Settings />} />
+            {/* Додаємо новий маршрут до налаштувань емоджі */}
+            <Route path="/settings/emoji-packs" element={<EmojiPacksSettings />} />
+            <Route path="/settings/emoji-packs/edit/:packId" element={<EditEmojiPack />} />
+            <Route path="/upload" element={<UploadMusic />} />
+            <Route path="/create-album" element={<CreateAlbum />} />
+            <Route path="/playlist/:playlistId" element={<PlaylistPage />} />
+            <Route path="/messages" element={<MessagesPage />} />
+            <Route path="/userlist" element={<UserList />} />
+            <Route path="/create-emoji-pack" element={<CreateEmojiPack />} />
+            <Route path="/track/:trackId" element={<TrackPage />} />
+            <Route path="/tags/:tagName" element={<TagPage />} />
+        </Routes>
             </main>
             
             {/* --- ПОЧАТОК ЗМІН --- */}

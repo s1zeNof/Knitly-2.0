@@ -9,7 +9,6 @@ import { getIconComponent } from './FolderIcons';
 import './MessagesPage.css';
 import default_picture from './img/Default-Images/default-picture.svg';
 import ImageViewerModal from './ImageViewerModal'; 
-
 import CreateGroupModal from './CreateGroupModal';
 import GroupInfoPanel from './GroupInfoPanel';
 import ConfirmationModal from './ConfirmationModal';
@@ -25,7 +24,9 @@ import ForwardModal from './ForwardModal';
 import ShareMusicModal from './ShareMusicModal';
 import EmojiPickerPlus from './EmojiPickerPlus';
 import ImageEditorModal from './ImageEditorModal';
+import { isPackAnimated } from './emojiPackCache'; // <-- Імпортуємо наш кеш
 
+// Іконки
 const AllChatsIcon = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>;
 const PersonalIcon = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>;
 const NewGroupIcon = () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>;
@@ -80,16 +81,10 @@ const MessagesPage = () => {
     const messagesEndRef = useRef(null);
     const location = useLocation();
     const navigate = useNavigate();
-    
-    // --- ПОЧАТОК ЗМІН (для свайпу) ---
     const [swipeState, setSwipeState] = useState({ startX: 0, deltaX: 0, isSwiping: false });
-    const chatWindowRef = useRef(null); // Ref для вікна чату
-    // --- КІНЕЦЬ ЗМІН ---
-
+    const chatWindowRef = useRef(null);
     const isPlayerVisible = !!currentTrack;
     
-    // --- ПОЧАТОК ЗМІН (для приховування панелей) ---
-    // Керуємо класом на body для глобального доступу до стану "в чаті"
     useEffect(() => {
         const isMobile = window.innerWidth <= 768;
         if (isMobile && selectedConversationId) {
@@ -97,10 +92,8 @@ const MessagesPage = () => {
         } else {
             document.body.classList.remove('in-chat-view');
         }
-        // Функція очищення, яка прибирає клас при виході зі сторінки
         return () => document.body.classList.remove('in-chat-view');
     }, [selectedConversationId]);
-    // --- КІНЕЦЬ ЗМІН ---
 
     const getCompanion = (convo) => {
         if (!convo || !convo.participantInfo || !currentUser) return null;
@@ -129,7 +122,7 @@ const MessagesPage = () => {
             setLoading(false);
         }, (error) => { console.error("Помилка завантаження чатів:", error); setLoading(false); });
         return () => unsubscribe();
-    }, [currentUser, authLoading, location.pathname, navigate]);
+    }, [currentUser, authLoading, location.pathname, navigate, selectedConversationId]); // Added selectedConversationId to deps
     
     useEffect(() => {
         if (!selectedConversationId || !currentUser?.uid) {
@@ -148,68 +141,26 @@ const MessagesPage = () => {
     }, [selectedConversationId, currentUser?.uid]);
     
     useEffect(() => {
-        const validatePinsAndSyncLastMessage = async () => {
-            if (!selectedConversation || loadingMessages || selectedConversation.id === 'saved_messages') return;
-            const existingMessageIds = new Set(messages.map(msg => msg.id));
-            if (selectedConversation.pinnedMessages?.length > 0) {
-                const validPins = selectedConversation.pinnedMessages.filter(pin => existingMessageIds.has(pin.messageId));
-                if (validPins.length !== selectedConversation.pinnedMessages.length) {
-                    await updateDoc(doc(db, 'chats', selectedConversation.id), { pinnedMessages: validPins });
-                }
-            }
-            const actualLastMessageInState = messages.length > 0 ? messages[messages.length - 1] : null;
-            const displayedLastMessage = selectedConversation.lastMessage;
-            if (actualLastMessageInState) {
-                const lastMessageText = getMessagePreviewText(actualLastMessageInState);
-                if (displayedLastMessage?.messageId !== actualLastMessageInState.id || displayedLastMessage?.text !== lastMessageText) {
-                    const chatRef = doc(db, 'chats', selectedConversationId);
-                    const newLastMessage = { text: lastMessageText, senderId: actualLastMessageInState.senderId, messageId: actualLastMessageInState.id };
-                    await updateDoc(chatRef, { lastMessage: newLastMessage });
-                }
-            } else if (displayedLastMessage) {
-                await updateDoc(doc(db, 'chats', selectedConversationId), { lastMessage: null });
-            }
-        };
-        validatePinsAndSyncLastMessage();
-    }, [messages, selectedConversationId, selectedConversation, loadingMessages]);
-
-    useEffect(() => { messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages]);
+        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }, [messages]);
     
-    // --- ПОЧАТОК ЗМІН (логіка свайпу) ---
     const handleSwipeStart = (e) => {
-        // Спрацьовує тільки якщо дотик біля лівого краю екрану
         if (e.touches[0].clientX < 50) { 
             setSwipeState({ startX: e.touches[0].clientX, deltaX: 0, isSwiping: true });
-            if (chatWindowRef.current) {
-                chatWindowRef.current.classList.add('is-swiping');
-            }
+            if (chatWindowRef.current) chatWindowRef.current.classList.add('is-swiping');
         }
     };
-
     const handleSwipeMove = (e) => {
         if (!swipeState.isSwiping) return;
         const deltaX = e.touches[0].clientX - swipeState.startX;
-        if (deltaX > 0) { // Дозволяємо свайп тільки вправо
-            setSwipeState(prev => ({ ...prev, deltaX }));
-        }
+        if (deltaX > 0) setSwipeState(prev => ({ ...prev, deltaX }));
     };
-
     const handleSwipeEnd = () => {
         if (!swipeState.isSwiping) return;
-
-        if (chatWindowRef.current) {
-            chatWindowRef.current.classList.remove('is-swiping');
-        }
-
-        // Якщо свайпнули більше ніж на третину екрану, повертаємось назад
-        if (swipeState.deltaX > window.innerWidth / 3) {
-            setSelectedConversationId(null);
-        }
-        
-        // Скидуємо стан свайпу
+        if (chatWindowRef.current) chatWindowRef.current.classList.remove('is-swiping');
+        if (swipeState.deltaX > window.innerWidth / 3) setSelectedConversationId(null);
         setSwipeState({ startX: 0, deltaX: 0, isSwiping: false });
     };
-    // --- КІНЕЦЬ ЗМІН ---
 
     const allFolders = useMemo(() => [{ id: 'all', name: 'Усі', icon: 'all', component: <AllChatsIcon /> }, { id: 'personal', name: 'Особисті', icon: 'personal', component: <PersonalIcon /> }, ...(currentUser?.chatFolders || []).sort((a, b) => (a.order || 0) - (b.order || 0))], [currentUser?.chatFolders]);
     const folderUnreadCounts = useMemo(() => {
@@ -224,7 +175,9 @@ const MessagesPage = () => {
         });
         return counts;
     }, [conversations, currentUser, allFolders]);
+    
     const savedMessagesChat = useMemo(() => ({ id: 'saved_messages', groupName: 'Збережене', lastMessage: { text: 'Ваші нотатки та файли' }, isVirtual: true }), []);
+
     const handleSelectConversation = async (convoId) => {
         if (selectionMode) exitSelectionMode();
         setSelectedConversationId(convoId);
@@ -233,25 +186,56 @@ const MessagesPage = () => {
             try { await updateDoc(chatRef, { [`unreadCounts.${currentUser.uid}`]: 0 }); } catch (error) { console.error("Помилка обнулення лічильника:", error); }
         }
     };
+
     const handleMessageReaction = async (message, reactionId, customUrl = null) => {
         if (!selectedConversationId || selectedConversationId === 'saved_messages' || !currentUser) return;
         const messageRef = doc(db, 'chats', selectedConversationId, 'messages', message.id);
+        
+        // --- ВИПРАВЛЕНО: Визначаємо, чи анімована реакція ---
+        const [packId] = reactionId.split('_');
+        const isAnimated = isPackAnimated(packId);
+
         try {
             await runTransaction(db, async (transaction) => {
                 const messageDoc = await transaction.get(messageRef);
                 if (!messageDoc.exists()) throw "Повідомлення не знайдено!";
+                
                 const data = messageDoc.data();
                 const reactions = (typeof data.reactions === 'object' && data.reactions !== null && !Array.isArray(data.reactions)) ? data.reactions : {};
-                const reactionData = reactions[reactionId] || { uids: [] };
+                let reactionData = reactions[reactionId] || { uids: [] };
+                
                 const currentUserUid = currentUser.uid;
                 const userIndex = reactionData.uids.indexOf(currentUserUid);
-                if (userIndex > -1) reactionData.uids.splice(userIndex, 1); else reactionData.uids.push(currentUserUid);
-                if (customUrl) reactionData.url = customUrl;
-                if (reactionData.uids.length > 0) reactions[reactionId] = reactionData; else delete reactions[reactionId];
+                
+                if (userIndex > -1) {
+                    reactionData.uids.splice(userIndex, 1);
+                } else {
+                    reactionData.uids.push(currentUserUid);
+                }
+
+                if (customUrl) {
+                    reactionData.url = customUrl;
+                    // --- ВИПРАВЛЕНО: Додаємо прапорець isAnimated ---
+                    if (isAnimated) {
+                        reactionData.isAnimated = true;
+                    }
+                }
+                
+                if (reactionData.uids.length > 0) {
+                    reactions[reactionId] = reactionData;
+                } else {
+                    delete reactions[reactionId];
+                }
+
                 transaction.update(messageRef, { reactions });
             });
-        } catch (error) { console.error("Помилка додавання реакції:", error); showNotification("Не вдалося поставити реакцію.", "error"); }
+        } catch (error) {
+            console.error("Помилка додавання реакції:", error);
+            showNotification("Не вдалося поставити реакцію.", "error");
+        }
     };
+    
+    // ... (решта коду залишається без змін)
     const handleEmojiSelect = (emoji, isCustom = false) => {
         if (contextMenu.message) {
             let reactionId, customUrl = null;
@@ -299,9 +283,7 @@ const MessagesPage = () => {
             default: break;
         }
     };
-    const handleCloseContextMenu = () => {
-        setContextMenu({ show: false, x: 0, y: 0, message: null });
-    };
+    const handleCloseContextMenu = () => setContextMenu({ show: false, x: 0, y: 0, message: null });
     const handleConfirmDelete = async (deleteForBoth) => {
         const messageToDelete = deleteModal.message;
         setDeleteModal({ isOpen: false, message: null });
@@ -436,31 +418,20 @@ const MessagesPage = () => {
     const handleGroupCreated = (newChatId) => { setCreateGroupModalOpen(false); navigate('/messages', { state: { conversationId: newChatId } }); };
     const openInfoPanel = () => { if (selectedConversationId === 'saved_messages') setStoragePanelOpen(true); else if (selectedConversation?.isGroup) setInfoPanelOpenFor(selectedConversation); };
     const handleForwardSelected = () => { const messagesToForward = messages.filter(msg => selectedMessages.includes(msg.id)); setForwardingMessages(messagesToForward); };
-    const handleOpenImageViewer = (image) => {
-        setViewingImage(image);
-    };
+    const handleOpenImageViewer = (image) => setViewingImage(image);
+    const handleCloseImageViewer = () => setViewingImage(null);
 
-    const handleCloseImageViewer = () => {
-        setViewingImage(null);
-    };
     if (authLoading || loading) return <div className="messages-page-loading">Завантаження...</div>;
+
     const companion = getCompanion(selectedConversation);
     const isCurrentUserAdmin = selectedConversation?.admins?.includes(currentUser?.uid);
     const companionName = !selectedConversation?.isGroup ? getCompanion(selectedConversation)?.displayName : '';
-
     const renderLastMessage = (lastMessage) => {
         if (!lastMessage || !lastMessage.text) return ' ';
-        if (typeof lastMessage.text === 'object' && lastMessage.text !== null) {
-            return 'Медіавкладення';
-        }
+        if (typeof lastMessage.text === 'object' && lastMessage.text !== null) return 'Медіавкладення';
         return lastMessage.text;
     };
-    
-    // --- ПОЧАТОК ЗМІН (стиль для свайпу) ---
-    const chatWindowStyle = swipeState.isSwiping 
-        ? { transform: `translateX(${swipeState.deltaX}px)`, transition: 'none' } 
-        : {};
-    // --- КІНЕЦЬ ЗМІН ---
+    const chatWindowStyle = swipeState.isSwiping ? { transform: `translateX(${swipeState.deltaX}px)`, transition: 'none' } : {};
 
     return (
         <div className={`messages-page-container ${!selectedConversationId ? 'no-chat-selected' : ''} ${isPlayerVisible ? 'player-visible' : ''}`}>
@@ -495,7 +466,6 @@ const MessagesPage = () => {
                             })) : (<p className="no-conversations">Чати не знайдено</p>)}
                         </div>
                     </aside>
-                    {/* --- ПОЧАТОК ЗМІН (додаємо обробники свайпу та ref) --- */}
                     <main 
                         ref={chatWindowRef}
                         className={`chat-window ${!selectedConversationId ? 'hidden-mobile' : ''}`}
@@ -504,7 +474,6 @@ const MessagesPage = () => {
                         onTouchEnd={handleSwipeEnd}
                         style={chatWindowStyle}
                     >
-                    {/* --- КІНЕЦЬ ЗМІН --- */}
                         {selectionMode ? ( <SelectionHeader selectedCount={selectedMessages.length} onCancel={exitSelectionMode} onDelete={() => setMultiDeleteModal(true)} onForward={handleForwardSelected} />
                         ) : selectedConversation ? (
                             <div className="chat-header" onClick={openInfoPanel} style={{cursor: 'pointer'}}>
@@ -524,23 +493,7 @@ const MessagesPage = () => {
                                     const isSent = msg.senderId === currentUser.uid;
                                     const senderInfo = selectedConversation.id === 'saved_messages' ? { displayName: msg.originalSender?.name, photoURL: msg.originalSender?.photoURL } : (isSent ? currentUser : (selectedConversation.isGroup ? selectedConversation.participantInfo.find(p => p.uid === msg.senderId) : companion));
                                     return (<MessageBubble 
-                                        key={msg.id} 
-                                        message={msg} 
-                                        isGroup={selectedConversation.isGroup} 
-                                        isSent={selectedConversationId !== 'saved_messages' && isSent} 
-                                        senderInfo={senderInfo} 
-                                        selectionMode={selectionMode} 
-                                        isSelected={selectedMessages.includes(msg.id)} 
-                                        isDeleting={deletingMessages.includes(msg.id)} 
-                                        deleteAnimationClass={currentUser.settings?.chat?.deleteAnimation || 'animation-vortex-out'} 
-                                        onContextMenu={handleContextMenu} 
-                                        onLongPress={handleLongPress} 
-                                        onTap={handleToggleSelect} 
-                                        isSavedContext={selectedConversationId === 'saved_messages'} 
-                                        onReaction={handleMessageReaction}
-                                        isContextMenuOpen={contextMenu.show}
-                                        onCloseContextMenu={handleCloseContextMenu}
-                                        onOpenImage={handleOpenImageViewer}
+                                        key={msg.id} message={msg} isGroup={selectedConversation.isGroup} isSent={selectedConversationId !== 'saved_messages' && isSent} senderInfo={senderInfo} selectionMode={selectionMode} isSelected={selectedMessages.includes(msg.id)} isDeleting={deletingMessages.includes(msg.id)} deleteAnimationClass={currentUser.settings?.chat?.deleteAnimation || 'animation-vortex-out'} onContextMenu={handleContextMenu} onLongPress={handleLongPress} onTap={handleToggleSelect} isSavedContext={selectedConversationId === 'saved_messages'} onReaction={handleMessageReaction} isContextMenuOpen={contextMenu.show} onCloseContextMenu={handleCloseContextMenu} onOpenImage={handleOpenImageViewer}
                                     />);
                                 }))}
                                 {selectedConversationId === 'saved_messages' && messages.length === 0 && !loadingMessages && (<div className="chat-placeholder"> <BookmarkIcon className="placeholder-icon" /> <h3>Збережені повідомлення</h3> <p>Пересилайте сюди повідомлення, щоб зберегти їх. Цей чат бачите тільки ви.</p> </div>)}
@@ -576,14 +529,7 @@ const MessagesPage = () => {
             {isFullPickerOpen && (<EmojiPickerPlus onClose={() => setIsFullPickerOpen(false)} onEmojiSelect={handleEmojiSelect} />)}
             {isImageEditorOpen && (<ImageEditorModal isOpen={isImageEditorOpen} imageToEdit={imageForEditor} onClose={() => { setIsImageEditorOpen(false); setImageForEditor(null); }} onSave={handleImageEditorSave} />)}
             {showUploadOverlay && (<div className="upload-progress-overlay"><div className="upload-progress-bar" style={{ width: `${uploadProgress}%` }}></div></div>)}
-            {viewingImage && (
-                <ImageViewerModal
-                    isOpen={!!viewingImage}
-                    imageUrl={viewingImage.url}
-                    imageAlt={viewingImage.alt}
-                    onClose={handleCloseImageViewer}
-                />
-            )}
+            {viewingImage && (<ImageViewerModal isOpen={!!viewingImage} imageUrl={viewingImage.url} imageAlt={viewingImage.alt} onClose={handleCloseImageViewer}/>)}
         </div>
     );
 };

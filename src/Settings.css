@@ -347,7 +347,7 @@ input:checked + .slider:before { transform: translateX(22px); }
         flex-shrink: 0;
     }
     .settings-page-container {
-        padding: 1.5rem 1rem;
+        padding: 1.5rem 1rem 8rem;
     }
 }
 @media (max-width: 600px) {

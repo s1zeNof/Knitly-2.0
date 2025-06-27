@@ -67,7 +67,7 @@ const BottomNavBar = ({ isPlayerVisible }) => {
             </NavLink>
             <NavLink to="/library" className="bottom-nav-item">
                 <LibraryIcon />
-                <span>Бібліотека</span>
+                <span>Треки</span>
             </NavLink>
             <NavLink to="/profile" className="bottom-nav-item">
                 <ProfileIcon />
