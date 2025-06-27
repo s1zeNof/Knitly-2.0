@@ -9,6 +9,7 @@ import { usePlayerContext } from '../PlayerContext';
 
 import TrackList from '../TrackList';
 import './TagPage.css';
+import default_picture from '../img/Default-Images/default-picture.svg'; // Додаємо імпорт дефолтної картинки
 
 const PlayAllIcon = () => <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>;
 
@@ -18,10 +19,13 @@ const TagPage = () => {
 
     const [popularTracks, setPopularTracks] = useState([]);
     const [newTracks, setNewTracks] = useState([]);
+    const [relatedTags, setRelatedTags] = useState([]);
+    // --- ЗМІНА: Новий стан для тематичних плейлистів ---
+    const [themedPlaylists, setThemedPlaylists] = useState([]);
     const [loading, setLoading] = useState(true);
     const [totalTracks, setTotalTracks] = useState(0);
 
-    const illustration = getTagIllustration(tagName);
+    const illustration = getTagIllustration(tagName.toLowerCase());
     const formattedTagName = tagName.charAt(0).toUpperCase() + tagName.slice(1).replace(/-/g, ' ');
 
     useEffect(() => {
@@ -29,24 +33,14 @@ const TagPage = () => {
             if (!tagName) return;
             setLoading(true);
             
-            const tagQuery = `#${tagName.toLowerCase()}`;
+            const lowerCaseTagName = tagName.toLowerCase();
+            const tagQuery = `#${lowerCaseTagName}`;
             const tracksRef = collection(db, 'tracks');
 
             try {
-                const popularQuery = query(
-                    tracksRef, 
-                    where('tags_search', 'array-contains', tagQuery), 
-                    orderBy('playCount', 'desc'), 
-                    limit(10)
-                );
-
-                const newQuery = query(
-                    tracksRef,
-                    where('tags_search', 'array-contains', tagQuery),
-                    orderBy('createdAt', 'desc'),
-                    limit(10)
-                );
-                
+                // Запити для треків
+                const popularQuery = query(tracksRef, where('tags_search', 'array-contains', tagQuery), orderBy('playCount', 'desc'), limit(10));
+                const newQuery = query(tracksRef, where('tags_search', 'array-contains', tagQuery), orderBy('createdAt', 'desc'), limit(10));
                 const countQuery = query(tracksRef, where('tags_search', 'array-contains', tagQuery));
 
                 const [popularSnap, newSnap, countSnap] = await Promise.all([
@@ -54,10 +48,45 @@ const TagPage = () => {
                     getDocs(newQuery),
                     getDocs(countQuery)
                 ]);
+                
+                const popular = popularSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                const fresh = newSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
-                setPopularTracks(popularSnap.docs.map(doc => ({ id: doc.id, ...doc.data() })));
-                setNewTracks(newSnap.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+                setPopularTracks(popular);
+                setNewTracks(fresh);
                 setTotalTracks(countSnap.size);
+
+                // --- ЗМІНА: Алгоритм пошуку плейлистів та схожих тегів ---
+                const allFetchedTracks = [...popular, ...fresh];
+                
+                // --- Пошук плейлистів ---
+                if (popular.length > 0) {
+                    const popularTrackIds = popular.map(t => t.id).slice(0, 10); // Firestore обмежує 'array-contains-any' до 10 елементів
+                    const playlistsQuery = query(
+                        collection(db, 'playlists'),
+                        where('trackIds', 'array-contains-any', popularTrackIds),
+                        limit(4)
+                    );
+                    const playlistsSnap = await getDocs(playlistsQuery);
+                    setThemedPlaylists(playlistsSnap.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+                }
+
+                // --- Пошук схожих тегів ---
+                const tagFrequency = new Map();
+                allFetchedTracks.forEach(track => {
+                    track.tags?.forEach(tag => {
+                        const cleanTag = tag.replace('#', '').toLowerCase();
+                        if (cleanTag !== lowerCaseTagName) {
+                            tagFrequency.set(cleanTag, (tagFrequency.get(cleanTag) || 0) + 1);
+                        }
+                    });
+                });
+                const sortedRelatedTags = [...tagFrequency.entries()]
+                    .sort((a, b) => b[1] - a[1])
+                    .slice(0, 5)
+                    .map(item => item[0]);
+                
+                setRelatedTags(sortedRelatedTags);
 
             } catch (error) {
                 console.error("Error fetching tag data:", error);
@@ -103,30 +132,38 @@ const TagPage = () => {
                     <TrackList initialTracks={newTracks} isLoading={loading} />
                 </section>
 
-                <section className="tag-content-section">
-                    <h2 className="tag-section-title">Тематичні плейлисти</h2>
-                    <div className="placeholder-grid">
-                        {[...Array(4)].map((_, i) => (
-                            <div key={i} className="placeholder-playlist-card">
-                                <div className="placeholder-artwork">🎵</div>
-                                <div className="placeholder-info">
-                                    <p>Phonk for Drift</p>
-                                    <span>Скоро...</span>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                </section>
+                {/* --- ЗМІНА: Динамічний рендеринг тематичних плейлистів --- */}
+                {themedPlaylists.length > 0 && (
+                    <section className="tag-content-section">
+                        <h2 className="tag-section-title">Тематичні плейлисти</h2>
+                        <div className="themed-playlist-grid">
+                            {themedPlaylists.map((pl) => (
+                                <Link to={`/playlist/${pl.id}`} key={pl.id} className="themed-playlist-card">
+                                    <div className="themed-playlist-artwork">
+                                        <img src={pl.coverArtUrl || default_picture} alt={pl.title}/>
+                                    </div>
+                                    <div className="themed-playlist-info">
+                                        <p>{pl.title}</p>
+                                        <span>від {pl.creatorName}</span>
+                                    </div>
+                                </Link>
+                            ))}
+                        </div>
+                    </section>
+                )}
 
-                <section className="tag-content-section">
-                    <h2 className="tag-section-title">Схожі теги</h2>
-                    <div className="related-tags-container">
-                        <Link to="/tags/drift" className="related-tag">#drift</Link>
-                        <Link to="/tags/memphis-rap" className="related-tag">#memphis-rap</Link>
-                        <Link to="/tags/electronic" className="related-tag">#electronic</Link>
-                        <Link to="/tags/dark" className="related-tag">#dark</Link>
-                    </div>
-                </section>
+                {relatedTags.length > 0 && (
+                    <section className="tag-content-section">
+                        <h2 className="tag-section-title">Схожі теги</h2>
+                        <div className="related-tags-container">
+                            {relatedTags.map(tag => (
+                                <Link to={`/tags/${tag}`} key={tag} className="related-tag">
+                                    #{tag}
+                                </Link>
+                            ))}
+                        </div>
+                    </section>
+                )}
             </main>
         </div>
     );

@@ -9,8 +9,8 @@
     color: inherit;
     font-size: inherit;
     font-weight: inherit;
-    min-width: 1.5ch; /* Резервуємо місце для цифр */
-    overflow: hidden;
+    /* --- ЗМІНА: Видалено min-width та overflow, щоб контейнер розширювався --- */
+    padding-left: 0.8rem;
 }
 
 .counter-viewport > span {

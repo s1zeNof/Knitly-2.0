@@ -251,7 +251,7 @@
         padding: 1rem;
     }
     .track-info-list {
-        width: calc(100% - 72px); /* Ширина мінус аватар та відступ */
+        /*width: calc(100% - 72px);*/ /* Ширина мінус аватар та відступ */
         order: 1; 
         padding: 0 0 0 1rem;
     }
@@ -262,6 +262,8 @@
         padding-left: 72px; /* Відступ, щоб вирівнятись з назвою треку */
         justify-content: flex-start;
         gap: 1.5rem;
+        /* --- ВИРІШЕННЯ ПРОБЛЕМИ --- */
+        box-sizing: border-box; 
     }
     .play-button-list {
         order: 0;
