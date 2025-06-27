@@ -9,14 +9,18 @@ import notificationBell from './img/notifications/notificationBell-white.svg';
 import verifiedIcon from './img/Profile-Settings/verified_icon-lg-bl.svg';
 import './Header.css';
 
-const Header = () => {
+// --- ПОЧАТОК ЗМІН ---
+// Іконка меню (гамбургер)
+const MenuIcon = () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>;
+
+const Header = ({ showTagPageMenu, onTagPageMenuClick }) => {
+// --- КІНЕЦЬ ЗМІН ---
     const { user, setUser, refreshUser } = useUserContext();
     const [showMenu, setShowMenu] = useState(false);
     const [notifications, setNotifications] = useState([]);
     const [showNotificationsPopup, setShowNotificationsPopup] = useState(false);
     const navigate = useNavigate();
 
-    // ... (існуюча логіка для сповіщень залишається без змін) ...
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, (authUser) => {
             if (authUser) {
@@ -31,17 +35,24 @@ const Header = () => {
         navigate('/');
     };
     
-    // ... (решта існуючих функцій) ...
-
     return (
         <header>
-            <div className="header-logo">
-                <Link to="/">Knitly</Link>
+            {/* --- ПОЧАТОК ЗМІН --- */}
+            <div className="header-left-section">
+                {showTagPageMenu && (
+                    <button className="header-menu-toggle" onClick={onTagPageMenuClick}>
+                        <MenuIcon />
+                    </button>
+                )}
+                <div className="header-logo">
+                    <Link to="/">Knitly</Link>
+                </div>
             </div>
+            {/* --- КІНЕЦЬ ЗМІН --- */}
+
             <div className="header-menu">
                 <Link to="/">Home</Link>
                 <Link to="/userlist">Users</Link>
-                {/* <<< ПОКАЗУЄМО ПОСИЛАННЯ "UPLOAD" ДЛЯ АВТОРИЗОВАНИХ КОРИСТУВАЧІВ >>> */}
                 {user && <Link to="/upload">Upload</Link>}
             </div>
             {!user ? (

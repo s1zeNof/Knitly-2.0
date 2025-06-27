@@ -1,5 +1,5 @@
-import React from 'react';
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { BrowserRouter as Router, Route, Routes, useLocation } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from 'react-query';
 import { UserProvider } from './UserContext';
 import { PlayerProvider, usePlayerContext } from './PlayerContext';
@@ -19,7 +19,8 @@ import MessagesPage from './MessagesPage';
 import Player from './Player';
 import CreateEmojiPack from './CreateEmojiPack';
 import TrackPage from './TrackPage';
-import TagPage from './pages/TagPage'; // --- ІМПОРТ НОВОЇ СТОРІНКИ ---
+import TagPage from './pages/TagPage';
+import BottomNavBar from './BottomNavBar'; 
 
 import './App.css';
 
@@ -29,9 +30,45 @@ const AppLayout = () => {
     const { notification, currentTrack } = usePlayerContext();
     const isPlayerVisible = !!currentTrack;
 
+    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+    const location = useLocation();
+    
+    const onTagPage = location.pathname.startsWith('/tags/');
+
+    const handleToggleSidebar = () => {
+        setIsSidebarOpen(prev => !prev);
+    };
+
+    const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+
+    useEffect(() => {
+        const handleResize = () => setIsMobile(window.innerWidth <= 768);
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
+
+    useEffect(() => {
+        if (isMobile) {
+            document.body.classList.add('mobile-view-active');
+        } else {
+            document.body.classList.remove('mobile-view-active');
+        }
+    }, [isMobile]);
+
+    useEffect(() => {
+        if (isPlayerVisible && isMobile) {
+             document.body.classList.add('player-visible-mobile');
+        } else {
+             document.body.classList.remove('player-visible-mobile');
+        }
+    }, [isPlayerVisible, isMobile])
+
     return (
         <>
-            <Header />
+            <Header 
+                showTagPageMenu={onTagPage}
+                onTagPageMenuClick={handleToggleSidebar}
+            />
             <main className="app-main-content">
                 <Routes>
                     <Route path="/" element={<Home />} />
@@ -47,10 +84,16 @@ const AppLayout = () => {
                     <Route path="/userlist" element={<UserList />} />
                     <Route path="/create-emoji-pack" element={<CreateEmojiPack />} />
                     <Route path="/track/:trackId" element={<TrackPage />} />
-                    {/* --- ДОДАНО НОВИЙ МАРШРУТ --- */}
-                    <Route path="/tags/:tagName" element={<TagPage />} />
+                    <Route 
+                        path="/tags/:tagName" 
+                        element={<TagPage isSidebarOpen={isSidebarOpen} />} 
+                    />
                 </Routes>
             </main>
+            
+            {/* --- ПОЧАТОК ЗМІН --- */}
+            <BottomNavBar isPlayerVisible={isPlayerVisible} />
+            {/* --- КІНЕЦЬ ЗМІН --- */}
             
             <Player className={isPlayerVisible ? 'visible' : ''} />
             
@@ -63,14 +106,18 @@ const AppLayout = () => {
     );
 }
 
+const AppContent = () => (
+    <Router>
+        <AppLayout />
+    </Router>
+);
+
 const App = () => {
     return (
         <QueryClientProvider client={queryClient}>
             <UserProvider>
                 <PlayerProvider>
-                    <Router>
-                        <AppLayout />
-                    </Router>
+                    <AppContent />
                 </PlayerProvider>
             </UserProvider>
         </QueryClientProvider>

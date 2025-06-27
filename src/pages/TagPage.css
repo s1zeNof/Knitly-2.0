@@ -1,5 +1,27 @@
 /* src/pages/TagPage.css */
 
+/* --- ПОЧАТОК ЗМІН --- */
+.tag-page-wrapper {
+    display: flex;
+    height: 100%;
+}
+
+.tag-page-content-pusher {
+    flex-grow: 1;
+    transition: margin-left 0.4s ease-in-out;
+    overflow-y: auto;
+    height: 100%;
+}
+
+/* Коли сайдбар невидимий, ми не додаємо відступ */
+.tag-page-content-pusher.sidebar-open {
+    /* Цей клас більше не потрібен для зсуву, 
+       оскільки сайдбар тепер з'являється через margin */
+}
+
+/* --- КІНЕЦЬ ЗМІН --- */
+
+
 .tag-page-loader {
     display: flex;
     justify-content: center;
@@ -69,7 +91,8 @@
 }
 
 /* --- Основний контент --- */
-.tag-page-content {
+/* --- ЗМІНА: перейменовано з .tag-page-content на .tag-page-main-content --- */
+.tag-page-main-content {
     max-width: 1400px;
     margin: 0 auto;
     padding: 3rem 4rem;
@@ -86,7 +109,6 @@
     border-bottom: 1px solid var(--color-border);
 }
 
-/* --- ЗМІНА: Стилі для сітки та карток плейлистів --- */
 .themed-playlist-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
@@ -150,7 +172,11 @@
     .tag-name {
         font-size: 3rem;
     }
-    .tag-page-content {
+    .tag-page-main-content {
         padding: 2rem 1.5rem;
+    }
+    /* Ховаємо сайдбар на мобільних, оскільки логіка для нього не вказана */
+    .left-sidebar {
+        display: none;
     }
 }

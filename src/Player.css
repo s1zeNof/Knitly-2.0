@@ -13,20 +13,23 @@
   box-sizing: border-box;
   z-index: 1000;
   gap: 2rem;
-  transform: translateY(100%);
+  /* --- ПОЧАТОК ЗМІН --- */
+  /* Забираємо початкове зміщення, бо тепер видимість контролюється монтуванням компонента */
   transition: transform 0.4s ease-in-out;
 }
 
-.player-container.visible {
-    transform: translateY(0);
+/* Клас для анімації зникнення */
+.player-container.hiding {
+    /*transform: translateY(100%);*/
 }
+/* --- КІНЕЦЬ ЗМІН --- */
+
 
 .player-container:not(.mobile-view) {
     cursor: default;
 }
 .player-container.mobile-view {
     cursor: pointer;
-    transition: background-color 0.2s;
 }
 .player-container.mobile-view:hover {
     background-color: var(--color-bg-light);

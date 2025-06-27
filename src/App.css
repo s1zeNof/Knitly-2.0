@@ -20,15 +20,16 @@
   --color-success: #22c55e;
   --color-error: #ef4444;
   --color-disabled: #4b5563;
+
+  --header-height: 70px;
 }
 
-/* === ПОЧАТОК ВИПРАВЛЕННЯ === */
-
+/* --- ПОЧАТОК КЛЮЧОВИХ ЗМІН --- */
 html, body, #root {
   height: 100%;
   margin: 0;
   padding: 0;
-  /* ЗМІНА: Видалено 'overflow: hidden;' звідси. Це головний фікс. */
+  overflow: hidden; /* Забороняємо скрол на рівні сторінки */
 }
 
 body {
@@ -40,16 +41,24 @@ body {
 #root {
     display: flex;
     flex-direction: column;
+    height: 100%; /* Використовуємо 100% висоти батька (body) замість 100vh */
+}
+
+.app-container {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    position: relative;
 }
 
 .app-main-content {
-    flex-grow: 1;
-    /* ЗМІНА: 'overflow-y: hidden' замінено на 'overflow-y: auto'. */
-    /* Це дозволить скролити контент сторінок, якщо він не вміщується. */
+    flex: 1 1 auto;
     overflow-y: auto;
+    min-height: 0;
+    position: relative;
 }
+/* --- КІНЕЦЬ КЛЮЧОВИХ ЗМІН --- */
 
-/* === КІНЕЦЬ ВИПРАВЛЕННЯ === */
 
 a {
     color: inherit;
@@ -70,7 +79,6 @@ a {
   background: var(--color-border);
 }
 
-/* --- СПОВІЩЕННЯ (TOAST) --- */
 @keyframes fadeInOut {
   0% { opacity: 0; transform: translate(-50%, 20px); }
   15% { opacity: 1; transform: translate(-50%, 0); }
@@ -97,7 +105,8 @@ a {
     background-color: var(--color-error);
 }
 
-/* ... решта стилів залишається без змін ... */
+/* ... решта стилів для форм та модальних вікон залишаються без змін ... */
+
 .form-input,
 .form-textarea {
   display: block;

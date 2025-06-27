@@ -80,8 +80,27 @@ const MessagesPage = () => {
     const messagesEndRef = useRef(null);
     const location = useLocation();
     const navigate = useNavigate();
+    
+    // --- ПОЧАТОК ЗМІН (для свайпу) ---
+    const [swipeState, setSwipeState] = useState({ startX: 0, deltaX: 0, isSwiping: false });
+    const chatWindowRef = useRef(null); // Ref для вікна чату
+    // --- КІНЕЦЬ ЗМІН ---
 
     const isPlayerVisible = !!currentTrack;
+    
+    // --- ПОЧАТОК ЗМІН (для приховування панелей) ---
+    // Керуємо класом на body для глобального доступу до стану "в чаті"
+    useEffect(() => {
+        const isMobile = window.innerWidth <= 768;
+        if (isMobile && selectedConversationId) {
+            document.body.classList.add('in-chat-view');
+        } else {
+            document.body.classList.remove('in-chat-view');
+        }
+        // Функція очищення, яка прибирає клас при виході зі сторінки
+        return () => document.body.classList.remove('in-chat-view');
+    }, [selectedConversationId]);
+    // --- КІНЕЦЬ ЗМІН ---
 
     const getCompanion = (convo) => {
         if (!convo || !convo.participantInfo || !currentUser) return null;
@@ -155,6 +174,42 @@ const MessagesPage = () => {
     }, [messages, selectedConversationId, selectedConversation, loadingMessages]);
 
     useEffect(() => { messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages]);
+    
+    // --- ПОЧАТОК ЗМІН (логіка свайпу) ---
+    const handleSwipeStart = (e) => {
+        // Спрацьовує тільки якщо дотик біля лівого краю екрану
+        if (e.touches[0].clientX < 50) { 
+            setSwipeState({ startX: e.touches[0].clientX, deltaX: 0, isSwiping: true });
+            if (chatWindowRef.current) {
+                chatWindowRef.current.classList.add('is-swiping');
+            }
+        }
+    };
+
+    const handleSwipeMove = (e) => {
+        if (!swipeState.isSwiping) return;
+        const deltaX = e.touches[0].clientX - swipeState.startX;
+        if (deltaX > 0) { // Дозволяємо свайп тільки вправо
+            setSwipeState(prev => ({ ...prev, deltaX }));
+        }
+    };
+
+    const handleSwipeEnd = () => {
+        if (!swipeState.isSwiping) return;
+
+        if (chatWindowRef.current) {
+            chatWindowRef.current.classList.remove('is-swiping');
+        }
+
+        // Якщо свайпнули більше ніж на третину екрану, повертаємось назад
+        if (swipeState.deltaX > window.innerWidth / 3) {
+            setSelectedConversationId(null);
+        }
+        
+        // Скидуємо стан свайпу
+        setSwipeState({ startX: 0, deltaX: 0, isSwiping: false });
+    };
+    // --- КІНЕЦЬ ЗМІН ---
 
     const allFolders = useMemo(() => [{ id: 'all', name: 'Усі', icon: 'all', component: <AllChatsIcon /> }, { id: 'personal', name: 'Особисті', icon: 'personal', component: <PersonalIcon /> }, ...(currentUser?.chatFolders || []).sort((a, b) => (a.order || 0) - (b.order || 0))], [currentUser?.chatFolders]);
     const folderUnreadCounts = useMemo(() => {
@@ -400,6 +455,12 @@ const MessagesPage = () => {
         }
         return lastMessage.text;
     };
+    
+    // --- ПОЧАТОК ЗМІН (стиль для свайпу) ---
+    const chatWindowStyle = swipeState.isSwiping 
+        ? { transform: `translateX(${swipeState.deltaX}px)`, transition: 'none' } 
+        : {};
+    // --- КІНЕЦЬ ЗМІН ---
 
     return (
         <div className={`messages-page-container ${!selectedConversationId ? 'no-chat-selected' : ''} ${isPlayerVisible ? 'player-visible' : ''}`}>
@@ -434,7 +495,16 @@ const MessagesPage = () => {
                             })) : (<p className="no-conversations">Чати не знайдено</p>)}
                         </div>
                     </aside>
-                    <main className={`chat-window ${!selectedConversationId ? 'hidden-mobile' : ''}`}>
+                    {/* --- ПОЧАТОК ЗМІН (додаємо обробники свайпу та ref) --- */}
+                    <main 
+                        ref={chatWindowRef}
+                        className={`chat-window ${!selectedConversationId ? 'hidden-mobile' : ''}`}
+                        onTouchStart={handleSwipeStart}
+                        onTouchMove={handleSwipeMove}
+                        onTouchEnd={handleSwipeEnd}
+                        style={chatWindowStyle}
+                    >
+                    {/* --- КІНЕЦЬ ЗМІН --- */}
                         {selectionMode ? ( <SelectionHeader selectedCount={selectedMessages.length} onCancel={exitSelectionMode} onDelete={() => setMultiDeleteModal(true)} onForward={handleForwardSelected} />
                         ) : selectedConversation ? (
                             <div className="chat-header" onClick={openInfoPanel} style={{cursor: 'pointer'}}>
