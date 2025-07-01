@@ -1,10 +1,11 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useUserContext } from './UserContext';
+import { usePlayerContext } from './PlayerContext'; // <-- 1. ІМПОРТУЄМО КОНТЕКСТ ПЛЕЄРА
 import default_picture from './img/Default-Images/default-picture.svg';
-import './LeftSidebar.css'; // Новий файл стилів
+import './LeftSidebar.css';
 
-// Іконки
+// Іконки (без змін)
 const UploadIcon = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12" /></svg>;
 const LibraryIcon = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>;
 const MessagesIcon = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>;
@@ -16,9 +17,15 @@ const HelpIcon = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor
 const LeftSidebar = ({ isOpen }) => {
     const { user } = useUserContext();
     const location = useLocation();
+    // --- ПОЧАТОК ЗМІН ---
+    const { currentTrack } = usePlayerContext();
+    const isPlayerVisible = !!currentTrack;
+    // --- КІНЕЦЬ ЗМІН ---
 
     return (
-        <aside className={`left-sidebar ${isOpen ? 'open' : ''}`}>
+        // --- ПОЧАТОК ЗМІН ---
+        <aside className={`left-sidebar ${isOpen ? 'open' : ''} ${isPlayerVisible ? 'player-visible-padding' : ''}`}>
+        {/* --- КІНЕЦЬ ЗМІН --- */}
             <div>
                 {user ? (
                     <Link to="/profile" className="sidebar-user-info">
