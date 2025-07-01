@@ -10,8 +10,16 @@
     justify-content: space-between;
     width: 240px;
     border-right: 1px solid #282828;
-    transition: margin-left 0.4s ease-in-out;
+    transition: margin-left 0.4s ease-in-out, padding-bottom 0.4s ease-in-out; /* Додано padding-bottom */
 }
+
+/* --- ПОЧАТОК ЗМІН --- */
+.left-sidebar.player-visible-padding {
+    /* Додаємо відступ знизу, що дорівнює висоті плеєра */
+    padding-bottom: 110px; /* 90px висота плеєра + 20px запас */
+}
+/* --- КІНЕЦЬ ЗМІН --- */
+
 
 .sidebar-user-info {
     display: flex;
@@ -50,10 +58,8 @@
     margin-left: 0;
 }
 
-/* --- ПОЧАТОК ЗМІН --- */
 @media (max-width: 768px) {
     .left-sidebar {
         display: none;
     }
 }
-/* --- КІНЕЦЬ ЗМІН --- */
