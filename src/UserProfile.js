@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { db } from './firebase';
+// --- ПОЧАТОК ЗМІН: Імпортуємо об'єкт auth ---
+import { auth, db } from './firebase'; 
+// --- КІНЕЦЬ ЗМІН ---
 import { query, collection, where, getDocs, doc, updateDoc, arrayUnion, arrayRemove, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { useUserContext } from './UserContext';
 import TrackList from './TrackList';
@@ -88,31 +90,42 @@ const UserProfile = () => {
     };
 
     const handleStartConversation = async () => {
-        // --- ПОЧАТОК ЗМІН: Додано рядки для діагностики ---
-        console.log("Attempting to create chat...");
-        console.log("Current User:", currentUser);
-        console.log("Profile User:", profileUser);
-        // --- КІНЕЦЬ ЗМІН ---
+        // --- ПОЧАТОК ЗМІН: Отримуємо користувача напряму з auth SDK ---
+        const currentAuthUser = auth.currentUser;
 
-        if (!currentUser || !profileUser) {
+        if (!currentAuthUser) {
+            console.error("Firebase Auth object has no current user. Aborting.");
+            // Можна показати сповіщення користувачу
+            // showNotification("Будь ласка, оновіть сторінку та спробуйте ще раз.", "error");
+            return;
+        }
+
+        // Використовуємо дані з контексту (displayName, photoURL), але UID беремо з auth.currentUser
+        const currentUserDataFromContext = currentUser; 
+        if (!currentUserDataFromContext || !profileUser) {
             console.error("ВІДСУТНІ ДАНІ: currentUser або profileUser не визначені.", { currentUser, profileUser });
             return;
         }
-        const chatId = [currentUser.uid, profileUser.uid].sort().join('_');
+        
+        const chatId = [currentAuthUser.uid, profileUser.uid].sort().join('_');
+        // --- КІНЕЦЬ ЗМІН ---
+
         const chatRef = doc(db, 'chats', chatId);
 
         const unreadCounts = {
-            [currentUser.uid]: 0,
+            [currentAuthUser.uid]: 0,
             [profileUser.uid]: 0
         };
 
         const dataToCreate = {
             isGroup: false,
-            participants: [currentUser.uid, profileUser.uid],
+            // --- ПОЧАТОК ЗМІН: Використовуємо UID з auth.currentUser ---
+            participants: [currentAuthUser.uid, profileUser.uid],
             participantInfo: [
-                { uid: currentUser.uid, displayName: currentUser.displayName, photoURL: currentUser.photoURL || null },
+                { uid: currentAuthUser.uid, displayName: currentUserDataFromContext.displayName, photoURL: currentUserDataFromContext.photoURL || null },
                 { uid: profileUser.uid, displayName: profileUser.displayName, photoURL: profileUser.photoURL || null }
             ],
+            // --- КІНЕЦЬ ЗМІН ---
             lastMessage: null,
             lastUpdatedAt: serverTimestamp(),
             unreadCounts: unreadCounts, 
