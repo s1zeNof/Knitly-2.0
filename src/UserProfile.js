@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { auth, db } from './firebase'; 
+import { db } from './firebase';
 import { query, collection, where, getDocs, doc, updateDoc, arrayUnion, arrayRemove, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { useUserContext } from './UserContext';
 import TrackList from './TrackList';
@@ -88,38 +88,29 @@ const UserProfile = () => {
     };
 
     const handleStartConversation = async () => {
-        const currentAuthUser = auth.currentUser;
-
-        if (!currentAuthUser || !currentUser || !profileUser) {
-            console.error("Один з об'єктів користувача не визначений", { currentAuthUser, currentUser, profileUser });
+        if (!currentUser || !profileUser) {
+            console.error("ВІДСУТНІ ДАНІ: currentUser або profileUser не визначені.", { currentUser, profileUser });
             return;
         }
-        
-        const chatId = [currentAuthUser.uid, profileUser.uid].sort().join('_');
+        const chatId = [currentUser.uid, profileUser.uid].sort().join('_');
         const chatRef = doc(db, 'chats', chatId);
 
-        // --- ПОЧАТОК ЗМІН: Ми максимально спрощуємо об'єкт для відправки ---
+        const unreadCounts = {
+            [currentUser.uid]: 0,
+            [profileUser.uid]: 0
+        };
+
         const dataToCreate = {
             isGroup: false,
-            participants: [currentAuthUser.uid, profileUser.uid],
+            participants: [currentUser.uid, profileUser.uid],
             participantInfo: [
-                { 
-                    uid: currentAuthUser.uid, 
-                    displayName: currentUser.displayName || "Користувач",
-                    photoURL: currentUser.photoURL || null 
-                },
-                { 
-                    uid: profileUser.uid, 
-                    displayName: profileUser.displayName || "Користувач",
-                    photoURL: profileUser.photoURL || null 
-                }
+                { uid: currentUser.uid, displayName: currentUser.displayName, photoURL: currentUser.photoURL || null },
+                { uid: profileUser.uid, displayName: profileUser.displayName, photoURL: profileUser.photoURL || null }
             ],
-            // Тимчасово прибираємо поля, які можуть викликати помилку
-            // lastMessage: null,
-            lastUpdatedAt: new Date(), // Замінюємо serverTimestamp() на звичайну дату
-            // unreadCounts: {}, // Поки що створюємо без лічильників
+            lastMessage: null,
+            lastUpdatedAt: serverTimestamp(),
+            unreadCounts: unreadCounts, 
         };
-        // --- КІНЕЦЬ ЗМІН ---
 
         try {
             const chatSnap = await getDoc(chatRef);
