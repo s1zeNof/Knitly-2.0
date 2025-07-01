@@ -98,30 +98,26 @@ const UserProfile = () => {
         const chatId = [currentAuthUser.uid, profileUser.uid].sort().join('_');
         const chatRef = doc(db, 'chats', chatId);
 
-        const unreadCounts = {
-            [currentAuthUser.uid]: 0,
-            [profileUser.uid]: 0
-        };
-
-        // --- ПОЧАТОК ЗМІН: Додаємо значення за замовчуванням для полів ---
+        // --- ПОЧАТОК ЗМІН: Ми максимально спрощуємо об'єкт для відправки ---
         const dataToCreate = {
             isGroup: false,
             participants: [currentAuthUser.uid, profileUser.uid],
             participantInfo: [
                 { 
                     uid: currentAuthUser.uid, 
-                    displayName: currentUser.displayName || "Користувач", // <-- ЗАХИСТ
+                    displayName: currentUser.displayName || "Користувач",
                     photoURL: currentUser.photoURL || null 
                 },
                 { 
                     uid: profileUser.uid, 
-                    displayName: profileUser.displayName || "Користувач", // <-- ЗАХИСТ
+                    displayName: profileUser.displayName || "Користувач",
                     photoURL: profileUser.photoURL || null 
                 }
             ],
-            lastMessage: null,
-            lastUpdatedAt: serverTimestamp(),
-            unreadCounts: unreadCounts, 
+            // Тимчасово прибираємо поля, які можуть викликати помилку
+            // lastMessage: null,
+            lastUpdatedAt: new Date(), // Замінюємо serverTimestamp() на звичайну дату
+            // unreadCounts: {}, // Поки що створюємо без лічильників
         };
         // --- КІНЕЦЬ ЗМІН ---
 
