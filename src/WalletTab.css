@@ -1,0 +1,141 @@
+.wallet-tab-container h3 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid var(--color-border);
+    margin: 0 0 2rem 0;
+}
+
+.section-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin: 2.5rem 0 1.5rem 0;
+    color: var(--color-text-secondary);
+}
+
+.balance-card {
+    background: linear-gradient(135deg, var(--color-bg-light) 0%, #3a3a4a 100%);
+    border: 1px solid var(--color-border);
+    border-radius: 0.75rem;
+    padding: 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.balance-info p {
+    margin: 0 0 0.5rem 0;
+    font-size: 1rem;
+    color: var(--color-text-secondary);
+}
+.balance-amount {
+    display: flex;
+    align-items: center;
+    gap: 2.05rem;
+    font-size: 2.5rem;
+    font-weight: 700;
+}
+.balance-note-icon {
+    width: 48px;
+    height: 48px;
+}
+.balance-amount .counter-viewport {
+    padding-left: 0;
+}
+
+.packages-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 1.5rem;
+}
+
+.package-card {
+    background-color: var(--color-bg-medium);
+    border: 1px solid var(--color-border);
+    border-radius: 0.75rem;
+    padding: 1.5rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.2s;
+}
+
+.package-card.popular {
+    border-color: var(--color-accent);
+}
+
+.popular-badge {
+    position: absolute;
+    top: 10px;
+    right: -35px;
+    background-color: var(--color-accent);
+    color: var(--color-bg-deep);
+    padding: 0.25rem 2.5rem;
+    font-size: 0.75rem;
+    font-weight: 700;
+    transform: rotate(45deg);
+}
+
+.package-notes {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+}
+.package-notes svg {
+    width: 28px;
+    height: 28px;
+    color: var(--color-accent);
+}
+
+.package-price {
+    color: var(--color-text-secondary);
+    font-size: 1.1rem;
+    margin: 0 0 1.5rem 0;
+}
+
+.package-card .button-secondary {
+    width: 100%;
+    background-color: var(--color-bg-light);
+}
+
+.transaction-history-placeholder {
+    padding: 3rem;
+    text-align: center;
+    color: var(--color-text-secondary);
+    background-color: var(--color-bg-medium);
+    border: 2px dashed var(--color-border-dashed);
+    border-radius: 0.75rem;
+}
+
+.button-primary {
+  padding: 0.75rem 2rem;
+  border: none;
+  font-size: 1rem;
+  font-weight: 600;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  color: white;
+  background-color: var(--color-accent);
+}
+
+.button-secondary {
+  padding: 0.6rem 1.2rem;
+  border-radius: 0.5rem;
+  border: 1px solid var(--color-border);
+  background-color: var(--color-bg-deep);
+  color: var(--color-text-primary);
+  cursor: pointer;
+  font-weight: 500;
+}
+
+
+@media (max-width: 768px) {
+    .balance-card {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1.5rem;
+    }
+}
