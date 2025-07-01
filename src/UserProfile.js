@@ -88,6 +88,12 @@ const UserProfile = () => {
     };
 
     const handleStartConversation = async () => {
+        // --- ПОЧАТОК ЗМІН: Додано рядки для діагностики ---
+        console.log("Attempting to create chat...");
+        console.log("Current User:", currentUser);
+        console.log("Profile User:", profileUser);
+        // --- КІНЕЦЬ ЗМІН ---
+
         if (!currentUser || !profileUser) {
             console.error("ВІДСУТНІ ДАНІ: currentUser або profileUser не визначені.", { currentUser, profileUser });
             return;
