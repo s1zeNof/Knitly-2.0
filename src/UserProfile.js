@@ -1,8 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-// --- ПОЧАТОК ЗМІН: Імпортуємо об'єкт auth ---
 import { auth, db } from './firebase'; 
-// --- КІНЕЦЬ ЗМІН ---
 import { query, collection, where, getDocs, doc, updateDoc, arrayUnion, arrayRemove, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { useUserContext } from './UserContext';
 import TrackList from './TrackList';
@@ -90,26 +88,14 @@ const UserProfile = () => {
     };
 
     const handleStartConversation = async () => {
-        // --- ПОЧАТОК ЗМІН: Отримуємо користувача напряму з auth SDK ---
         const currentAuthUser = auth.currentUser;
 
-        if (!currentAuthUser) {
-            console.error("Firebase Auth object has no current user. Aborting.");
-            // Можна показати сповіщення користувачу
-            // showNotification("Будь ласка, оновіть сторінку та спробуйте ще раз.", "error");
-            return;
-        }
-
-        // Використовуємо дані з контексту (displayName, photoURL), але UID беремо з auth.currentUser
-        const currentUserDataFromContext = currentUser; 
-        if (!currentUserDataFromContext || !profileUser) {
-            console.error("ВІДСУТНІ ДАНІ: currentUser або profileUser не визначені.", { currentUser, profileUser });
+        if (!currentAuthUser || !currentUser || !profileUser) {
+            console.error("Один з об'єктів користувача не визначений", { currentAuthUser, currentUser, profileUser });
             return;
         }
         
         const chatId = [currentAuthUser.uid, profileUser.uid].sort().join('_');
-        // --- КІНЕЦЬ ЗМІН ---
-
         const chatRef = doc(db, 'chats', chatId);
 
         const unreadCounts = {
@@ -117,19 +103,27 @@ const UserProfile = () => {
             [profileUser.uid]: 0
         };
 
+        // --- ПОЧАТОК ЗМІН: Додаємо значення за замовчуванням для полів ---
         const dataToCreate = {
             isGroup: false,
-            // --- ПОЧАТОК ЗМІН: Використовуємо UID з auth.currentUser ---
             participants: [currentAuthUser.uid, profileUser.uid],
             participantInfo: [
-                { uid: currentAuthUser.uid, displayName: currentUserDataFromContext.displayName, photoURL: currentUserDataFromContext.photoURL || null },
-                { uid: profileUser.uid, displayName: profileUser.displayName, photoURL: profileUser.photoURL || null }
+                { 
+                    uid: currentAuthUser.uid, 
+                    displayName: currentUser.displayName || "Користувач", // <-- ЗАХИСТ
+                    photoURL: currentUser.photoURL || null 
+                },
+                { 
+                    uid: profileUser.uid, 
+                    displayName: profileUser.displayName || "Користувач", // <-- ЗАХИСТ
+                    photoURL: profileUser.photoURL || null 
+                }
             ],
-            // --- КІНЕЦЬ ЗМІН ---
             lastMessage: null,
             lastUpdatedAt: serverTimestamp(),
             unreadCounts: unreadCounts, 
         };
+        // --- КІНЕЦЬ ЗМІН ---
 
         try {
             const chatSnap = await getDoc(chatRef);
