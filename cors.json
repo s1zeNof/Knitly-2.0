@@ -3,7 +3,8 @@
     "origin": [
       "http://localhost:3000",
       "http://192.168.0.113:3000",
-      "https://knitly-92828.web.app"
+      "https://knitly-92828.web.app",
+      "https://knitly-demo.vercel.app"
     ],
     "method": ["GET"],
     "maxAgeSeconds": 3600
