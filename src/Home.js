@@ -5,16 +5,16 @@ import { db } from './firebase';
 import { collection, getDocs, query, where, orderBy, limit } from 'firebase/firestore';
 import { getTagIllustration } from './config/tagConfig'; 
 
-// --- ПОЧАТОК ЗМІН ---
-// Імпортуємо новий компонент сайдбару
+// Компоненти, що вже були
 import LeftSidebar from './LeftSidebar'; 
-// --- КІНЕЦЬ ЗМІН ---
-
 import './Home.css';
 import default_picture from './img/Default-Images/default-picture.svg';
 
-// Іконки, що використовуються тільки в цьому файлі, залишаються. 
-// Решту видалено, бо вони тепер у LeftSidebar.js
+// <<< ДОДАНО: Імпортуємо нові компоненти для постів >>>
+import CreatePostForm from './components/posts/CreatePostForm';
+import Feed from './components/posts/Feed';
+
+
 const HomeLoader = () => ( <div className="home-loader-container"><div className="loader-spinner"></div></div> );
 
 const formatRelativeTime = (timestamp) => {
@@ -97,15 +97,29 @@ const Home = () => {
 
     return (
         <div className="home-container">
-            {/* --- ПОЧАТОК ЗМІН --- */}
-            {/* Використовуємо новий компонент, передаючи isOpen={true}, щоб він був завжди видимим */}
+            {/* Сайдбар залишається без змін */}
             <LeftSidebar isOpen={true} />
-            {/* --- КІНЕЦЬ ЗМІН --- */}
             
             <main className="main-content">
                 {loading ? <HomeLoader /> : (
                     <>
                         <h1 className="feed-title">Стрічка</h1>
+                        
+                        {/* <<< ПОЧАТОК ЗМІН: Вставляємо компоненти постів сюди >>> */}
+                        
+                        {/* Форма для створення нового допису */}
+                        <CreatePostForm />
+
+                        {/* Компонент, що завантажує та відображає стрічку дописів */}
+                        <Feed />
+
+                        {/* Розділювач, щоб візуально відокремити пости від рекомендацій */}
+                        <hr className="feed-divider" />
+                        
+                        {/* <<< КІНЕЦЬ ЗМІН >>> */}
+
+
+                        {/* Далі йде ваш існуючий контент головної сторінки */}
                         {newRelease && (
                              <div className="feed-card horizontal-card new-release-card animate-fade-in-up">
                                 <img src={newRelease.coverArtUrl || default_picture} alt={newRelease.title} />

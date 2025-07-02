@@ -6,14 +6,17 @@ import { useUserContext } from './UserContext';
 import TrackList from './TrackList';
 import PlaylistTab from './PlaylistTab';
 import LikedTracks from './LikedTracks';
+import Feed from './components/posts/Feed'; // <<< ДОДАНО ІМПОРТ
 
 import default_picture from './img/Default-Images/default-picture.svg';
 import verifiedIcon from './img/Profile-Settings/verified_icon-lg-bl.svg';
 import './Profile.css';
 
+// Іконки
 const MusicIcon = () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>;
 const FeedIcon = () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 6h16M4 12h16M4 18h16"/></svg>;
 const PlaylistIcon = () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M8 6h13"/><path d="M8 12h13"/><path d="M8 18h13"/><path d="M3 6h.01"/><path d="M3 12h.01"/><path d="M3 18h.01"/></svg>;
+
 
 const UserProfile = () => {
     const { userNickname } = useParams();
@@ -80,6 +83,13 @@ const UserProfile = () => {
                 setIsFollowing(true);
             }
             await refreshUser();
+            // Оновлюємо локальний стан, щоб лічильник оновився
+            setProfileUser(prev => ({
+                ...prev,
+                followers: isFollowing 
+                    ? prev.followers.filter(id => id !== currentUser.uid) 
+                    : [...(prev.followers || []), currentUser.uid]
+            }));
         } catch (error) {
             console.error('Помилка підписки/відписки:', error);
         } finally {
@@ -141,8 +151,11 @@ const UserProfile = () => {
                 );
             case 'playlists': 
                 return <PlaylistTab userId={profileUser.uid} />;
+            // <<< ПОЧАТОК ЗМІН >>>
             case 'feed': 
-                return <div className="page-profile-tab-placeholder">Стрічка цього користувача буде тут.</div>;
+                // Показуємо стрічку постів ТІЛЬКИ цього користувача
+                return <Feed userId={profileUser.uid} />;
+            // <<< КІНЕЦЬ ЗМІН >>>
             default: 
                 return null;
         }
@@ -185,6 +198,7 @@ const UserProfile = () => {
                 <div className="page-profile-tabs">
                     <button className={`page-profile-tab-button ${activeTab === 'music' ? 'active' : ''}`} onClick={() => setActiveTab('music')}><MusicIcon/> Музика</button>
                     <button className={`page-profile-tab-button ${activeTab === 'playlists' ? 'active' : ''}`} onClick={() => setActiveTab('playlists')}><PlaylistIcon/> Плейлисти</button>
+                    {/* <<< ДОДАНО КНОПКУ >>> */}
                     <button className={`page-profile-tab-button ${activeTab === 'feed' ? 'active' : ''}`} onClick={() => setActiveTab('feed')}><FeedIcon/> Стрічка</button>
                 </div>
                 <div className="page-profile-tab-content">

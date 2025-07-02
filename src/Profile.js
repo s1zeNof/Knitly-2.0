@@ -8,6 +8,10 @@ import TrackList from './TrackList';
 import LikedTracks from './LikedTracks';
 import PlaylistTab from './PlaylistTab';
 
+// <<< ДОДАНО ІМПОРТИ >>>
+import CreatePostForm from './components/posts/CreatePostForm';
+import Feed from './components/posts/Feed';
+
 import default_picture from './img/Default-Images/default-picture.svg';
 import verifiedIcon from './img/Profile-Settings/verified_icon-lg-bl.svg';
 import './Profile.css';
@@ -74,8 +78,18 @@ const Profile = () => {
                 return <PlaylistTab userId={currentUser.uid} />;
             case 'albums':
                 return <div className="page-profile-tab-placeholder">Ваші альбоми будуть відображатися тут.</div>;
+            // <<< ПОЧАТОК ЗМІН >>>
             case 'feed':
-                return <div className="page-profile-tab-placeholder">Стрічка активності з'явиться тут.</div>;
+                return (
+                    <div>
+                        {/* Форма створення допису видима тільки на власному профілі */}
+                        <CreatePostForm />
+                        <hr className="feed-divider" /> 
+                        {/* Стрічка з дописами ТІЛЬКИ поточного користувача */}
+                        <Feed userId={currentUser.uid} />
+                    </div>
+                );
+            // <<< КІНЕЦЬ ЗМІН >>>
             default:
                 return null;
         }
