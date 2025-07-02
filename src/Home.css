@@ -94,6 +94,13 @@ body.home-page-background {
 .trending-card:hover::after { background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.1) 60%); }
 .trending-card span { position: relative; z-index: 2; font-weight: 700; font-size: 1.1rem; color: white; }
 
+.feed-divider {
+    border: none;
+    height: 1px;
+    background-color: var(--color-border);
+    margin: 3rem 0; /* Відступи зверху та знизу */
+}
+
 /* --- Адаптивність --- */
 @media (max-width: 1200px) {
     .right-sidebar { display: none; }

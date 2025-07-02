@@ -30,6 +30,7 @@ import AdminPage from './AdminPage';
 import ArtistDashboard from './ArtistDashboard';
 
 import './App.css';
+import './components/posts/Post.css';
 
 const queryClient = new QueryClient();
 

@@ -1,0 +1,541 @@
+.create-post-form {
+    background-color: var(--color-bg-medium);
+    padding: 0.75rem;
+    border-radius: 0.75rem;
+    border: 1px solid var(--color-border);
+    margin-bottom: 2rem;
+}
+
+.create-post-form .form-header {
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+}
+
+.create-post-form .user-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.create-post-form .post-textarea {
+    flex-grow: 1;
+    background: none;
+    border: none;
+    outline: none;
+    color: var(--color-text-primary);
+    font-size: 1.1rem;
+    resize: none;
+    font-family: var(--font-main);
+    padding-top: 0.5rem;
+}
+.create-post-form .post-textarea::placeholder {
+    color: var(--color-text-placeholder);
+}
+
+.create-post-form .error-message {
+    color: var(--color-error);
+    font-size: 0.9rem;
+    margin: 0.5rem 0 0 64px; /* 48px avatar + 16px gap */
+}
+
+.create-post-form .form-footer {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 1rem;
+}
+
+/* Стилі для стрічки та карток */
+.feed-container {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.feed-loader, .feed-error {
+    text-align: center;
+    padding: 3rem;
+    color: var(--color-text-secondary);
+}
+
+.post-card {
+    background-color: var(--color-bg-medium);
+    border: 1px solid var(--color-border);
+    border-radius: 0.75rem;
+    padding: 0.75rem;
+    display: flex;
+    gap: 1rem;
+}
+
+.post-author-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0;
+}
+
+.post-content {
+    flex-grow: 1;
+}
+
+.post-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.post-author-name {
+    font-weight: 600;
+    color: var(--color-text-primary);
+}
+.post-author-name:hover {
+    text-decoration: underline;
+}
+
+.post-timestamp {
+    font-size: 0.9rem;
+    color: var(--color-text-secondary);
+}
+
+.post-text {
+    margin: 0 0 1rem 0;
+    line-height: 1.6;
+    white-space: pre-wrap; /* Зберігає переноси рядків */
+    word-wrap: break-word;
+}
+
+.post-actions {
+    display: flex;
+    gap: 1.5rem;
+}
+
+.post-action-button {
+    background: none;
+    border: none;
+    color: var(--color-text-secondary);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+.post-action-button:hover, .post-action-button.like:hover {
+    color: var(--color-accent);
+}
+
+.post-action-button svg {
+    width: 20px;
+    height: 20px;
+}
+
+/* Додайте це в кінець файлу Post.css */
+.post-action-button.like.liked,
+.post-action-button.like.liked:hover {
+    color: #ef4444; /* червоний колір для лайка */
+}
+
+.post-action-button.like.liked svg {
+    fill: #ef4444;
+}
+
+/* Секція коментарів */
+.comment-section {
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--color-border);
+
+    /*padding-left: 64px;  Відступ, що дорівнює ширині аватара (48px) + відступ (16px) */
+    box-sizing: border-box;
+}
+
+.comment-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.comment-item {
+    display: flex;
+    gap: 0.75rem;
+    align-items: flex-start;
+    position: relative;
+    z-index: 1;
+}
+
+.comment-author-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0;
+    margin-top: 0.25rem;
+    background-color: var(--color-bg-medium);
+}
+
+.comment-content {
+    background-color: var(--color-bg-light);
+    border-radius: 0.75rem;
+    padding: 0.75rem 1rem;
+    flex-grow: 1;
+}
+
+.comment-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.25rem;
+}
+
+.comment-author-name {
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+.comment-author-name:hover {
+    text-decoration: underline;
+}
+
+.comment-timestamp {
+    font-size: 0.8rem;
+    color: var(--color-text-secondary);
+}
+
+.comment-text {
+    margin: 0;
+    line-height: 1.5;
+    word-wrap: break-word;
+}
+
+/* Форма для нового коментаря */
+.comment-form {
+    display: flex;
+    gap: 0.75rem;
+    margin-top: 1rem;
+}
+
+.comment-input {
+    flex-grow: 1;
+    background-color: var(--color-bg-light);
+    border: 1px solid var(--color-border);
+    border-radius: 1.5rem;
+    padding: 0.75rem 1rem;
+    color: var(--color-text-primary);
+    outline: none;
+    font-size: 0.9rem;
+}
+.comment-input:focus {
+    border-color: var(--color-accent);
+}
+
+.comment-submit-button {
+    background-color: var(--color-accent);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    flex-shrink: 0;
+    cursor: pointer;
+    font-size: 1.2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.comment-submit-button:disabled {
+    background-color: var(--color-disabled);
+}
+
+.post-reactions-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 0.75rem;
+    padding-bottom: 0.75rem;
+}
+
+.reaction-badge {
+    display: flex;
+    align-items: center;
+    background-color: var(--color-bg-light);
+    border: 1px solid var(--color-border);
+    border-radius: 1rem;
+    padding: 4px 10px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    user-select: none;
+}
+
+.reaction-badge:hover {
+    transform: scale(1.08);
+    border-color: var(--color-accent);
+}
+
+.reaction-emoji {
+    font-size: 1rem;
+    margin-right: 0.3rem;
+    line-height: 1;
+}
+
+.reaction-emoji-custom {
+    width: 20px;
+    height: 20px;
+    object-fit: contain;
+    margin-right: 0.3rem;
+}
+
+.reaction-count {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--color-text-secondary);
+    line-height: 1;
+}
+
+.reaction-badge.user-reacted {
+    background-color: rgba(45, 223, 184, 0.2); /* Колір вашого акценту з прозорістю */
+    border-color: var(--color-accent);
+}
+
+.reaction-badge.user-reacted .reaction-count {
+    color: var(--color-text-primary);
+}
+
+/* Додайте це в кінець файлу Post.css */
+
+/* Меню опцій (...) */
+.comment-options-container, .post-options-container {
+    position: relative;
+    margin-left: auto;
+}
+
+.options-button {
+    background: none;
+    border: none;
+    color: var(--color-text-secondary);
+    cursor: pointer;
+    padding: 0.5rem;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+}
+.options-button:hover {
+    background-color: var(--color-bg-light);
+    color: var(--color-text-primary);
+}
+
+.options-menu-small {
+    position: absolute;
+    right: 0;
+    top: 100%;
+    background-color: var(--color-bg-light);
+    border: 1px solid var(--color-border);
+    border-radius: 0.5rem;
+    padding: 0.5rem;
+    z-index: 10;
+    width: 150px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+}
+
+.options-menu-small button {
+    display: block;
+    width: 100%;
+    background: none;
+    border: none;
+    color: var(--color-text-primary);
+    padding: 0.75rem 1rem;
+    text-align: left;
+    border-radius: 0.25rem;
+    cursor: pointer;
+    font-size: 0.9rem;
+}
+
+.options-menu-small button:hover {
+    background-color: var(--color-accent);
+}
+.options-menu-small button.option-delete:hover {
+    background-color: var(--color-error);
+}
+
+/* Форма редагування */
+.comment-edit-form {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+.comment-edit-textarea {
+    width: 100%;
+    background-color: var(--color-bg-deep); /* темніший фон для виділення */
+    border: 1px solid var(--color-accent);
+    border-radius: 0.5rem;
+    padding: 0.75rem 1rem;
+    color: var(--color-text-primary);
+    font-size: 1rem;
+    resize: vertical;
+    box-sizing: border-box;
+}
+.comment-edit-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.75rem;
+}
+.comment-edit-actions button {
+    background: none;
+    border: none;
+    font-weight: 600;
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+    cursor: pointer;
+}
+.comment-edit-actions button[type="button"] {
+    color: var(--color-text-secondary);
+}
+.comment-edit-actions button[type="submit"] {
+    background-color: var(--color-accent);
+    color: white;
+}
+
+.post-header {
+    /* Додаємо, щоб кнопка опцій не вилазила за межі */
+    position: relative;
+}
+
+
+/* Додайте це в кінець файлу Post.css */
+.comment-content-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    width: 100%;
+}
+
+.comment-bubble {
+    /* ... існуючі стилі ... */
+    max-width: 100%;
+}
+
+.comment-reactions-container {
+    display: flex;
+    flex-wrap: wrap;
+    width: fit-content;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+    padding-left: 5px; 
+}
+
+/* Додайте це в кінець файлу Post.css */
+
+.comment-footer {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-top: 0.5rem;
+    width: 100%;
+}
+
+.comment-reactions-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    flex-grow: 1; /* Займає вільне місце */
+}
+
+.comment-actions {
+    display: flex;
+    flex-shrink: 0; /* Не стискається */
+}
+
+.comment-action-btn {
+    background: none;
+    border: none;
+    color: var(--color-text-secondary);
+    cursor: pointer;
+    padding: 0.25rem;
+    display: flex;
+    align-items: center;
+    border-radius: 50%;
+    transition: color 0.2s, background-color 0.2s;
+}
+
+.comment-action-btn:hover {
+    color: var(--color-accent);
+    background-color: var(--color-bg-light);
+}
+
+.comment-action-btn svg {
+    width: 20px;
+    height: 20px;
+}
+
+
+
+
+/* Контейнер для "нитки", що об'єднує пост та коментарі */
+.post-thread-container {
+    position: relative;
+    width: 100%;
+}
+
+/* Основний контент поста (аватар + тіло) */
+.post-main-content {
+    display: flex;
+    gap: 1rem;
+    position: relative;
+}
+
+/* Створюємо початок нитки, що йде вниз від аватара поста */
+.post-main-content::after {
+    content: '';
+    position: absolute;
+    top: 48px; /* Починається одразу під аватаром поста */
+    bottom: 0;
+    left: 24px; /* По центру аватара (48px / 2) */
+    width: 2px;
+    background-color: var(--color-border);
+    z-index: 0;
+}
+
+/* Секція коментарів */
+.comment-section {
+    padding-left: 7.5px; 
+    box-sizing: border-box;
+    margin-top: 1rem;
+}
+
+/* Окремий елемент коментаря всередині контейнера "нитки" */
+.comment-thread-item {
+    position: relative;
+    padding: 1rem 0;
+}
+
+/* Створення самої "нитки" за допомогою SVG-фону */
+.comment-thread-item::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 16px; /* Позиціонується по центру аватара коментаря (32px / 2) */
+    width: 2px;
+    z-index: 0;
+
+    /* НОВИЙ SVG: Цей SVG довший (100px) і має більше точок,
+      що створює більш "нерівний" та природний вигляд.
+      Колір #3f3f46 взято з вашої змінної --color-border.
+    */
+    background-image: url("data:image/svg+xml,%3Csvg width='2' height='100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M 1 0 C 3 10, -1 15, 1 25 C 3 35, -1 40, 1 50 C 3 60, -1 65, 1 75 C 3 85, -1 90, 1 100' stroke='%233f3f46' fill='none' stroke-width='1.2' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat: repeat-y;
+}
+
+/* Це потрібно, щоб контент коментаря був вище за "нитку" */
+.comment-item {
+    position: relative;
+    z-index: 1;
+}
+
+/* Аватар коментаря тепер має фон, щоб перекривати "нитку" */
+.comment-author-avatar {
+    background-color: var(--color-bg-medium);
+}
