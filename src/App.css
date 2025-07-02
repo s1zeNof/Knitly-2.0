@@ -24,12 +24,11 @@
   --header-height: 70px;
 }
 
-/* --- ПОЧАТОК КЛЮЧОВИХ ЗМІН --- */
 html, body, #root {
   height: 100%;
   margin: 0;
   padding: 0;
-  overflow: hidden; /* Забороняємо скрол на рівні сторінки */
+  overflow: hidden;
 }
 
 body {
@@ -58,10 +57,10 @@ body {
     position: relative;
 }
 
-/* --- НОВІ СТИЛІ ДЛЯ АДАПТИВНОГО ВІДСТУПУ --- */
+/* --- ГЛОБАЛЬНИЙ ВІДСТУП ДЛЯ АДАПТИВУ --- */
 @media (max-width: 768px) {
-    /* Додаємо відступ знизу для основного контенту, щоб він не перекривався нижньою панеллю навігації */
-    .app-main-content, .dashboard-container, .page-profile-container {
+    .app-main-content, .dashboard-container, .page-profile-container, .playlist-page-container {
+        /* Додаємо відступ знизу, щоб контент не перекривався нижньою панеллю навігації */
         padding-bottom: 100px; /* Висота BottomNavBar (70px) + запас (30px) */
     }
 
@@ -71,8 +70,14 @@ body {
     body.player-visible-mobile .page-profile-container {
         padding-bottom: 170px; /* 70px (навбар) + 70px (плеєр) + 30px (запас) */
     }
+
+    /* --- ПОЧАТОК ЗМІН: Виправляємо баг з зайвим відступом у чаті --- */
+    /* Коли ми знаходимось у чаті, нижня панель ховається, тому відступ не потрібен */
+    body.in-chat-view .app-main-content {
+        padding-bottom: 0;
+    }
+    /* --- КІНЕЦЬ ЗМІН --- */
 }
-/* --- КІНЕЦЬ НОВИХ СТИЛІВ --- */
 
 a {
     color: inherit;
