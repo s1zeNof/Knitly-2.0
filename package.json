@@ -11,7 +11,7 @@
     "emoji-picker-react": "^4.5.16",
     "firebase": "^10.7.0",
     "firebase-admin": "^11.11.1",
-    "framer-motion": "^12.20.1",
+    "framer-motion": "^12.23.0",
     "lottie-react": "^2.4.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",

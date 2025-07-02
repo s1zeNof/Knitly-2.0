@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 import { db } from './firebase';
 import { doc, getDoc, collection, query, where, documentId, getDocs, updateDoc } from 'firebase/firestore';
 import { usePlayerContext } from './PlayerContext';
@@ -10,7 +10,6 @@ import './PlaylistPage.css';
 // Іконки
 const PlayIcon = () => <svg height="24" width="24" viewBox="0 0 24 24"><path fill="currentColor" d="M8 5v14l11-7z"></path></svg>;
 const OptionsIcon = () => <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="2"></circle><circle cx="19" cy="12" r="2"></circle><circle cx="5" cy="12" r="2"></circle></svg>;
-// Нова іконка для кастомізації
 const CustomizeIcon = () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>;
 
 
@@ -23,12 +22,43 @@ const PlaylistPage = () => {
     const [loading, setLoading] = useState(true);
     const [showOptionsMenu, setShowOptionsMenu] = useState(false);
     const optionsMenuRef = useRef(null);
-
-    // Нові стани для кастомізації
     const [showCustomizePanel, setShowCustomizePanel] = useState(false);
     const [selectedGradient, setSelectedGradient] = useState('gradient-default');
     const [isSavingStyle, setIsSavingStyle] = useState(false);
 
+    // --- ПОЧАТОК ЗМІН: Проста і надійна логіка ---
+    const [isStickyHeaderVisible, setIsStickyHeaderVisible] = useState(false);
+    const heroHeaderRef = useRef(null); // Ref на великий хедер
+
+    useEffect(() => {
+        if (loading) return; 
+
+        // Спостерігаємо за великим хедером
+        const observer = new IntersectionObserver(
+            ([entry]) => {
+                // Коли великий хедер повністю зникає з екрану (isIntersecting: false),
+                // ми робимо "липкий" хедер видимим.
+                setIsStickyHeaderVisible(!entry.isIntersecting);
+            },
+            { 
+                root: null,
+                // `rootMargin` змушує обсервер спрацювати, коли хедер ховається під головну навігацію
+                rootMargin: `-70px 0px 0px 0px`,
+                threshold: 0 
+            }
+        );
+
+        if (heroHeaderRef.current) {
+            observer.observe(heroHeaderRef.current);
+        }
+
+        return () => {
+            if (heroHeaderRef.current) {
+                observer.unobserve(heroHeaderRef.current);
+            }
+        };
+    }, [loading]);
+    // --- КІНЕЦЬ ЗМІН ---
 
     useEffect(() => {
         const fetchPlaylistData = async () => {
@@ -41,8 +71,6 @@ const PlaylistPage = () => {
                 if (playlistSnap.exists()) {
                     const playlistData = { id: playlistSnap.id, ...playlistSnap.data() };
                     setPlaylist(playlistData);
-
-                    // Встановлюємо збережений стиль або стиль за замовчуванням
                     if (playlistData.customization?.gradient) {
                         setSelectedGradient(playlistData.customization.gradient);
                     }
@@ -53,16 +81,9 @@ const PlaylistPage = () => {
                         for (let i = 0; i < trackIds.length; i += 10) {
                             chunks.push(trackIds.slice(i, i + 10));
                         }
-                        
-                        const trackPromises = chunks.map(chunk => 
-                            getDocs(query(collection(db, 'tracks'), where(documentId(), 'in', chunk)))
-                        );
-
+                        const trackPromises = chunks.map(chunk => getDocs(query(collection(db, 'tracks'), where(documentId(), 'in', chunk))));
                         const trackSnapshots = await Promise.all(trackPromises);
-                        const tracksData = trackSnapshots.flatMap(snapshot => 
-                            snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }))
-                        );
-                        
+                        const tracksData = trackSnapshots.flatMap(snapshot => snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
                         setTracks(tracksData);
                     }
                 } else {
@@ -79,9 +100,7 @@ const PlaylistPage = () => {
 
     useEffect(() => {
         const handleClickOutside = (event) => {
-            if (optionsMenuRef.current && !optionsMenuRef.current.contains(event.target)) {
-                setShowOptionsMenu(false);
-            }
+            if (optionsMenuRef.current && !optionsMenuRef.current.contains(event.target)) setShowOptionsMenu(false);
         };
         document.addEventListener("mousedown", handleClickOutside);
         return () => document.removeEventListener("mousedown", handleClickOutside);
@@ -89,8 +108,7 @@ const PlaylistPage = () => {
     
     const playAllTracks = () => {
         if(tracks.length > 0){
-            handlePlayPause(tracks[0]);
-            tracks.slice(1).forEach(track => addToQueue(track));
+            handlePlayPause(tracks[0], tracks);
         }
     }
 
@@ -99,9 +117,7 @@ const PlaylistPage = () => {
         setIsSavingStyle(true);
         try {
             const playlistRef = doc(db, "playlists", playlist.id);
-            await updateDoc(playlistRef, {
-                "customization.gradient": selectedGradient
-            });
+            await updateDoc(playlistRef, { "customization.gradient": selectedGradient });
             showNotification("Стиль плейлиста оновлено!", "info");
             setShowCustomizePanel(false);
         } catch (error) {
@@ -120,7 +136,13 @@ const PlaylistPage = () => {
 
     return (
         <div className={`playlist-page-container ${selectedGradient}`}>
-            <header className="playlist-header">
+            <div className={`sticky-playlist-header ${isStickyHeaderVisible ? 'visible' : ''}`}>
+                <img src={playlist.coverArtUrl || 'https://placehold.co/40x40/181818/333333?text=K'} alt={playlist.title} />
+                <h3>{playlist.title}</h3>
+                <button className="sticky-play-button" onClick={playAllTracks}><PlayIcon /></button>
+            </div>
+            
+            <header className="playlist-header" ref={heroHeaderRef}>
                 <div className="playlist-cover-art">
                     {playlist.coverArtUrl ? (
                         <img src={playlist.coverArtUrl} alt={playlist.title} />
@@ -141,7 +163,6 @@ const PlaylistPage = () => {
                 <button className="playlist-play-button" onClick={playAllTracks}>
                     <PlayIcon />
                 </button>
-                {/* --- Нова кнопка поруч із трьома крапками --- */}
                 {isOwner && (
                     <button className="playlist-options-button" onClick={() => setShowCustomizePanel(true)}>
                         <CustomizeIcon />
@@ -171,7 +192,6 @@ const PlaylistPage = () => {
                 <TrackList initialTracks={tracks} />
             </main>
             
-            {/* Панель кастомізації */}
             {showCustomizePanel && (
                 <div className="customize-panel">
                     <div className="customize-panel-header">
@@ -189,7 +209,6 @@ const PlaylistPage = () => {
                                 />
                             ))}
                         </div>
-                        {/* Тут буде секція для ефектів */}
                     </div>
                     <div className="customize-panel-footer">
                         <button className="button-primary" onClick={handleSaveStyle} disabled={isSavingStyle}>

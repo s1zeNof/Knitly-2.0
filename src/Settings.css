@@ -1,17 +1,51 @@
 .settings-page-container {
     max-width: 1440px;
     margin: 0 auto;
-    padding: 2rem 4rem;
+    padding: 0 4rem; /* Прибираємо вертикальний padding, він тепер у хедера */
+    height: 100%; /* Важливо для роботи скрол-контейнера */
+    overflow-y: auto; /* Додаємо скрол до основного контейнера */
+}
+.settings-page-header {
+    /* --- ПОЧАТОК ЗМІН: Стилі для "липкого" хедера --- */
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background-color: var(--color-bg-deep);
+    padding: 2.5rem 0 1.5rem 0;
+    margin: 0 -4rem; /* Компенсуємо padding батьківського елемента */
+    padding-left: 4rem;
+    padding-right: 4rem;
+    border-bottom: 1px solid var(--color-border);
+    transition: padding 0.3s ease, background-color 0.3s ease, backdrop-filter 0.3s ease;
+}
+.settings-page-header.shrunk {
+    padding-top: 1rem;
+    padding-bottom: 1rem;
+    background-color: rgba(18, 18, 18, 0.85);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
 }
 .settings-page-header h1 {
     font-size: 2.5rem;
     font-weight: 700;
-    margin: 0 0 2rem 0;
+    margin: 0;
+    transition: font-size 0.3s ease;
 }
+.settings-page-header.shrunk h1 {
+    font-size: 1.5rem;
+}
+.header-scroll-trigger {
+    /* Цей елемент невидимий і слугує точкою, при перетині якої спрацьовує анімація */
+    height: 1px;
+    width: 100%;
+}
+/* --- КІНЕЦЬ ЗМІН --- */
+
 .settings-layout {
     display: grid;
     grid-template-columns: 280px 1fr;
     gap: 3rem;
+    margin-top: 2rem; /* Додаємо відступ, щоб контент не заїжджав під хедер */
 }
 .settings-sidebar {
     display: flex;
@@ -251,7 +285,6 @@ input:checked + .slider:before { transform: translateX(22px); }
     padding: 3rem;
 }
 
-/* --- СТИЛІ ДЛЯ ВКЛАДКИ КАСТОМІЗАЦІЇ ЧАТІВ --- */
 .form-section-description {
     color: var(--color-text-secondary);
     font-size: 0.9rem;
@@ -284,15 +317,12 @@ input:checked + .slider:before { transform: translateX(22px); }
     cursor: pointer;
 }
 
-/* ... (існуючі стилі) ... */
-
 .animation-preview {
     padding: 0.5rem 1rem;
     border-radius: 1rem;
     background-color: var(--color-accent);
     color: white;
     font-weight: 600;
-    /* transition видаляємо, щоб анімація не конфліктувала */
     animation-duration: 0.6s;
     animation-fill-mode: forwards;
     animation-play-state: paused;
@@ -307,19 +337,10 @@ input:checked + .slider:before { transform: translateX(22px); }
     outline: 2px solid var(--color-accent);
 }
 
-/* Прив'язуємо анімації до прев'ю */
 .animation-preview.animation-vortex-out { animation-name: vortex-out; }
 .animation-preview.animation-fall-out { animation-name: fall-out; }
 .animation-preview.animation-pixelate-out { animation-name: pixelate-out; }
 .animation-preview.animation-blur-out { animation-name: blurOut; }
-
-.animation-preview-wrapper:hover .animation-preview:not(.active) {
-    animation-play-state: running; /* Запускаємо анімацію при ховері, якщо не активна */
-}
-
-.animation-preview.active {
-    outline: 2px solid var(--color-accent);
-}
 
 .animation-option label {
     display: flex;
@@ -333,6 +354,14 @@ input:checked + .slider:before { transform: translateX(22px); }
 }
 
 @media (max-width: 900px) {
+    .settings-page-container {
+        padding: 0 1rem; /* Адаптивний padding для мобільних */
+    }
+    .settings-page-header {
+        margin: 0 -1rem; /* Компенсація */
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
     .settings-layout {
         grid-template-columns: 1fr;
     }
@@ -346,10 +375,8 @@ input:checked + .slider:before { transform: translateX(22px); }
     .settings-sidebar button {
         flex-shrink: 0;
     }
-    .settings-page-container {
-        padding: 1.5rem 1rem 8rem;
-    }
 }
+
 @media (max-width: 600px) {
     .form-row, .image-uploaders-container {
         grid-template-columns: 1fr;

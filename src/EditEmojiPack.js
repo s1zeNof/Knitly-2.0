@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { db, storage } from './firebase';
 import { doc, getDoc, collection, getDocs, writeBatch, updateDoc, deleteDoc } from 'firebase/firestore';
@@ -13,7 +13,6 @@ const UploadIcon = () => <svg className="upload-icon" fill="none" stroke="curren
 const RemoveIcon = () => <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.47 2 2 6.47 2 12s4.47 10 10 10 10-4.47 10-10S17.53 2 12 2zm5 13.59L15.59 17 12 13.41 8.41 17 7 15.59 10.59 12 7 8.41 8.41 7 12 10.59 15.59 7 17 8.41 13.41 12 17 15.59z"/></svg>;
 
 const LottieEmoji = React.memo(({ animationData, path }) => {
-    // Рендеримо тільки якщо є дані
     if (!animationData && !path) return <div className="emoji-preview-loader" />;
     return <Lottie animationData={animationData} path={path} autoplay={true} loop={true} style={{ width: '100%', height: '100%' }} />;
 });
@@ -31,13 +30,32 @@ const EditEmojiPack = () => {
     const [existingEmojis, setExistingEmojis] = useState([]);
     const [newEmojiPreviews, setNewEmojiPreviews] = useState([]);
     const [emojisToDelete, setEmojisToDelete] = useState([]);
-    
-    // --- НОВИЙ СТАН ДЛЯ ЗБЕРІГАННЯ ДАНИХ ІСНУЮЧИХ АНІМАЦІЙ ---
     const [existingLottieData, setExistingLottieData] = useState({});
-
     const [isLoading, setIsLoading] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
     const [showDeleteModal, setShowDeleteModal] = useState(false);
+
+    // --- ПОЧАТОК ЗМІН: Логіка для анімації хедера ---
+    const [isHeaderShrunk, setIsHeaderShrunk] = useState(false);
+    const scrollContainerRef = useRef(null);
+    const headerTriggerRef = useRef(null);
+
+    useEffect(() => {
+        const scrollContainer = scrollContainerRef.current;
+        const trigger = headerTriggerRef.current;
+        if (!scrollContainer || !trigger) return;
+
+        const observer = new IntersectionObserver(
+            ([entry]) => {
+                setIsHeaderShrunk(!entry.isIntersecting);
+            },
+            { root: scrollContainer, threshold: 0 }
+        );
+
+        observer.observe(trigger);
+        return () => observer.disconnect();
+    }, [isLoading]); // Перезапускаємо спостерігач після завантаження даних
+    // --- КІНЕЦЬ ЗМІН ---
 
     useEffect(() => {
         if (!user || !packId) return;
@@ -59,7 +77,6 @@ const EditEmojiPack = () => {
                     const emojis = emojisSnap.docs.map(d => ({ id: d.id, ...d.data() }));
                     setExistingEmojis(emojis);
                     
-                    // --- ВИПРАВЛЕННЯ: Завантажуємо дані Lottie для існуючих емоджі ---
                     if (packData.isAnimated) {
                         const lottieFetches = emojis.map(emoji =>
                             fetch(emoji.url)
@@ -72,9 +89,7 @@ const EditEmojiPack = () => {
                         );
                         const fetchedLottieData = await Promise.all(lottieFetches);
                         const lottieDataMap = fetchedLottieData.reduce((acc, current) => {
-                            if (current) {
-                                acc[current.id] = current.data;
-                            }
+                            if (current) acc[current.id] = current.data;
                             return acc;
                         }, {});
                         setExistingLottieData(lottieDataMap);
@@ -93,7 +108,7 @@ const EditEmojiPack = () => {
         fetchPackData();
     }, [packId, user, navigate, showNotification]);
 
-    // ... (решта коду залишається без змін)
+    // ...решта функцій-обробників без змін...
     const handleCoverChange = (e) => {
         const file = e.target.files?.[0];
         if (file) {
@@ -108,39 +123,30 @@ const EditEmojiPack = () => {
     const handleNewEmojisChange = (e) => {
         const files = Array.from(e.target.files);
         if (files.length === 0 || !pack) return;
-
-        const filePromises = files.map(file => {
-            return new Promise((resolve, reject) => {
-                const reader = new FileReader();
-                reader.onload = (event) => {
-                    try {
-                        if (pack.isAnimated) {
-                            if (!file.name.toLowerCase().endsWith('.json')) return reject(new Error(`Файл "${file.name}" не є .json!`));
-                            const data = JSON.parse(event.target.result);
-                            resolve({ file, data });
-                        } else {
-                            const data = URL.createObjectURL(file);
-                            resolve({ file, data });
-                        }
-                    } catch (error) { reject(new Error(`Помилка читання файлу: ${file.name}`)); }
-                };
-                reader.onerror = () => reject(new Error(`Не вдалося прочитати файл: ${file.name}`));
-                if (pack.isAnimated) reader.readAsText(file); else reader.readAsDataURL(file);
-            });
-        });
-
-        Promise.all(filePromises)
-            .then(previews => setNewEmojiPreviews(current => [...current, ...previews]))
-            .catch(err => showNotification(err.message, 'error'));
-
+        const filePromises = files.map(file => new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                try {
+                    if (pack.isAnimated) {
+                        if (!file.name.toLowerCase().endsWith('.json')) return reject(new Error(`Файл "${file.name}" не є .json!`));
+                        const data = JSON.parse(event.target.result);
+                        resolve({ file, data });
+                    } else {
+                        const data = URL.createObjectURL(file);
+                        resolve({ file, data });
+                    }
+                } catch (error) { reject(new Error(`Помилка читання файлу: ${file.name}`)); }
+            };
+            reader.onerror = () => reject(new Error(`Не вдалося прочитати файл: ${file.name}`));
+            if (pack.isAnimated) reader.readAsText(file); else reader.readAsDataURL(file);
+        }));
+        Promise.all(filePromises).then(previews => setNewEmojiPreviews(current => [...current, ...previews])).catch(err => showNotification(err.message, 'error'));
         if (e.target) e.target.value = null;
     };
 
     const removeNewEmojiPreview = (indexToRemove) => {
         const preview = newEmojiPreviews?.[indexToRemove];
-        if (!pack?.isAnimated && preview?.data?.startsWith('blob:')) {
-            URL.revokeObjectURL(preview.data);
-        }
+        if (!pack?.isAnimated && preview?.data?.startsWith('blob:')) URL.revokeObjectURL(preview.data);
         setNewEmojiPreviews(p => p.filter((_, index) => index !== indexToRemove));
     };
 
@@ -158,9 +164,7 @@ const EditEmojiPack = () => {
                 await uploadBytes(newCoverRef, coverFile);
                 newCoverUrl = await getDownloadURL(newCoverRef);
             }
-            if (packName !== pack?.name || newCoverUrl !== pack?.coverEmojiUrl) {
-                await updateDoc(packRef, { name: packName, coverEmojiUrl: newCoverUrl });
-            }
+            if (packName !== pack?.name || newCoverUrl !== pack?.coverEmojiUrl) await updateDoc(packRef, { name: packName, coverEmojiUrl: newCoverUrl });
             for (const emojiId of emojisToDelete) {
                 const emojiToDelete = existingEmojis.find(e => e.id === emojiId);
                 if (emojiToDelete) {
@@ -217,13 +221,14 @@ const EditEmojiPack = () => {
     if (isLoading || !pack) return <div className="edit-pack-page"><p className="loading-text">Завантаження редактора...</p></div>;
 
     return (
-        <div className="edit-pack-page">
-            <div className="edit-pack-container">
-                <header className="edit-pack-header">
-                    <Link to="/settings" className="back-link">← Назад до налаштувань</Link>
-                    <h1>Редагувати пак</h1>
-                </header>
+        <div ref={scrollContainerRef} className="edit-pack-page">
+            <header className={`edit-pack-header ${isHeaderShrunk ? 'shrunk' : ''}`}>
+                <Link to="/settings/emoji-packs" className="back-link">← Мої паки</Link>
+                <h1>Редагувати пак</h1>
+            </header>
+            <div ref={headerTriggerRef} className="header-scroll-trigger"></div>
 
+            <div className="edit-pack-container">
                 <div className="edit-form-grid">
                     <div className="edit-form-column">
                         <div className="form-group">
@@ -252,7 +257,6 @@ const EditEmojiPack = () => {
                         {existingEmojis.map(emoji => (
                             <div key={emoji.id} className={`emoji-item ${emojisToDelete.includes(emoji.id) ? 'marked-for-deletion' : ''}`}>
                                 <div className="emoji-preview">
-                                    {/* --- ВИПРАВЛЕННЯ: Використовуємо animationData для існуючих Lottie --- */}
                                     {pack.isAnimated ? <LottieEmoji animationData={existingLottieData[emoji.id]} /> : <img src={emoji.url} alt={emoji.name} />}
                                 </div>
                                 <span className="emoji-name" title={emoji.name}>{emoji.name}</span>
@@ -290,7 +294,7 @@ const EditEmojiPack = () => {
                 isOpen={showDeleteModal}
                 onClose={() => setShowDeleteModal(false)}
                 onConfirm={handleDeletePack}
-                title="Видалити пак?"
+                title={`Видалити пак "${pack?.name}"?`}
                 message={`Ви впевнені, що хочете назавжди видалити пак "${pack?.name}"? Цю дію неможливо буде скасувати.`}
                 confirmText="Так, видалити"
             />

@@ -12,7 +12,7 @@ import EmojiPacksSettings from './EmojiPacksSettings';
 import WalletTab from './WalletTab';
 import './Settings.css';
 
-// Icons
+// Іконки (без змін)
 const UserIcon = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>;
 const PrivacyIcon = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>;
 const FolderIcon = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>;
@@ -45,6 +45,28 @@ const Settings = () => {
     const [deleteAnimation, setDeleteAnimation] = useState('animation-vortex-out');
     const previewRefs = useRef({});
 
+    // --- ПОЧАТОК ЗМІН: Логіка для анімації хедера ---
+    const [isHeaderShrunk, setIsHeaderShrunk] = useState(false);
+    const scrollContainerRef = useRef(null);
+    const headerTriggerRef = useRef(null);
+
+    useEffect(() => {
+        const scrollContainer = scrollContainerRef.current;
+        const trigger = headerTriggerRef.current;
+        if (!scrollContainer || !trigger) return;
+
+        const observer = new IntersectionObserver(
+            ([entry]) => {
+                setIsHeaderShrunk(!entry.isIntersecting);
+            },
+            { root: null, threshold: 0 } // root: null означає, що viewport - це сам екран
+        );
+
+        observer.observe(trigger);
+        return () => observer.disconnect();
+    }, []);
+    // --- КІНЕЦЬ ЗМІН ---
+
     useEffect(() => {
         const countryOptions = Country.getAllCountries().map(c => ({ value: c.isoCode, label: c.name }));
         setCountries(countryOptions);
@@ -69,6 +91,7 @@ const Settings = () => {
         }
     }, [user]);
     
+    // ...решта useEffect без змін...
     useEffect(() => {
         if (user && user.chatFolders) {
             const sortedFolders = [...user.chatFolders].sort((a, b) => a.order - b.order);
@@ -86,6 +109,7 @@ const Settings = () => {
         return () => document.removeEventListener("mousedown", handleClickOutside);
     }, []);
 
+    // ...решта функцій-обробників без змін...
     const handleCountryChange = (countryOption) => {
         setSelectedCountry(countryOption);
         const cityOptions = City.getCitiesOfCountry(countryOption.value)?.map(c => ({ value: c.name, label: c.name })) || [];
@@ -201,6 +225,7 @@ const Settings = () => {
         }
     };
     
+    // ...решта функцій-рендерів без змін...
     const renderProfileTab = () => (
         <div className="settings-tab-content">
             <div className="form-section">
@@ -344,10 +369,12 @@ const Settings = () => {
     };
 
     return (
-        <div className="settings-page-container">
-            <header className="settings-page-header">
+        <div ref={scrollContainerRef} className="settings-page-container">
+            <header className={`settings-page-header ${isHeaderShrunk ? 'shrunk' : ''}`}>
                 <h1>Налаштування</h1>
             </header>
+            <div ref={headerTriggerRef} className="header-scroll-trigger"></div>
+            
             <div className="settings-layout">
                 <aside className="settings-sidebar">
                     <button className={activeTab === 'profile' ? 'active' : ''} onClick={() => setActiveTab('profile')}><UserIcon /> Профіль</button>
@@ -385,19 +412,10 @@ const Settings = () => {
 };
 
 const customSelectStyles = {
-    control: (provided) => ({
-        ...provided, backgroundColor: 'var(--color-bg-light)', border: '1px solid var(--color-border)',
-        borderRadius: '0.5rem', padding: '0.35rem', boxShadow: 'none', '&:hover': { borderColor: 'var(--color-accent)' }
-    }),
+    control: (provided) => ({ ...provided, backgroundColor: 'var(--color-bg-light)', border: '1px solid var(--color-border)', borderRadius: '0.5rem', padding: '0.35rem', boxShadow: 'none', '&:hover': { borderColor: 'var(--color-accent)' } }),
     singleValue: (provided) => ({ ...provided, color: 'var(--color-text-primary)' }),
-    menu: (provided) => ({
-        ...provided, backgroundColor: 'var(--color-bg-light)', border: '1px solid var(--color-border)',
-    }),
-    option: (provided, state) => ({
-        ...provided,
-        backgroundColor: state.isSelected ? 'var(--color-accent)' : state.isFocused ? 'var(--color-border)' : 'transparent',
-        '&:active': { backgroundColor: 'var(--color-accent)' }, cursor: 'pointer',
-    }),
+    menu: (provided) => ({ ...provided, backgroundColor: 'var(--color-bg-light)', border: '1px solid var(--color-border)', }),
+    option: (provided, state) => ({ ...provided, backgroundColor: state.isSelected ? 'var(--color-accent)' : state.isFocused ? 'var(--color-border)' : 'transparent', '&:active': { backgroundColor: 'var(--color-accent)' }, cursor: 'pointer', }),
     input: (provided) => ({ ...provided, color: 'var(--color-text-primary)' }),
     placeholder: (provided) => ({ ...provided, color: 'var(--color-text-placeholder)' }),
 };

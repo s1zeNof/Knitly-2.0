@@ -1,38 +1,91 @@
 .edit-pack-page {
-    padding: 1rem;
+    padding: 0 1rem;
     max-width: 800px;
     margin: 0 auto;
+    height: 100%;
+    overflow-y: auto;
 }
-.edit-pack-container {
-    background-color: var(--color-bg-dark);
-    padding: 2rem;
-    border-radius: 1rem;
-}
+
 .edit-pack-header {
     display: flex;
-    justify-content: space-between;
+    justify-content: center; /* Центруємо заголовок по горизонталі */
     align-items: center;
-    margin-bottom: 2rem;
-    position: relative;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background-color: var(--color-bg-deep);
+    padding: 1.5rem 0;
+    border-bottom: 1px solid var(--color-border);
+    transition: padding 0.3s ease, background-color 0.3s ease, backdrop-filter 0.3s ease;
 }
+
+.edit-pack-header.shrunk {
+    padding-top: 0rem;
+    padding-bottom: 1rem;
+    background-color: rgba(18, 18, 18, 0.85);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}
+
 .edit-pack-header h1 {
     text-align: center;
-    flex-grow: 1;
+    font-size: 1.75rem;
+    margin: 0;
+    transition: font-size 0.3s ease;
 }
+
+.edit-pack-header.shrunk h1 {
+    font-size: 1.25rem;
+}
+
 .back-link {
     position: absolute;
-    left: 0;
+    left: 1rem; /* Відступ від краю */
+    top: 50%;
+    transform: translateY(-50%);
     text-decoration: none;
     color: var(--color-text-secondary);
     font-size: 0.9rem;
+    transition: opacity 0.3s ease;
 }
+
+.edit-pack-header.shrunk .back-link {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.header-scroll-trigger {
+    height: 1px;
+    width: 100%;
+}
+
+.edit-pack-container {
+    background-color: var(--color-bg-medium);
+    padding: 2rem;
+    border-radius: 1rem;
+    margin-top: 1rem;
+    border: 1px solid var(--color-border);
+}
+
+.edit-form-grid {
+    display: flex;
+    gap: 2.5rem;
+    margin-bottom: 2rem;
+    align-items: flex-start;
+}
+
+.edit-form-column {
+    flex: 1;
+}
+
 .emojis-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
     gap: 1rem;
 }
+
 .emoji-item {
-    background-color: var(--color-bg-medium);
+    background-color: var(--color-bg-light);
     border-radius: 0.5rem;
     padding: 0.5rem;
     display: flex;
@@ -40,10 +93,25 @@
     align-items: center;
     gap: 0.5rem;
     position: relative;
+    border: 1px solid var(--color-border);
 }
+
 .emoji-item.new {
-    opacity: 0.7;
+    border-style: dashed;
 }
+
+.emoji-item.marked-for-deletion {
+    opacity: 0.5;
+    border-color: var(--color-error);
+}
+.emoji-item.marked-for-deletion .remove-btn {
+    color: #f7baba;
+    background-color: var(--color-error);
+    opacity: 1;
+    transform: scale(1) rotate(45deg);
+}
+
+
 .emoji-preview {
     width: 64px;
     height: 64px;
@@ -51,69 +119,162 @@
     align-items: center;
     justify-content: center;
 }
-.emoji-preview img, .emoji-preview > div { /* Target Lottie wrapper */
+
+.emoji-preview img, .emoji-preview > div {
     width: 100%;
     height: 100%;
     object-fit: contain;
 }
+
 .emoji-name {
     font-size: 0.75rem;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
     max-width: 100%;
+    color: var(--color-text-secondary);
 }
+
 .remove-btn {
     position: absolute;
     top: -8px;
     right: -8px;
-    background: none;
-    border: none;
+    background: var(--color-bg-light);
+    border: 1px solid var(--color-border);
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     cursor: pointer;
-    color: #ff4d4d;
+    color: var(--color-text-secondary);
+    transition: all 0.2s ease;
 }
+
+.emoji-item:hover .remove-btn {
+    transform: scale(1.1);
+    color: var(--color-error);
+    border-color: var(--color-error);
+}
+
 .remove-btn svg {
-    width: 20px;
-    height: 20px;
+    width: 18px;
+    height: 18px;
 }
+
 .add-emoji-btn {
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    border: 2px dashed var(--color-border);
+    border: 2px dashed var(--color-border-dashed);
     border-radius: 0.5rem;
     cursor: pointer;
     color: var(--color-text-secondary);
-    min-height: 110px;
+    min-height: 122px;
+    transition: all 0.2s;
 }
+
 .add-emoji-btn:hover {
     border-color: var(--color-accent);
     color: var(--color-accent);
 }
+
 .add-emoji-btn input[type="file"] {
     display: none;
 }
+
 .add-emoji-btn .upload-icon {
     width: 32px;
     height: 32px;
 }
+
 .edit-pack-footer {
     display: flex;
     justify-content: space-between;
+    align-items: center;
     margin-top: 2rem;
     padding-top: 1.5rem;
     border-top: 1px solid var(--color-border);
 }
 
-.file-dropzone.cover {
-    width: 120px;
-    height: 120px;
-    border-radius: 0.75rem;
+.button-danger {
+    padding: 0.75rem 1.5rem;
+    border: 1px solid var(--color-error);
+    color: var(--color-error);
+    background: none;
+    border-radius: 0.5rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s, color 0.2s;
 }
-.preview-image {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    border-radius: 0.75rem;
+.button-danger:hover {
+    background-color: var(--color-error);
+    color: white;
+}
+.button-danger:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.form-group, .file-dropzone, .form-input, .pack-type-indicator {
+    margin-bottom: 1rem;
+}
+
+.form-label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+}
+
+/* Адаптивність */
+
+@media (max-width: 600px) {
+    .edit-pack-page {
+        padding: 0 1rem 4rem 1rem;
+    }
+    
+    /* --- ПОЧАТОК ЗМІН --- */
+    .edit-pack-header {
+        display: flex;
+        grid-template-columns: 1fr auto 1fr;
+        padding-left: 1rem;
+        padding-right: 1rem;
+        margin: 0 -1rem;
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .edit-pack-header .back-link {
+        position: static; /* Повертаємо в потік */
+        transform: none;
+        justify-self: start; /* Вирівнюємо по лівому краю колонки */
+        grid-column: 1 / 2;
+    }
+
+    .edit-pack-header h1 {
+        grid-column: 2 / 3;
+    }
+    /* --- КІНЕЦЬ ЗМІН --- */
+
+    .edit-pack-container {
+        padding: 1.5rem;
+    }
+
+    .edit-form-grid {
+        flex-direction: column;
+        align-items: center;
+        gap: 1.5rem;
+    }
+
+    .edit-form-column {
+        width: 100%;
+    }
+
+    .edit-pack-footer {
+        flex-direction: column-reverse;
+        gap: 1rem;
+        align-items: stretch;
+    }
 }

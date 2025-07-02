@@ -4,6 +4,8 @@ import { QueryClient, QueryClientProvider } from 'react-query';
 import { UserProvider } from './UserContext';
 import { PlayerProvider, usePlayerContext } from './PlayerContext';
 
+
+
 import Header from './Header';
 import Home from './Home';
 import Login from './Login';
@@ -23,11 +25,9 @@ import TagPage from './pages/TagPage';
 import BottomNavBar from './BottomNavBar'; 
 import EmojiPacksSettings from './EmojiPacksSettings';
 import EditEmojiPack from './EditEmojiPack';
-
-// --- ПОЧАТОК ЗМІН: Імпортуємо компоненти для адмін-панелі ---
 import AdminRoute from './AdminRoute';
 import AdminPage from './AdminPage';
-// --- КІНЕЦЬ ЗМІН ---
+import ArtistDashboard from './ArtistDashboard';
 
 import './App.css';
 
@@ -40,7 +40,7 @@ const AppLayout = () => {
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const location = useLocation();
     
-    const onTagPage = location.pathname.startsWith('/tags/');
+    const isSidebarPage = location.pathname.startsWith('/tags/') || location.pathname === '/dashboard';
 
     const handleToggleSidebar = () => {
         setIsSidebarOpen(prev => !prev);
@@ -73,7 +73,7 @@ const AppLayout = () => {
     return (
         <>
             <Header 
-                showTagPageMenu={onTagPage}
+                showTagPageMenu={isSidebarPage}
                 onTagPageMenuClick={handleToggleSidebar}
             />
             <main className="app-main-content">
@@ -95,7 +95,15 @@ const AppLayout = () => {
                     <Route path="/track/:trackId" element={<TrackPage />} />
                     <Route path="/tags/:tagName" element={<TagPage isSidebarOpen={isSidebarOpen} />} />
 
-                    {/* --- ПОЧАТОК ЗМІН: Додаємо новий захищений маршрут для адмін-панелі --- */}
+                    <Route 
+                        path="/dashboard" 
+                        element={
+                            <AdminRoute>
+                                <ArtistDashboard isSidebarOpen={isSidebarOpen} />
+                            </AdminRoute>
+                        } 
+                    />
+                    
                     <Route 
                         path="/admin" 
                         element={
@@ -104,7 +112,6 @@ const AppLayout = () => {
                             </AdminRoute>
                         } 
                     />
-                    {/* --- КІНЕЦЬ ЗМІН --- */}
                 </Routes>
             </main>
             

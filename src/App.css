@@ -41,7 +41,7 @@ body {
 #root {
     display: flex;
     flex-direction: column;
-    height: 100%; /* Використовуємо 100% висоти батька (body) замість 100vh */
+    height: 100%;
 }
 
 .app-container {
@@ -57,8 +57,22 @@ body {
     min-height: 0;
     position: relative;
 }
-/* --- КІНЕЦЬ КЛЮЧОВИХ ЗМІН --- */
 
+/* --- НОВІ СТИЛІ ДЛЯ АДАПТИВНОГО ВІДСТУПУ --- */
+@media (max-width: 768px) {
+    /* Додаємо відступ знизу для основного контенту, щоб він не перекривався нижньою панеллю навігації */
+    .app-main-content, .dashboard-container, .page-profile-container {
+        padding-bottom: 100px; /* Висота BottomNavBar (70px) + запас (30px) */
+    }
+
+    /* Якщо активний ще й плеєр, відступ має бути більшим */
+    body.player-visible-mobile .app-main-content,
+    body.player-visible-mobile .dashboard-container,
+    body.player-visible-mobile .page-profile-container {
+        padding-bottom: 170px; /* 70px (навбар) + 70px (плеєр) + 30px (запас) */
+    }
+}
+/* --- КІНЕЦЬ НОВИХ СТИЛІВ --- */
 
 a {
     color: inherit;
@@ -104,8 +118,6 @@ a {
 .toast-notification.error {
     background-color: var(--color-error);
 }
-
-/* ... решта стилів для форм та модальних вікон залишаються без змін ... */
 
 .form-input,
 .form-textarea {
