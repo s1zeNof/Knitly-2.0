@@ -1,3 +1,16 @@
 # https://www.robotstxt.org/robotstxt.html
 User-agent: *
-Disallow:
+
+# Забороняємо індексацію приватних та адміністративних розділів
+Disallow: /admin/
+Disallow: /dashboard/
+Disallow: /settings/
+Disallow: /messages/
+Disallow: /create-album/
+Disallow: /create-emoji-pack/
+
+# Дозволяємо сканування решти сайту
+Allow: /
+
+# Вказуємо шлях до карти сайту (замініть на ваш реальний домен)
+Sitemap: https://knitly.app/sitemap.xml
