@@ -3,10 +3,12 @@ import React, { createContext, useState, useContext, useEffect } from 'react';
 import { auth, db } from './firebase';
 import { onAuthStateChanged } from 'firebase/auth';
 import { doc, getDoc, setDoc, serverTimestamp, collection, query, where, getDocs } from 'firebase/firestore';
-import { cacheAnimatedPackId } from './emojiPackCache';
+import { cacheAnimatedPackId } from './emojiPackCache'; // <-- ІМПОРТ
 
 const UserContext = createContext();
 
+// --- НОВА ФУНКЦІЯ ---
+// Завантажує всі емоджі-паки користувача і кешує типи
 const fetchAndCacheUserEmojiPacks = async (userId) => {
     if (!userId) return;
     try {
@@ -37,9 +39,9 @@ export const UserProvider = ({ children }) => {
                     uid: user.uid, 
                     ...userData,
                     chatFolders: userData.chatFolders || [],
-                    subscribedPackIds: userData.subscribedPackIds || [],
-                    notesBalance: userData.notesBalance || 0 
+                    subscribedPackIds: userData.subscribedPackIds || []
                 });
+                // Оновлюємо кеш паків при оновленні користувача
                 await fetchAndCacheUserEmojiPacks(user.uid);
             }
         } catch (error) {
@@ -52,7 +54,8 @@ export const UserProvider = ({ children }) => {
             if (authUser) {
                 const userRef = doc(db, 'users', authUser.uid);
                 const userDoc = await getDoc(userRef);
-                
+
+                // --- ПОКРАЩЕННЯ: Викликаємо кешування після отримання даних про користувача ---
                 await fetchAndCacheUserEmojiPacks(authUser.uid);
 
                 if (userDoc.exists()) {
@@ -61,8 +64,7 @@ export const UserProvider = ({ children }) => {
                         uid: authUser.uid, 
                         ...userData,
                         chatFolders: userData.chatFolders || [],
-                        subscribedPackIds: userData.subscribedPackIds || [],
-                        notesBalance: userData.notesBalance || 0 
+                        subscribedPackIds: userData.subscribedPackIds || []
                     });
                 } else {
                     const nickname = authUser.email ? authUser.email.split('@')[0].replace(/[^a-z0-9_.]/g, '') : `user${Date.now()}`;
@@ -77,8 +79,7 @@ export const UserProvider = ({ children }) => {
                         likedTracks: [],
                         createdAt: serverTimestamp(),
                         chatFolders: [],
-                        subscribedPackIds: [],
-                        notesBalance: 0 
+                        subscribedPackIds: []
                     };
                     await setDoc(userRef, newUser);
                     setUser(newUser);

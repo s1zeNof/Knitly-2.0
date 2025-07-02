@@ -24,6 +24,11 @@ import BottomNavBar from './BottomNavBar';
 import EmojiPacksSettings from './EmojiPacksSettings';
 import EditEmojiPack from './EditEmojiPack';
 
+// --- ПОЧАТОК ЗМІН: Імпортуємо компоненти для адмін-панелі ---
+import AdminRoute from './AdminRoute';
+import AdminPage from './AdminPage';
+// --- КІНЕЦЬ ЗМІН ---
+
 import './App.css';
 
 const queryClient = new QueryClient();
@@ -88,8 +93,17 @@ const AppLayout = () => {
                     <Route path="/userlist" element={<UserList />} />
                     <Route path="/create-emoji-pack" element={<CreateEmojiPack />} />
                     <Route path="/track/:trackId" element={<TrackPage />} />
-                    {/* --- ПОЧАТОК ЗМІН --- */}
                     <Route path="/tags/:tagName" element={<TagPage isSidebarOpen={isSidebarOpen} />} />
+
+                    {/* --- ПОЧАТОК ЗМІН: Додаємо новий захищений маршрут для адмін-панелі --- */}
+                    <Route 
+                        path="/admin" 
+                        element={
+                            <AdminRoute>
+                                <AdminPage />
+                            </AdminRoute>
+                        } 
+                    />
                     {/* --- КІНЕЦЬ ЗМІН --- */}
                 </Routes>
             </main>

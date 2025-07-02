@@ -1,0 +1,32 @@
+.admin-page-container {
+    padding: 2rem;
+    max-width: 1600px;
+    margin: 0 auto;
+}
+
+.admin-page-header {
+    margin-bottom: 2rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid var(--color-border);
+}
+
+.admin-page-header h1 {
+    font-size: 2rem;
+    margin: 0;
+}
+
+.admin-page-header p {
+    color: var(--color-text-secondary);
+    margin-top: 0.5rem;
+}
+
+.admin-page-loader, .admin-page-error {
+    text-align: center;
+    padding: 4rem;
+    font-size: 1.2rem;
+    color: var(--color-text-secondary);
+}
+
+.admin-page-error {
+    color: var(--color-error);
+}
