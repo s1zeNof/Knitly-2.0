@@ -1,0 +1,132 @@
+.post-analytics-card {
+    background-color: var(--color-bg-medium);
+    border: 1px solid var(--color-border);
+    border-radius: 0.75rem;
+    padding: 1.25rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1.5rem;
+    transition: background-color 0.2s;
+}
+
+.post-analytics-card:hover {
+    background-color: var(--color-bg-light);
+}
+
+.post-analytics-content {
+    flex-grow: 1;
+    overflow: hidden;
+}
+
+.post-snippet {
+    max-height: 60px; /* Обмежуємо висоту текстового блоку */
+    overflow: hidden;
+    position: relative;
+    font-size: 0.9rem;
+    line-height: 1.4;
+    color: var(--color-text-secondary);
+}
+
+/* Створюємо ефект "згасання" для тексту, що не вміщується */
+.post-snippet::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 20px;
+    background: linear-gradient(to bottom, transparent, var(--color-bg-medium));
+}
+
+.post-analytics-card:hover .post-snippet::after {
+     background: linear-gradient(to bottom, transparent, var(--color-bg-light));
+}
+
+.post-snippet-placeholder {
+    font-style: italic;
+    color: var(--color-text-placeholder);
+    font-size: 0.9rem;
+}
+
+.post-analytics-attachment {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-top: 1rem;
+    background-color: var(--color-bg-light);
+    padding: 0.5rem;
+    border-radius: 0.375rem;
+}
+
+.post-analytics-attachment img {
+    width: 32px;
+    height: 32px;
+    object-fit: cover;
+    border-radius: 4px;
+}
+
+.post-analytics-attachment span {
+    font-size: 0.9rem;
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.post-analytics-stats {
+    display: flex;
+    gap: 1.5rem;
+    flex-shrink: 0;
+}
+
+.post-analytics-stats .stat-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--color-text-primary);
+    font-weight: 600;
+    font-size: 1rem;
+    position: relative;
+}
+
+.post-analytics-stats .stat-item svg {
+    width: 20px;
+    height: 20px;
+    color: var(--color-text-secondary);
+}
+
+.stat-tooltip {
+    visibility: hidden;
+    opacity: 0;
+    background-color: var(--color-bg-light);
+    color: white;
+    text-align: center;
+    border-radius: 6px;
+    padding: 5px 10px;
+    position: absolute;
+    z-index: 1;
+    bottom: 150%;
+    left: 50%;
+    margin-left: -50px; /* Use half of the width to center the tooltip */
+    transition: opacity 0.2s;
+    font-size: 0.8rem;
+    width: 100px;
+}
+
+.stat-item:hover .stat-tooltip {
+    visibility: visible;
+    opacity: 1;
+}
+
+@media (max-width: 600px) {
+    .post-analytics-card {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    .post-analytics-stats {
+        justify-content: space-around;
+        padding-top: 1rem;
+        border-top: 1px solid var(--color-border);
+    }
+}

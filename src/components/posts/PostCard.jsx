@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { useMutation, useQueryClient } from 'react-query';
 import { db, storage } from '../../firebase';
-import { doc, runTransaction, updateDoc, deleteDoc, getDoc } from 'firebase/firestore';
+import { doc, runTransaction, updateDoc, deleteDoc, getDoc, increment } from 'firebase/firestore';
 import { ref, deleteObject } from 'firebase/storage';
 import { useUserContext } from '../../UserContext';
 import { usePlayerContext } from '../../PlayerContext';
@@ -48,7 +48,7 @@ const PostCard = ({ post }) => {
     const [isPlayAttachmentLoading, setIsPlayAttachmentLoading] = useState(false);
 
     const isLiked = currentUser && post.likedBy?.includes(currentUser.uid);
-    const canManagePost = currentUser?.uid === post.authorId || currentUser?.roles?.includes('admin');
+    const canManagePost = currentUser?.uid && post.authorUids?.includes(currentUser.uid);
 
     useEffect(() => {
         const handleClickOutside = (event) => {
@@ -92,7 +92,6 @@ const PostCard = ({ post }) => {
         });
       },
       onSuccess: () => {
-        queryClient.invalidateQueries(['feedPosts', post.authorId]);
         queryClient.invalidateQueries(['feedPosts', null]);
       },
       onError: (error) => console.error("Reaction error:", error),
@@ -102,7 +101,6 @@ const PostCard = ({ post }) => {
         (newText) => updateDoc(doc(db, 'posts', post.id), { text: newText, isEdited: true }),
         {
             onSuccess: () => {
-                queryClient.invalidateQueries(['feedPosts', post.authorId]);
                 queryClient.invalidateQueries(['feedPosts', null]);
                 setIsEditing(false);
             }
@@ -118,7 +116,6 @@ const PostCard = ({ post }) => {
         },
         {
             onSuccess: () => {
-                queryClient.invalidateQueries(['feedPosts', post.authorId]);
                 queryClient.invalidateQueries(['feedPosts', null]);
             }
         }
@@ -155,6 +152,24 @@ const PostCard = ({ post }) => {
             deletePostMutation.mutate();
         }
     };
+
+    const renderAuthors = (authors) => {
+        if (!authors || authors.length === 0) return null;
+
+        return (
+            <div className="post-author-links">
+                {authors.map((author, index) => (
+                    <React.Fragment key={author.uid}>
+                        <Link to={`/user/${author.nickname}`} className="post-author-name">
+                            @{author.nickname}
+                        </Link>
+                        {index < authors.length - 2 && ', '}
+                        {index === authors.length - 2 && ' та '}
+                    </React.Fragment>
+                ))}
+            </div>
+        );
+    };
     
     const renderAttachment = (attachment) => {
         if (!attachment) return null;
@@ -162,6 +177,12 @@ const PostCard = ({ post }) => {
         const playAttachment = async (e) => {
             e.stopPropagation();
             if (attachment.type !== 'track' || !attachment.id) return;
+            
+            const postRef = doc(db, 'posts', post.id);
+            await updateDoc(postRef, {
+                attachmentClicks: increment(1)
+            }).catch(err => console.error("Failed to increment attachment clicks:", err));
+
             setIsPlayAttachmentLoading(true);
             try {
                 const trackRef = doc(db, 'tracks', attachment.id);
@@ -209,14 +230,12 @@ const PostCard = ({ post }) => {
             <div className="post-card">
                 <div className="post-thread-container">
                     <div className="post-main-content">
-                        <Link to={`/user/${post.authorUsername}`}>
-                            <img src={post.authorAvatarUrl || default_picture} alt={post.authorUsername} className="post-author-avatar" />
+                        <Link to={`/user/${post.authors[0].nickname}`}>
+                            <img src={post.authors[0].photoURL || default_picture} alt={post.authors[0].nickname} className="post-author-avatar" />
                         </Link>
                         <div className="post-content">
                             <div className="post-header">
-                                <Link to={`/user/${post.authorUsername}`} className="post-author-name">
-                                    @{post.authorUsername}
-                                </Link>
+                                {renderAuthors(post.authors)}
                                 <span className="post-timestamp">· {formatPostTime(post.createdAt)} {post.isEdited && '(ред.)'}</span>
                                 {canManagePost && (
                                     <div className="post-options-container" ref={menuRef}>
@@ -302,7 +321,7 @@ const PostCard = ({ post }) => {
                             </div>
                         </div>
                     </div>
-                    {commentsVisible && <CommentSection postId={post.id} postAuthorId={post.authorId} />}
+                    {commentsVisible && <CommentSection postId={post.id} postAuthorId={post.authors[0].uid} />}
                 </div>
             </div>
             {showFullPicker && (

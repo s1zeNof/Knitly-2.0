@@ -1,16 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { usePlayerContext } from './PlayerContext';
+import { useUserContext } from './UserContext';
 import { db } from './firebase';
 import { collection, getDocs, query, where, orderBy, limit } from 'firebase/firestore';
 import { getTagIllustration } from './config/tagConfig'; 
 
-// Компоненти, що вже були
 import LeftSidebar from './LeftSidebar'; 
 import './Home.css';
 import default_picture from './img/Default-Images/default-picture.svg';
 
-// <<< ДОДАНО: Імпортуємо нові компоненти для постів >>>
 import CreatePostForm from './components/posts/CreatePostForm';
 import Feed from './components/posts/Feed';
 
@@ -37,6 +36,8 @@ const formatRelativeTime = (timestamp) => {
 
 const Home = () => {
     const { handlePlayPause } = usePlayerContext();
+    // --- ЗМІНА: Отримуємо не тільки користувача, а й статус завантаження ---
+    const { user: currentUser, authLoading } = useUserContext(); 
 
     const [newRelease, setNewRelease] = useState(null);
     const [spotlightAlbum, setSpotlightAlbum] = useState(null);
@@ -95,31 +96,24 @@ const Home = () => {
         return () => document.body.classList.remove('home-page-background');
     }, []);
 
+    const feedIds = currentUser ? [currentUser.uid, ...(currentUser.following || [])] : null;
+
     return (
         <div className="home-container">
-            {/* Сайдбар залишається без змін */}
             <LeftSidebar isOpen={true} />
             
             <main className="main-content">
-                {loading ? <HomeLoader /> : (
+                {(loading || authLoading) ? <HomeLoader /> : (
                     <>
                         <h1 className="feed-title">Стрічка</h1>
                         
-                        {/* <<< ПОЧАТОК ЗМІН: Вставляємо компоненти постів сюди >>> */}
-                        
-                        {/* Форма для створення нового допису */}
-                        <CreatePostForm />
+                        {/* --- ЗМІНА: Перевіряємо authLoading перед рендерингом --- */}
+                        {!authLoading && currentUser && <CreatePostForm />}
 
-                        {/* Компонент, що завантажує та відображає стрічку дописів */}
-                        <Feed />
+                        <Feed followingList={feedIds} />
 
-                        {/* Розділювач, щоб візуально відокремити пости від рекомендацій */}
                         <hr className="feed-divider" />
                         
-                        {/* <<< КІНЕЦЬ ЗМІН >>> */}
-
-
-                        {/* Далі йде ваш існуючий контент головної сторінки */}
                         {newRelease && (
                              <div className="feed-card horizontal-card new-release-card animate-fade-in-up">
                                 <img src={newRelease.coverArtUrl || default_picture} alt={newRelease.title} />

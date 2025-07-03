@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { useMutation, useQueryClient } from 'react-query';
-import { doc, deleteDoc, updateDoc, runTransaction, increment } from 'firebase/firestore';
+import { doc, deleteDoc, updateDoc, runTransaction, increment, getDoc } from 'firebase/firestore';
 import { db } from '../../firebase';
 import { useUserContext } from '../../UserContext';
 import default_picture from '../../img/Default-Images/default-picture.svg';
@@ -13,6 +13,9 @@ import './Post.css';
 // Іконки
 const OptionsIcon = () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="1"></circle><circle cx="19" cy="12" r="1"></circle><circle cx="5" cy="12" r="1"></circle></svg>;
 const AddReactionIcon = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"></circle><path d="M8 14s1.5 2 4 2 4-2 4-2"></path><line x1="9" y1="9" x2="9.01" y2="9"></line><line x1="15" y1="9" x2="15.01" y2="9"></line></svg>;
+// --- НОВА ІКОНКА ---
+const PinIcon = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>;
+
 
 const formatTime = (timestamp) => {
     if (!timestamp) return '';
@@ -20,7 +23,8 @@ const formatTime = (timestamp) => {
     return date.toLocaleString('uk-UA', { day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' });
 };
 
-const Comment = ({ comment, postId, postAuthorId }) => {
+// --- ДОДАНО ПРОПС isPinned ---
+const Comment = ({ comment, postId, postAuthorId, isPinned }) => {
     const { user: currentUser } = useUserContext();
     const queryClient = useQueryClient();
     const menuRef = useRef(null);
@@ -31,7 +35,11 @@ const Comment = ({ comment, postId, postAuthorId }) => {
     const [showFullPicker, setShowFullPicker] = useState(false);
 
     const canEdit = currentUser?.uid === comment.authorId;
+    // --- ЗМІНЕНО: тепер і автор поста може видаляти ---
     const canDelete = canEdit || currentUser?.uid === postAuthorId || currentUser?.roles?.includes('admin');
+    // --- НОВА УМОВА: Закріплювати може лише автор поста ---
+    const canPin = currentUser?.uid === postAuthorId;
+
 
     useEffect(() => {
         const handleClickOutside = (event) => {
@@ -65,7 +73,26 @@ const Comment = ({ comment, postId, postAuthorId }) => {
         {
             onSuccess: () => {
                 queryClient.invalidateQueries(['comments', postId]);
-                queryClient.invalidateQueries('feedPosts');
+                // --- ЗМІНЕНО: Інвалідація конкретного поста, а не всіх ---
+                queryClient.invalidateQueries(['post', postId]);
+            }
+        }
+    );
+
+    // --- НОВА МУТАЦІЯ ДЛЯ ЗАКРІПЛЕННЯ ---
+    const pinCommentMutation = useMutation(
+        async () => {
+            const postRef = doc(db, 'posts', postId);
+            // Якщо коментар вже закріплено, ми його відкріплюємо (встановлюємо null)
+            const newPinnedId = isPinned ? null : comment.id;
+            await updateDoc(postRef, { pinnedCommentId: newPinnedId });
+        },
+        {
+            onSuccess: () => {
+                // Оновлюємо дані поста і коментарів, щоб UI перебудувався
+                queryClient.invalidateQueries(['post', postId]);
+                queryClient.invalidateQueries(['comments', postId]);
+                setShowMenu(false);
             }
         }
     );
@@ -118,7 +145,14 @@ const Comment = ({ comment, postId, postAuthorId }) => {
     
     return (
         <>
-            <div className="comment-thread-item">
+            {/* --- ОГОРТКА ДЛЯ СТИЛІЗАЦІЇ ЗАКРІПЛЕНОГО КОМЕНТАРЯ --- */}
+            <div className={`comment-thread-item ${isPinned ? 'pinned' : ''}`}>
+                {isPinned && (
+                    <div className="pinned-badge">
+                        <PinIcon />
+                        <span>Закріплено автором</span>
+                    </div>
+                )}
                 <div className="comment-item">
                     <Link to={`/user/${comment.authorUsername}`}>
                         <img src={comment.authorAvatarUrl || default_picture} alt={comment.authorUsername} className="comment-author-avatar"/>
@@ -168,11 +202,17 @@ const Comment = ({ comment, postId, postAuthorId }) => {
                         </div>
                     </div>
                     
-                    {(canEdit || canDelete) && (
+                    {(canEdit || canDelete || canPin) && (
                         <div className="comment-options-container" ref={menuRef}>
                             <button className="options-button" onClick={() => setShowMenu(!showMenu)}><OptionsIcon /></button>
                             {showMenu && (
                                 <div className="options-menu-small">
+                                    {/* --- КНОПКА ЗАКРІПЛЕННЯ --- */}
+                                    {canPin && (
+                                        <button onClick={() => pinCommentMutation.mutate()}>
+                                            {isPinned ? 'Відкріпити' : 'Закріпити'}
+                                        </button>
+                                    )}
                                     {canEdit && <button onClick={() => { setIsEditing(true); setShowMenu(false); }}>Редагувати</button>}
                                     {canDelete && <button className="option-delete" onClick={handleDeleteComment}>Видалити</button>}
                                 </div>

@@ -1,8 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { useMutation, useQueryClient } from 'react-query';
-import { collection, addDoc, serverTimestamp, doc, updateDoc, increment, getDoc } from 'firebase/firestore'; // Додано getDoc
+import { useMutation, useQueryClient, useQuery } from 'react-query';
+import { collection, addDoc, serverTimestamp, doc, updateDoc, increment, getDoc, query, where, getDocs, limit } from 'firebase/firestore';
 import { db } from '../../firebase';
 import { useUserContext } from '../../UserContext';
+import { useDebounce } from 'use-debounce';
 import toast from 'react-hot-toast';
 
 import { LexicalComposer } from '@lexical/react/LexicalComposer';
@@ -30,6 +31,37 @@ const EditorAccessPlugin = ({ onEditorReady }) => {
     return null;
 };
 
+const CollaboratorTag = ({ user, onRemove }) => (
+    <div className="collaborator-tag">
+        <img src={user.photoURL || default_picture} alt={user.displayName} />
+        <span>@{user.nickname}</span>
+        <button type="button" onClick={() => onRemove(user.uid)}>&times;</button>
+    </div>
+);
+
+const searchUsers = async (searchTerm, currentUser) => {
+    if (!searchTerm) return { following: [], others: [] };
+
+    const term = searchTerm.toLowerCase();
+    const endTerm = term + '\uf8ff';
+
+    const nicknameQuery = query(
+        collection(db, "users"),
+        where("nickname", ">=", term),
+        where("nickname", "<=", endTerm),
+        limit(5)
+    );
+    
+    const snapshot = await getDocs(nicknameQuery);
+    const allResults = snapshot.docs.map(doc => ({ uid: doc.id, ...doc.data() }));
+
+    const followingIds = currentUser.following || [];
+    const following = allResults.filter(u => followingIds.includes(u.uid) && u.uid !== currentUser.uid);
+    const others = allResults.filter(u => !followingIds.includes(u.uid) && u.uid !== currentUser.uid);
+
+    return { following, others };
+};
+
 const CreatePostForm = () => {
     const { user } = useUserContext();
     const queryClient = useQueryClient();
@@ -39,6 +71,17 @@ const CreatePostForm = () => {
     const [isEmojiPickerOpen, setIsEmojiPickerOpen] = useState(false);
     const [editorState, setEditorState] = useState(null);
     const [isEditorEmpty, setIsEditorEmpty] = useState(true);
+
+    const [showCollabInput, setShowCollabInput] = useState(false);
+    const [collaborators, setCollaborators] = useState([]);
+    const [collabSearchTerm, setCollabSearchTerm] = useState("");
+    const [debouncedSearchTerm] = useDebounce(collabSearchTerm, 300);
+
+    const { data: searchResults, isLoading: isSearchingCollab } = useQuery(
+        ['collabSearch', debouncedSearchTerm, user],
+        () => searchUsers(debouncedSearchTerm, user),
+        { enabled: !!debouncedSearchTerm }
+    );
 
     const initialConfig = {
         namespace: 'KnitlyPostEditor',
@@ -66,6 +109,9 @@ const CreatePostForm = () => {
                 });
             }
             setAttachment(null);
+            setCollaborators([]);
+            setShowCollabInput(false);
+            setCollabSearchTerm('');
             queryClient.invalidateQueries('feedPosts');
         },
         onError: (error) => {
@@ -76,19 +122,35 @@ const CreatePostForm = () => {
 
     const onSubmit = (e) => {
         e.preventDefault();
-        if (!user) {
-            toast.error('Потрібно увійти в акаунт, щоб створити допис.');
+        if (!user || !user.uid || !user.nickname) { // Додаткова перевірка
+            toast.error('Ваш профіль ще завантажується, зачекайте хвилинку.');
             return;
         }
         if (isEditorEmpty && !attachment) {
             toast.error("Допис не може бути порожнім без вкладення.");
             return;
         }
+
+        const mainAuthor = {
+            uid: user.uid,
+            nickname: user.nickname,
+            photoURL: user.photoURL,
+            displayName: user.displayName,
+        };
+
+        const allAuthors = [mainAuthor, ...collaborators.map(c => ({
+            uid: c.uid,
+            nickname: c.nickname,
+            photoURL: c.photoURL,
+            displayName: c.displayName,
+        }))];
+
+        const authorUids = allAuthors.map(a => a.uid);
+
         const newPost = {
             editorState: editorState ? JSON.stringify(editorState) : null,
-            authorId: user.uid,
-            authorUsername: user.nickname,
-            authorAvatarUrl: user.photoURL,
+            authors: allAuthors,
+            authorUids: authorUids,
             createdAt: serverTimestamp(),
             attachment: attachment,
             likesCount: 0,
@@ -97,6 +159,27 @@ const CreatePostForm = () => {
             isEdited: false,
         };
         createPostMutation.mutate(newPost);
+    };
+
+    const handleAddCollaborator = (userToAdd) => {
+        if (collaborators.length >= 3) {
+            toast.error("Можна додати не більше 3 співавторів.");
+            return;
+        }
+        if (userToAdd.uid === user.uid) {
+             toast.error("Ви не можете додати себе в співавтори.");
+            return;
+        }
+        if (collaborators.some(c => c.uid === userToAdd.uid)) {
+            toast.error("Цей користувач вже є співавтором.");
+            return;
+        }
+        setCollaborators(prev => [...prev, userToAdd]);
+        setCollabSearchTerm("");
+    };
+
+    const handleRemoveCollaborator = (uid) => {
+        setCollaborators(prev => prev.filter(c => c.uid !== uid));
     };
 
     const handleEditorChange = (currentEditorState) => {
@@ -136,28 +219,22 @@ const CreatePostForm = () => {
         setIsEmojiPickerOpen(false);
     };
 
-    // --- ПОЧАТОК КАРДИНАЛЬНОГО ВИПРАВЛЕННЯ ---
     const handleSelectMusic = async (item, type) => {
-        setIsShareModalOpen(false); // Закриваємо модалку одразу
-
+        setIsShareModalOpen(false);
         if (type === 'track') {
             try {
-                // Робимо запит до Firestore, щоб отримати повний, свіжий документ треку
                 const trackRef = doc(db, 'tracks', item.id);
                 const trackSnap = await getDoc(trackRef);
-
                 if (trackSnap.exists()) {
                     const freshTrackData = trackSnap.data();
-                    // Створюємо об'єкт вкладення з гарантовано актуальними даними
-                    const newAttachment = {
+                    setAttachment({
                         id: item.id,
                         type: 'track',
                         title: freshTrackData.title,
                         authorName: freshTrackData.authorName,
                         coverArtUrl: freshTrackData.coverArtUrl,
-                        trackUrl: freshTrackData.trackUrl, // <-- Тепер це поле точно буде тут
-                    };
-                    setAttachment(newAttachment);
+                        trackUrl: freshTrackData.trackUrl,
+                    });
                 } else {
                     toast.error('Вибраний трек не знайдено в базі.');
                 }
@@ -166,7 +243,6 @@ const CreatePostForm = () => {
                 toast.error('Не вдалося додати трек.');
             }
         } else if (type === 'album') {
-            // Логіка для альбомів залишається, як і раніше
             setAttachment({
                 id: item.id,
                 type: 'album',
@@ -176,7 +252,6 @@ const CreatePostForm = () => {
             });
         }
     };
-    // --- КІНЕЦЬ КАРДИНАЛЬНОГО ВИПРАВЛЕННЯ ---
 
     if (!user) { return null; }
 
@@ -208,20 +283,77 @@ const CreatePostForm = () => {
                         <button type="button" className="remove-attachment-btn" onClick={() => setAttachment(null)}>&times;</button>
                     </div>
                 )}
+                <div className="collaborators-section">
+                    <div className="collaborators-display">
+                        {collaborators.map(c => <CollaboratorTag key={c.uid} user={c} onRemove={handleRemoveCollaborator}/>)}
+                    </div>
+                    {showCollabInput && (
+                        <div className="collaborator-input-container">
+                            <div className="collaborator-input-wrapper">
+                                <span className="at-symbol">@</span>
+                                <input
+                                    type="text"
+                                    value={collabSearchTerm}
+                                    onChange={(e) => setCollabSearchTerm(e.target.value)}
+                                    placeholder="Нікнейм..."
+                                    className="collaborator-input"
+                                />
+                            </div>
+                            { (debouncedSearchTerm && (isSearchingCollab || searchResults)) && (
+                                <div className="collaborator-search-results">
+                                    {isSearchingCollab && <div className="search-loader">Пошук...</div>}
+                                    {searchResults?.following.length > 0 && (
+                                        <>
+                                            <div className="results-separator">Ви підписані</div>
+                                            {searchResults.following.map(u => (
+                                                <div key={u.uid} className="search-item" onClick={() => handleAddCollaborator(u)}>
+                                                    <img src={u.photoURL || default_picture} alt={u.displayName}/>
+                                                    <span>{u.displayName} <small>@{u.nickname}</small></span>
+                                                </div>
+                                            ))}
+                                        </>
+                                    )}
+                                    {searchResults?.others.length > 0 && (
+                                         <>
+                                            <div className="results-separator">Інші користувачі</div>
+                                            {searchResults.others.map(u => (
+                                                <div key={u.uid} className="search-item" onClick={() => handleAddCollaborator(u)}>
+                                                    <img src={u.photoURL || default_picture} alt={u.displayName}/>
+                                                    <span>{u.displayName} <small>@{u.nickname}</small></span>
+                                                </div>
+                                            ))}
+                                        </>
+                                    )}
+                                    {!isSearchingCollab && !searchResults?.following.length && !searchResults?.others.length && debouncedSearchTerm &&
+                                        <div className="search-loader">Не знайдено</div>
+                                    }
+                                </div>
+                            )}
+                        </div>
+                    )}
+                </div>
                 <div className="form-footer">
-                    <ExpandableMenu onAction={handleMenuAction} />
+                    <div className="form-footer-left">
+                        <ExpandableMenu onAction={handleMenuAction} />
+                         <button
+                            type="button"
+                            className="add-collaborator-btn"
+                            title="Додати співавтора"
+                            onClick={() => setShowCollabInput(!showCollabInput)}
+                        >
+                            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"></path></svg>
+                        </button>
+                    </div>
                     <button type="submit" className="button-primary" disabled={createPostMutation.isLoading}>
                         {createPostMutation.isLoading ? 'Публікуємо...' : 'Опублікувати'}
                     </button>
                 </div>
             </form>
-
             <ShareMusicModal
                 isOpen={isShareModalOpen}
                 onClose={() => setIsShareModalOpen(false)}
                 onShare={handleSelectMusic}
             />
-            
             {isEmojiPickerOpen && (
                 <EmojiPickerPlus
                     onClose={() => setIsEmojiPickerOpen(false)}
