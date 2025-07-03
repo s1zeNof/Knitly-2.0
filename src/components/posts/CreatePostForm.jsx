@@ -1,6 +1,6 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useMutation, useQueryClient } from 'react-query';
-import { collection, addDoc, serverTimestamp, doc, updateDoc, increment } from 'firebase/firestore';
+import { collection, addDoc, serverTimestamp, doc, updateDoc, increment, getDoc } from 'firebase/firestore'; // Додано getDoc
 import { db } from '../../firebase';
 import { useUserContext } from '../../UserContext';
 import toast from 'react-hot-toast';
@@ -26,7 +26,7 @@ import './Post.css';
 
 const EditorAccessPlugin = ({ onEditorReady }) => {
     const [editor] = useLexicalComposerContext();
-    React.useEffect(() => { onEditorReady(editor); }, [editor, onEditorReady]);
+    useEffect(() => { onEditorReady(editor); }, [editor, onEditorReady]);
     return null;
 };
 
@@ -76,10 +76,16 @@ const CreatePostForm = () => {
 
     const onSubmit = (e) => {
         e.preventDefault();
-        if (!user) return;
-        if (isEditorEmpty && !attachment) return;
+        if (!user) {
+            toast.error('Потрібно увійти в акаунт, щоб створити допис.');
+            return;
+        }
+        if (isEditorEmpty && !attachment) {
+            toast.error("Допис не може бути порожнім без вкладення.");
+            return;
+        }
         const newPost = {
-            editorState: JSON.stringify(editorState),
+            editorState: editorState ? JSON.stringify(editorState) : null,
             authorId: user.uid,
             authorUsername: user.nickname,
             authorAvatarUrl: user.photoURL,
@@ -98,8 +104,9 @@ const CreatePostForm = () => {
         currentEditorState.read(() => {
             const root = $getRoot();
             const textContent = root.getTextContent().trim();
-            const childrenSize = root.getChildrenSize();
-            setIsEditorEmpty(textContent === '' && childrenSize <= 1 && root.getFirstChild()?.getChildrenSize() === 0);
+            const children = root.getChildren();
+            const isEffectivelyEmpty = textContent === '' && children.every(node => node.getType() === 'paragraph' && node.isEmpty());
+            setIsEditorEmpty(isEffectivelyEmpty);
         });
     };
 
@@ -128,6 +135,48 @@ const CreatePostForm = () => {
         }
         setIsEmojiPickerOpen(false);
     };
+
+    // --- ПОЧАТОК КАРДИНАЛЬНОГО ВИПРАВЛЕННЯ ---
+    const handleSelectMusic = async (item, type) => {
+        setIsShareModalOpen(false); // Закриваємо модалку одразу
+
+        if (type === 'track') {
+            try {
+                // Робимо запит до Firestore, щоб отримати повний, свіжий документ треку
+                const trackRef = doc(db, 'tracks', item.id);
+                const trackSnap = await getDoc(trackRef);
+
+                if (trackSnap.exists()) {
+                    const freshTrackData = trackSnap.data();
+                    // Створюємо об'єкт вкладення з гарантовано актуальними даними
+                    const newAttachment = {
+                        id: item.id,
+                        type: 'track',
+                        title: freshTrackData.title,
+                        authorName: freshTrackData.authorName,
+                        coverArtUrl: freshTrackData.coverArtUrl,
+                        trackUrl: freshTrackData.trackUrl, // <-- Тепер це поле точно буде тут
+                    };
+                    setAttachment(newAttachment);
+                } else {
+                    toast.error('Вибраний трек не знайдено в базі.');
+                }
+            } catch (error) {
+                console.error("Error fetching full track data:", error);
+                toast.error('Не вдалося додати трек.');
+            }
+        } else if (type === 'album') {
+            // Логіка для альбомів залишається, як і раніше
+            setAttachment({
+                id: item.id,
+                type: 'album',
+                title: item.title,
+                artistName: item.artistName,
+                coverArtUrl: item.coverArtUrl,
+            });
+        }
+    };
+    // --- КІНЕЦЬ КАРДИНАЛЬНОГО ВИПРАВЛЕННЯ ---
 
     if (!user) { return null; }
 
@@ -170,23 +219,13 @@ const CreatePostForm = () => {
             <ShareMusicModal
                 isOpen={isShareModalOpen}
                 onClose={() => setIsShareModalOpen(false)}
-                onShare={(item, type) => {
-                    setAttachment({
-                        type: type,
-                        id: item.id,
-                        title: item.title,
-                        authorName: item.authorName || item.artistName,
-                        coverArtUrl: item.coverArtUrl,
-                    });
-                    setIsShareModalOpen(false);
-                }}
+                onShare={handleSelectMusic}
             />
             
             {isEmojiPickerOpen && (
                 <EmojiPickerPlus
                     onClose={() => setIsEmojiPickerOpen(false)}
                     onEmojiSelect={handleEmojiSelect}
-                    context="post"
                 />
             )}
         </>

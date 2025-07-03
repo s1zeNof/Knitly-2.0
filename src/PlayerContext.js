@@ -48,20 +48,39 @@ export const PlayerProvider = ({ children }) => {
         };
     }, [playNext]);
 
+    // --- ПОЧАТОК ЗМІН: Покращена логіка відтворення ---
+
+    // Ефект для завантаження нового треку
     useEffect(() => {
+        const audio = audioRef.current;
         if (currentTrack?.trackUrl) {
-            if (audioRef.current.src !== currentTrack.trackUrl) {
-                audioRef.current.src = currentTrack.trackUrl;
-            }
-            if (isPlaying) {
-                audioRef.current.play().catch(e => console.error("Playback error:", e));
-            } else {
-                audioRef.current.pause();
+            if (audio.src !== currentTrack.trackUrl) {
+                audio.src = currentTrack.trackUrl;
+                audio.load(); // Явно вказуємо браузеру завантажити новий ресурс
             }
         } else {
-             audioRef.current.pause();
+            audio.src = ''; // Очищуємо, якщо треку немає
         }
-    }, [currentTrack, isPlaying]);
+    }, [currentTrack]); // Цей ефект залежить ТІЛЬКИ від зміни треку
+
+    // Ефект для керування станом play/pause
+    useEffect(() => {
+        const audio = audioRef.current;
+        if (isPlaying && currentTrack) {
+            const playPromise = audio.play();
+            if (playPromise !== undefined) {
+                playPromise.catch(error => {
+                    // Обробка помилок, напр. блокування автоплею браузером
+                    console.error("Playback failed:", error);
+                    setIsPlaying(false); // Синхронізуємо стан, якщо відтворення не вдалося
+                });
+            }
+        } else {
+            audio.pause();
+        }
+    }, [isPlaying, currentTrack]); // Цей ефект залежить від isPlaying та currentTrack
+
+    // --- КІНЕЦЬ ЗМІН ---
     
     useEffect(() => {
         audioRef.current.volume = volume;
@@ -128,9 +147,6 @@ export const PlayerProvider = ({ children }) => {
         showNotification(`Трек "${trackToRemove.title}" видалено з черги`);
     }, [queue, showNotification]);
 
-    // <<< ОСНОВНА ОПТИМІЗАЦІЯ >>>
-    // Мемоізуємо об'єкт value, щоб уникнути зайвих ре-рендерів у дочірніх компонентах.
-    // Тепер він буде оновлюватися тільки, коли зміняться його залежності.
     const value = useMemo(() => ({
         currentTrack, 
         isPlaying, 
