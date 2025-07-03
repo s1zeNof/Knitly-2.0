@@ -1,4 +1,3 @@
-// src/EmojiPickerPlus.js
 import React, { useState } from 'react';
 import { useQuery } from 'react-query';
 import { useUserContext } from './UserContext';
@@ -7,7 +6,10 @@ import { collection, query, where, getDocs } from 'firebase/firestore';
 import EmojiPicker from 'emoji-picker-react';
 import Lottie from 'lottie-react';
 import { cacheAnimatedPackId } from './emojiPackCache';
+import toast from 'react-hot-toast';
 import './EmojiPickerPlus.css';
+
+// Функції fetchEmojiPacks, LottieEmoji, isLottieUrl залишаються без змін
 
 const fetchEmojiPacks = async (userId) => {
     if (!userId) return [];
@@ -23,7 +25,6 @@ const fetchEmojiPacks = async (userId) => {
     return packs;
 };
 
-// --- ВИПРАВЛЕННЯ ТУТ ---
 const LottieEmoji = React.memo(({ url }) => {
     return <Lottie path={url} autoplay={true} loop={true} className="picker-lottie-preview" />;
 });
@@ -35,6 +36,7 @@ const isLottieUrl = (url) => {
         return path.toLowerCase().endsWith('.json');
     } catch (e) { return false; }
 };
+
 
 const EmojiPickerPlus = ({ onEmojiSelect, onClose }) => {
     const { user } = useUserContext();
@@ -55,8 +57,17 @@ const EmojiPickerPlus = ({ onEmojiSelect, onClose }) => {
         }
     );
 
-    const handleUnicodeSelect = (emojiData) => onEmojiSelect(emojiData.emoji, false);
-    const handleCustomSelect = (emoji, packId) => onEmojiSelect({ ...emoji, packId }, true);
+    // <<< ВИПРАВЛЕННЯ: Тепер обидві функції викликають onEmojiSelect з двома аргументами >>>
+
+    const handleUnicodeSelect = (emojiData) => {
+        // Перший аргумент - сам емоджі (рядок), другий - флаг 'isCustom'
+        onEmojiSelect(emojiData.emoji, false);
+    };
+
+    const handleCustomSelect = (emoji, packId) => {
+        // Перший аргумент - об'єкт емоджі, другий - флаг 'isCustom'
+        onEmojiSelect({ ...emoji, packId }, true);
+    };
 
     return (
         <div className="picker-overlay" onClick={onClose}>
@@ -72,18 +83,27 @@ const EmojiPickerPlus = ({ onEmojiSelect, onClose }) => {
                     </nav>
                 </header>
                 <main className="picker-content">
-                    {activeTab === 'unicode' && ( <EmojiPicker onEmojiClick={handleUnicodeSelect} autoFocusSearch={false} theme="dark" width="100%" height="100%" searchDisabled previewConfig={{ showPreview: false }} lazyLoadEmojis categories={[{ category: 'suggested', name: 'Недавні' }, { category: 'smileys_people', name: 'Смайли' }, { category: 'animals_nature', name: 'Тварини' }, { category: 'food_drink', name: 'Їжа' }, { category: 'travel_places', name: 'Подорожі' }, { category: 'activities', name: 'Активності' }, { category: 'objects', name: 'Об\'єкти' }, { category: 'symbols', name: 'Символи' }, { category: 'flags', name: 'Прапори' }]} /> )}
+                    {activeTab === 'unicode' && ( 
+                        <EmojiPicker 
+                            onEmojiClick={handleUnicodeSelect} 
+                            autoFocusSearch={false} 
+                            theme="dark" 
+                            width="100%" 
+                            height="100%" 
+                            searchDisabled 
+                            previewConfig={{ showPreview: false }} 
+                            categories={[{ category: 'suggested', name: 'Недавні' }, { category: 'smileys_people', name: 'Смайли' }, { category: 'animals_nature', name: 'Тварини' }, { category: 'food_drink', name: 'Їжа' }, { category: 'travel_places', name: 'Подорожі' }, { category: 'activities', name: 'Активності' }, { category: 'objects', name: 'Об\'єкти' }, { category: 'symbols', name: 'Символи' }, { category: 'flags', name: 'Прапори' }]} 
+                        /> 
+                    )}
                     {packs?.map(pack => {
                         if (activeTab !== pack.id) return null;
                         return (
                             <div key={pack.id} className="custom-emoji-grid">
-                                {pack.emojis.map(emoji => {
-                                    return (
-                                        <button key={emoji.id} className="custom-emoji-btn" onClick={() => handleCustomSelect(emoji, pack.id)}>
-                                            {pack.isAnimated || isLottieUrl(emoji.url) ? <LottieEmoji url={emoji.url} /> : <img src={emoji.url} alt={emoji.name} className="picker-image-preview" />}
-                                        </button>
-                                    )
-                                })}
+                                {pack.emojis.map(emoji => (
+                                    <button key={emoji.id} className="custom-emoji-btn" onClick={() => handleCustomSelect(emoji, pack.id)}>
+                                        {pack.isAnimated || isLottieUrl(emoji.url) ? <LottieEmoji url={emoji.url} /> : <img src={emoji.url} alt={emoji.name} className="picker-image-preview" />}
+                                    </button>
+                                ))}
                             </div>
                         )
                     })}

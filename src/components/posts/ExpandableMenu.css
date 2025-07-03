@@ -1,0 +1,71 @@
+.expandable-menu-container {
+    position: relative;
+    display: flex;
+    flex-direction: row-reverse;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.main-menu-btn {
+    background-color: var(--color-accent);
+    color: white;
+    border: none;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 2; /* Має бути вище за інші кнопки */
+}
+.main-menu-btn svg {
+    width: 24px;
+    height: 24px;
+}
+
+.menu-items-wrapper {
+    display: flex;
+    gap: 0.75rem;
+}
+
+.menu-item-btn {
+    background-color: var(--color-bg-light);
+    color: var(--color-text-secondary);
+    border: 1px solid var(--color-border);
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background-color 0.2s, color 0.2s, border-color 0.2s;
+}
+
+.menu-item-btn:hover {
+    color: var(--color-text-primary);
+    border-color: var(--color-accent);
+}
+
+.menu-item-btn svg {
+    width: 24px;
+    height: 24px;
+}
+
+/* Адаптивність для телефонів */
+@media (max-width: 768px) {
+    .expandable-menu-container {
+        /* На мобільних позиціонуємо відносно футера форми */
+        position: absolute;
+        bottom: 100%; /* Розміщуємо над футером */
+        left: 0.75rem;
+        margin-bottom: 0.75rem;
+    }
+    
+    .menu-items-wrapper {
+        /* Кнопки вистрибують ВГОРУ */
+        flex-direction: column-reverse; 
+        gap: 0.75rem;
+    }
+}

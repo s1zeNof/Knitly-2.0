@@ -41,8 +41,10 @@
 }
 
 .create-post-form .form-footer {
+    position: relative;
     display: flex;
     justify-content: flex-end;
+    align-items: center;
     margin-top: 1rem;
 }
 
@@ -539,3 +541,147 @@
 .comment-author-avatar {
     background-color: var(--color-bg-medium);
 }
+
+
+
+
+
+/* Кнопка "додати музику" у формі */
+.create-post-form .form-footer {
+    display: flex;
+    justify-content: space-between; /* Розміщуємо кнопки по краях */
+    align-items: center;
+    margin-top: 1rem;
+}
+.add-attachment-btn {
+    background: none;
+    border: none;
+    color: var(--color-text-secondary);
+    padding: 0.5rem;
+    cursor: pointer;
+    border-radius: 50%;
+}
+.add-attachment-btn:hover {
+    color: var(--color-accent);
+    background-color: var(--color-bg-light);
+}
+.add-attachment-btn svg {
+    width: 24px;
+    height: 24px;
+}
+
+/* Прев'ю вкладення у формі */
+.attachment-preview {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    background-color: var(--color-bg-light);
+    border: 1px solid var(--color-border);
+    border-radius: 0.5rem;
+    padding: 0.75rem;
+    margin: 1rem 0 0 64px; /* відступ зліва як у тексту */
+}
+.attachment-preview img {
+    width: 48px;
+    height: 48px;
+    object-fit: cover;
+    border-radius: 4px;
+}
+.attachment-preview-info {
+    flex-grow: 1;
+}
+.attachment-preview-type {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    color: var(--color-text-secondary);
+    font-weight: 600;
+    margin: 0;
+}
+.attachment-preview-title {
+    margin: 0.25rem 0 0 0;
+    font-weight: 500;
+}
+.remove-attachment-btn {
+    background: none;
+    border: none;
+    color: var(--color-text-secondary);
+    cursor: pointer;
+}
+.remove-attachment-btn:hover {
+    color: var(--color-error);
+}
+.remove-attachment-btn svg {
+    width: 20px;
+    height: 20px;
+}
+
+/* Картка вкладення в самому пості */
+.post-attachment-card {
+    margin-top: 1rem;
+    border: 1px solid var(--color-border);
+    border-radius: 0.75rem;
+    background-color: var(--color-bg-light);
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+    transition: background-color 0.2s;
+}
+.post-attachment-card:hover {
+    background-color: var(--color-border);
+}
+.attachment-link-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    flex-grow: 1;
+    text-decoration: none;
+    color: inherit;
+}
+.attachment-cover {
+    width: 80px;
+    height: 80px;
+    object-fit: cover;
+    border-radius: 0.5rem;
+    flex-shrink: 0;
+}
+.attachment-info {
+    overflow: hidden;
+}
+.attachment-type {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--color-accent);
+    text-transform: uppercase;
+}
+.attachment-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin: 0.25rem 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.attachment-author {
+    color: var(--color-text-secondary);
+    font-size: 0.9rem;
+}
+.attachment-play-button {
+    background-color: transparent;
+    border: none;
+    color: white;
+    cursor: pointer;
+    padding: 1.5rem;
+    align-self: stretch; /* Розтягуємо кнопку на всю висоту */
+    display: flex;
+    align-items: center;
+    transition: background-color 0.2s;
+}
+.attachment-play-button:hover {
+    background-color: rgba(45, 223, 184, 0.2);
+}
+
+
+
+
+

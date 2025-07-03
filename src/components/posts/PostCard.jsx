@@ -5,11 +5,13 @@ import { db, storage } from '../../firebase';
 import { doc, runTransaction, arrayUnion, arrayRemove, increment, updateDoc, deleteDoc } from 'firebase/firestore';
 import { ref, deleteObject } from 'firebase/storage';
 import { useUserContext } from '../../UserContext';
+import { usePlayerContext } from '../../PlayerContext'; // <<< ВИПРАВЛЕННЯ: Додано відсутній імпорт
 import default_picture from '../../img/Default-Images/default-picture.svg';
 import CommentSection from './CommentSection';
 import EmojiPickerPlus from '../../EmojiPickerPlus';
 import LottieRenderer from '../../LottieRenderer';
 import { isPackAnimated } from '../../emojiPackCache';
+import PostRenderer from '../lexical/PostRenderer';
 import './Post.css';
 
 // Іконки
@@ -33,6 +35,7 @@ const formatPostTime = (timestamp) => {
 
 const PostCard = ({ post }) => {
     const { user: currentUser } = useUserContext();
+    const { handlePlayPause } = usePlayerContext();
     const queryClient = useQueryClient();
     const menuRef = useRef(null);
 
@@ -86,7 +89,7 @@ const PostCard = ({ post }) => {
             onError: (error) => console.error("Reaction error:", error),
         }
     );
-
+    
     const updatePostMutation = useMutation(
         (newText) => updateDoc(doc(db, 'posts', post.id), { text: newText, isEdited: true }),
         {
@@ -128,7 +131,7 @@ const PostCard = ({ post }) => {
 
     const handleUpdatePost = (e) => {
         e.preventDefault();
-        if (editedText.trim()) {
+        if (editedText && editedText.trim()) {
             updatePostMutation.mutate(editedText);
         }
     };
@@ -137,6 +140,32 @@ const PostCard = ({ post }) => {
         if (window.confirm('Ви впевнені, що хочете видалити цей допис?')) {
             deletePostMutation.mutate();
         }
+    };
+    
+    const renderAttachment = (attachment) => {
+        if (!attachment) return null;
+        const handlePlayAttachment = (e) => {
+            e.stopPropagation();
+            if (attachment.type === 'track') {
+                handlePlayPause(attachment);
+            }
+        };
+
+        return (
+            <div className="post-attachment-card">
+                <Link to={`/${attachment.type}/${attachment.id}`} className="attachment-link-wrapper">
+                    <img src={attachment.coverArtUrl || default_picture} alt={attachment.title} className="attachment-cover"/>
+                    <div className="attachment-info">
+                        <span className="attachment-type">{attachment.type === 'track' ? 'ТРЕК' : 'АЛЬБОМ'}</span>
+                        <p className="attachment-title">{attachment.title}</p>
+                        <p className="attachment-author">{attachment.authorName}</p>
+                    </div>
+                </Link>
+                <button className="attachment-play-button" onClick={handlePlayAttachment}>
+                    <svg height="24" width="24" viewBox="0 0 24 24"><path fill="currentColor" d="M8 5v14l11-7z"></path></svg>
+                </button>
+            </div>
+        );
     };
 
     return (
@@ -160,7 +189,7 @@ const PostCard = ({ post }) => {
                                         </button>
                                         {showMenu && (
                                             <div className="options-menu-small">
-                                                <button onClick={() => { setIsEditing(true); setShowMenu(false); }}>Редагувати</button>
+                                                {post.text && <button onClick={() => { setIsEditing(true); setShowMenu(false); }}>Редагувати</button>}
                                                 <button className="option-delete" onClick={handleDeletePost}>Видалити</button>
                                             </div>
                                         )}
@@ -185,8 +214,14 @@ const PostCard = ({ post }) => {
                                     </div>
                                 </form>
                             ) : (
-                                <p className="post-text">{post.text}</p>
+                                post.editorState ? (
+                                    <PostRenderer content={post.editorState} />
+                                ) : (
+                                    <p className="post-text">{post.text}</p>
+                                )
                             )}
+                            
+                            {renderAttachment(post.attachment)}
                             
                             {post.reactions && Object.keys(post.reactions).length > 0 && (
                                 <div className="post-reactions-container">

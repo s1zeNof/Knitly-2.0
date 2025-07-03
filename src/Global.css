@@ -30,7 +30,9 @@
 
 /* --- Базові стилі для всього додатку --- */
 body {
-  font-family: var(--font-main);
+  /* Новий, більш надійний набір шрифтів */
+  font-family: 'Urbanist', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';
+  
   background-color: var(--color-bg-deep);
   color: var(--color-text-primary);
   margin: 0;
