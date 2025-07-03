@@ -1,0 +1,56 @@
+.editor-container {
+    background-color: transparent;
+    border-radius: 0.5rem;
+    color: var(--color-text-primary);
+    position: relative;
+    font-size: 1.1rem;
+    line-height: 1.6;
+    width: 100%;
+}
+
+.editor-input {
+    min-height: 80px;
+    resize: none;
+    font-size: 1.1rem;
+    caret-color: var(--color-accent);
+    position: relative;
+    tab-size: 1;
+    outline: none;
+    padding-top: 0.5rem;
+}
+
+.editor-placeholder {
+    font-size: 1.1rem;
+    color: var(--color-text-placeholder);
+    overflow: hidden;
+    position: absolute;
+    text-overflow: ellipsis;
+    top: 0;
+    left: 0;
+    user-select: none;
+    pointer-events: none;
+    padding-top: 0.5rem;
+}
+
+.editor-paragraph {
+    margin: 0 0 15px 0;
+}
+.editor-paragraph:last-child {
+    margin-bottom: 0;
+}
+
+.editor-container.read-only .editor-input {
+    min-height: auto;
+}
+
+.custom-emoji-wrapper {
+  display: inline-block;
+  vertical-align: bottom;
+  margin: 0 2px;
+}
+.custom-emoji-in-editor {
+  height: 1.5em; /* Розмір емоджі відносно тексту */
+  width: 1.5em;
+  object-fit: contain;
+  pointer-events: none; /* Щоб можна було клікати крізь нього */
+}
