@@ -2,10 +2,11 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { useMutation, useQueryClient } from 'react-query';
 import { db, storage } from '../../firebase';
-import { doc, runTransaction, arrayUnion, arrayRemove, increment, updateDoc, deleteDoc } from 'firebase/firestore';
+import { doc, runTransaction, updateDoc, deleteDoc, getDoc } from 'firebase/firestore';
 import { ref, deleteObject } from 'firebase/storage';
 import { useUserContext } from '../../UserContext';
-import { usePlayerContext } from '../../PlayerContext'; // <<< ВИПРАВЛЕННЯ: Додано відсутній імпорт
+import { usePlayerContext } from '../../PlayerContext';
+import toast from 'react-hot-toast';
 import default_picture from '../../img/Default-Images/default-picture.svg';
 import CommentSection from './CommentSection';
 import EmojiPickerPlus from '../../EmojiPickerPlus';
@@ -44,7 +45,9 @@ const PostCard = ({ post }) => {
     const [showMenu, setShowMenu] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
     const [editedText, setEditedText] = useState(post.text);
+    const [isPlayAttachmentLoading, setIsPlayAttachmentLoading] = useState(false);
 
+    const isLiked = currentUser && post.likedBy?.includes(currentUser.uid);
     const canManagePost = currentUser?.uid === post.authorId || currentUser?.roles?.includes('admin');
 
     useEffect(() => {
@@ -57,38 +60,43 @@ const PostCard = ({ post }) => {
         return () => document.removeEventListener("mousedown", handleClickOutside);
     }, []);
 
-    const reactionMutation = useMutation(
-        async ({ reactionId, customUrl, isAnimated }) => {
-            if (!currentUser) throw new Error("Потрібно увійти в акаунт");
-            const postRef = doc(db, "posts", post.id);
-            await runTransaction(db, async (transaction) => {
-                const postDoc = await transaction.get(postRef);
-                if (!postDoc.exists()) throw "Допис не знайдено!";
-                const reactions = postDoc.data().reactions || {};
-                const currentReaction = reactions[reactionId] || { uids: [] };
-                const userIndex = currentReaction.uids.indexOf(currentUser.uid);
-                if (userIndex > -1) {
-                    currentReaction.uids.splice(userIndex, 1);
-                } else {
-                    currentReaction.uids.push(currentUser.uid);
-                    if (customUrl) {
-                        currentReaction.url = customUrl;
-                        currentReaction.isAnimated = isAnimated;
-                    }
+    const reactionMutation = useMutation({
+      mutationFn: async ({ reactionId, customUrl, isAnimated }) => {
+        if (!currentUser) throw new Error("Потрібно увійти в акаунт");
+        const postRef = doc(db, "posts", post.id);
+        
+        await runTransaction(db, async (transaction) => {
+            const postDoc = await transaction.get(postRef);
+            if (!postDoc.exists()) throw "Допис не знайдено!";
+            
+            const reactions = postDoc.data().reactions || {};
+            const currentReaction = reactions[reactionId] || { uids: [] };
+            const userIndex = currentReaction.uids.indexOf(currentUser.uid);
+
+            if (userIndex > -1) {
+                currentReaction.uids.splice(userIndex, 1);
+            } else {
+                currentReaction.uids.push(currentUser.uid);
+                if (customUrl) {
+                    currentReaction.url = customUrl;
+                    currentReaction.isAnimated = isAnimated;
                 }
-                if (currentReaction.uids.length > 0) reactions[reactionId] = currentReaction;
-                else delete reactions[reactionId];
-                transaction.update(postRef, { reactions });
-            });
-        },
-        {
-            onSuccess: () => {
-                queryClient.invalidateQueries(['feedPosts', post.authorId]);
-                queryClient.invalidateQueries(['feedPosts', null]);
-            },
-            onError: (error) => console.error("Reaction error:", error),
-        }
-    );
+            }
+            if (currentReaction.uids.length > 0) {
+                reactions[reactionId] = currentReaction;
+            } else {
+                delete reactions[reactionId];
+            }
+            const newLikesCount = reactions['unicode_❤️']?.uids.length || 0;
+            transaction.update(postRef, { reactions, likesCount: newLikesCount });
+        });
+      },
+      onSuccess: () => {
+        queryClient.invalidateQueries(['feedPosts', post.authorId]);
+        queryClient.invalidateQueries(['feedPosts', null]);
+      },
+      onError: (error) => console.error("Reaction error:", error),
+    });
     
     const updatePostMutation = useMutation(
         (newText) => updateDoc(doc(db, 'posts', post.id), { text: newText, isEdited: true }),
@@ -115,6 +123,12 @@ const PostCard = ({ post }) => {
             }
         }
     );
+
+    const handleLikeClick = () => {
+      if (!reactionMutation.isLoading) {
+        reactionMutation.mutate({ reactionId: 'unicode_❤️' });
+      }
+    };
 
     const handleReactionSelect = (emoji, isCustom = false) => {
         let reactionId, customUrl = null, isAnimated = false;
@@ -144,10 +158,25 @@ const PostCard = ({ post }) => {
     
     const renderAttachment = (attachment) => {
         if (!attachment) return null;
-        const handlePlayAttachment = (e) => {
+
+        const playAttachment = async (e) => {
             e.stopPropagation();
-            if (attachment.type === 'track') {
-                handlePlayPause(attachment);
+            if (attachment.type !== 'track' || !attachment.id) return;
+            setIsPlayAttachmentLoading(true);
+            try {
+                const trackRef = doc(db, 'tracks', attachment.id);
+                const trackSnap = await getDoc(trackRef);
+                if (trackSnap.exists()) {
+                    const fullTrackData = { id: trackSnap.id, ...trackSnap.data() };
+                    handlePlayPause(fullTrackData);
+                } else {
+                    toast.error("На жаль, цей трек більше не доступний.");
+                }
+            } catch (error) {
+                console.error("Помилка відтворення прикріпленого треку:", error);
+                toast.error("Не вдалося відтворити трек.");
+            } finally {
+                setIsPlayAttachmentLoading(false);
             }
         };
 
@@ -158,11 +187,18 @@ const PostCard = ({ post }) => {
                     <div className="attachment-info">
                         <span className="attachment-type">{attachment.type === 'track' ? 'ТРЕК' : 'АЛЬБОМ'}</span>
                         <p className="attachment-title">{attachment.title}</p>
-                        <p className="attachment-author">{attachment.authorName}</p>
+                        <p className="attachment-author">{attachment.authorName || attachment.artistName}</p>
                     </div>
                 </Link>
-                <button className="attachment-play-button" onClick={handlePlayAttachment}>
-                    <svg height="24" width="24" viewBox="0 0 24 24"><path fill="currentColor" d="M8 5v14l11-7z"></path></svg>
+                <button 
+                    className="attachment-play-button" 
+                    onClick={playAttachment}
+                    disabled={isPlayAttachmentLoading}
+                >
+                    {isPlayAttachmentLoading 
+                        ? <div className="mini-loader"></div> 
+                        : <svg height="24" width="24" viewBox="0 0 24 24"><path fill="currentColor" d="M8 5v14l11-7z"></path></svg>
+                    }
                 </button>
             </div>
         );
@@ -251,6 +287,14 @@ const PostCard = ({ post }) => {
                                 <button className="post-action-button" onClick={() => setCommentsVisible(!commentsVisible)}>
                                     <CommentIcon />
                                     <span>{post.commentsCount || 0}</span>
+                                </button>
+                                <button 
+                                    className={`post-action-button like ${isLiked ? 'liked' : ''}`}
+                                    onClick={handleLikeClick}
+                                    disabled={reactionMutation.isLoading}
+                                >
+                                    <HeartIcon />
+                                    <span>{post.likesCount || 0}</span>
                                 </button>
                                 <button className="post-action-button" onClick={() => setShowFullPicker(true)}>
                                     <AddReactionIcon />

@@ -3,21 +3,25 @@ import { LexicalComposer } from '@lexical/react/LexicalComposer';
 import { RichTextPlugin } from '@lexical/react/LexicalRichTextPlugin';
 import { ContentEditable } from '@lexical/react/LexicalContentEditable';
 import { LexicalErrorBoundary } from '@lexical/react/LexicalErrorBoundary';
-import { CustomEmojiNode } from './CustomEmojiNode'; // Імпорт нашого вузла
+import { CustomEmojiNode } from './CustomEmojiNode';
 import { EditorTheme } from './EditorTheme';
 import './Editor.css';
 
 const PostRenderer = ({ content }) => {
+  // <<< ПОЧАТОК ВИПРАВЛЕННЯ: Додаємо надійну перевірку контенту >>>
+  // Якщо контент відсутній або є рядком "null", нічого не рендеримо
+  if (!content || content === 'null') {
+    return null; 
+  }
+  // <<< КІНЕЦЬ ВИПРАВЛЕННЯ >>>
+
   let initialEditorState;
   try {
     JSON.parse(content);
     initialEditorState = content;
   } catch (e) {
-    initialEditorState = null;
-  }
-
-  if (!initialEditorState) {
-    return null;
+    console.error("Invalid JSON content for PostRenderer:", content);
+    return null; // Не рендеримо, якщо JSON невалідний
   }
   
   const initialConfig = {
@@ -25,7 +29,7 @@ const PostRenderer = ({ content }) => {
     editable: false,
     namespace: 'KnitlyPostRenderer',
     theme: EditorTheme,
-    nodes: [CustomEmojiNode], // Реєстрація вузла тут
+    nodes: [CustomEmojiNode],
     onError(error) {
       console.error("Lexical Renderer Error:", error);
     },
