@@ -6,7 +6,7 @@ import { useUserContext } from './UserContext';
 import TrackList from './TrackList';
 import PlaylistTab from './PlaylistTab';
 import LikedTracks from './LikedTracks';
-import Feed from './components/posts/Feed'; // <<< ДОДАНО ІМПОРТ
+import Feed from './components/posts/Feed';
 
 import default_picture from './img/Default-Images/default-picture.svg';
 import verifiedIcon from './img/Profile-Settings/verified_icon-lg-bl.svg';
@@ -83,7 +83,6 @@ const UserProfile = () => {
                 setIsFollowing(true);
             }
             await refreshUser();
-            // Оновлюємо локальний стан, щоб лічильник оновився
             setProfileUser(prev => ({
                 ...prev,
                 followers: isFollowing 
@@ -151,11 +150,8 @@ const UserProfile = () => {
                 );
             case 'playlists': 
                 return <PlaylistTab userId={profileUser.uid} />;
-            // <<< ПОЧАТОК ЗМІН >>>
             case 'feed': 
-                // Показуємо стрічку постів ТІЛЬКИ цього користувача
                 return <Feed userId={profileUser.uid} />;
-            // <<< КІНЕЦЬ ЗМІН >>>
             default: 
                 return null;
         }
@@ -198,7 +194,6 @@ const UserProfile = () => {
                 <div className="page-profile-tabs">
                     <button className={`page-profile-tab-button ${activeTab === 'music' ? 'active' : ''}`} onClick={() => setActiveTab('music')}><MusicIcon/> Музика</button>
                     <button className={`page-profile-tab-button ${activeTab === 'playlists' ? 'active' : ''}`} onClick={() => setActiveTab('playlists')}><PlaylistIcon/> Плейлисти</button>
-                    {/* <<< ДОДАНО КНОПКУ >>> */}
                     <button className={`page-profile-tab-button ${activeTab === 'feed' ? 'active' : ''}`} onClick={() => setActiveTab('feed')}><FeedIcon/> Стрічка</button>
                 </div>
                 <div className="page-profile-tab-content">

@@ -8,7 +8,6 @@ import TrackList from './TrackList';
 import LikedTracks from './LikedTracks';
 import PlaylistTab from './PlaylistTab';
 
-// <<< ДОДАНО ІМПОРТИ >>>
 import CreatePostForm from './components/posts/CreatePostForm';
 import Feed from './components/posts/Feed';
 
@@ -52,7 +51,7 @@ const Profile = () => {
     const handleLogout = () => signOut(auth).then(() => navigate('/'));
     
     const renderTabContent = () => {
-        if (!currentUser) return null; // Додаткова перевірка
+        if (!currentUser) return null;
 
         switch (activeTab) {
             case 'music':
@@ -78,18 +77,14 @@ const Profile = () => {
                 return <PlaylistTab userId={currentUser.uid} />;
             case 'albums':
                 return <div className="page-profile-tab-placeholder">Ваші альбоми будуть відображатися тут.</div>;
-            // <<< ПОЧАТОК ЗМІН >>>
             case 'feed':
                 return (
                     <div>
-                        {/* Форма створення допису видима тільки на власному профілі */}
                         <CreatePostForm />
                         <hr className="feed-divider" /> 
-                        {/* Стрічка з дописами ТІЛЬКИ поточного користувача */}
                         <Feed userId={currentUser.uid} />
                     </div>
                 );
-            // <<< КІНЕЦЬ ЗМІН >>>
             default:
                 return null;
         }

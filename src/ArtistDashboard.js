@@ -1,12 +1,14 @@
 import React, { useMemo, useState, useEffect, useRef } from 'react';
 import { useQuery } from 'react-query';
 import { db } from './firebase';
-import { collection, query, where, documentId, getDocs } from 'firebase/firestore';
+import { collection, query, where, documentId, getDocs, orderBy, limit } from 'firebase/firestore';
 import { useUserContext } from './UserContext';
 import { useUserTracks } from './hooks/useUserTracks';
 import TrackList from './TrackList';
 import LeftSidebar from './LeftSidebar';
 import default_picture from './img/Default-Images/default-picture.svg';
+// --- ВИПРАВЛЕНО ШЛЯХ: 'post' -> 'posts' ---
+import PostAnalyticsCard from './components/posts/PostAnalyticsCard';
 import './ArtistDashboard.css';
 
 // Іконки (без змін)
@@ -24,6 +26,19 @@ const fetchFollowersDetails = async (followerIds) => {
     const userSnapshots = await Promise.all(userPromises);
     return userSnapshots.flatMap(snapshot => snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
 };
+
+const fetchArtistPosts = async (artistId) => {
+    if (!artistId) return [];
+    const postsQuery = query(
+        collection(db, 'posts'), 
+        where('authorId', '==', artistId), 
+        orderBy('createdAt', 'desc'),
+        limit(5)
+    );
+    const snapshot = await getDocs(postsQuery);
+    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+};
+
 
 const StatCard = ({ title, value, icon, isLoading }) => (
     <div className="stat-card">
@@ -64,6 +79,13 @@ const ArtistDashboard = ({ isSidebarOpen }) => {
         () => fetchFollowersDetails(currentUser.followers),
         { enabled: !!currentUser?.followers?.length }
     );
+
+    const { data: artistPosts, isLoading: postsLoading } = useQuery(
+        ['artistPosts', currentUser?.uid],
+        () => fetchArtistPosts(currentUser?.uid),
+        { enabled: !!currentUser?.uid }
+    );
+
 
     const stats = useMemo(() => {
         if (!tracks || tracks.length === 0) return { totalPlays: 0, totalLikes: 0, topTracks: [] };
@@ -121,6 +143,19 @@ const ArtistDashboard = ({ isSidebarOpen }) => {
                                         <TrackList initialTracks={stats.topTracks} isLoading={tracksLoading} />
                                     </div>
                                 </section>
+
+                                <section className="dashboard-section">
+                                    <h2 className="dashboard-section-title">Ефективність останніх дописів</h2>
+                                    <div className="posts-analytics-list">
+                                        {postsLoading && <p>Завантаження аналітики...</p>}
+                                        {!postsLoading && artistPosts && artistPosts.length > 0 ? (
+                                            artistPosts.map(post => <PostAnalyticsCard key={post.id} post={post} />)
+                                        ) : (
+                                            !postsLoading && <p className="no-data-placeholder">У вас ще немає дописів, щоб аналізувати їх ефективність.</p>
+                                        )}
+                                    </div>
+                                </section>
+
                             </div>
                             <aside className="dashboard-side-column">
                                 <section className="dashboard-section">

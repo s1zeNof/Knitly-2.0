@@ -1,24 +1,36 @@
 import React from 'react';
-import { useQuery } from 'react-query'; // Переконайтесь, що використовуєте 'react-query'
+import { useQuery } from 'react-query';
+// --- ЗМІНА: Додаємо limit ---
 import { collection, query, orderBy, getDocs, limit, where } from 'firebase/firestore';
 import { db } from '../../firebase';
 import PostCard from './PostCard';
 import './Post.css';
 
-// <<< ЗМІНА: Функція тепер приймає userId >>>
-const fetchPosts = async (userId) => {
+// --- ЗМІНА: Логіка завантаження тепер використовує 'array-contains' ---
+const fetchPosts = async (userId, followingList) => {
   let postsQuery;
   
-  // Якщо userId передано, фільтруємо пости за автором
   if (userId) {
+    // Для сторінки профілю: завантажуємо пости, де користувач є одним з авторів
     postsQuery = query(
       collection(db, 'posts'), 
-      where('authorId', '==', userId), 
+      where('authorUids', 'array-contains', userId), 
       orderBy('createdAt', 'desc'), 
       limit(20)
     );
+  } else if (followingList) {
+    // Для головної стрічки: завантажуємо пости від людей, на яких підписаний користувач
+    // Firestore 'array-contains-any' обмежений 10 елементами в масиві, тому якщо підписок більше,
+    // треба буде реалізовувати складнішу логіку. Поки що для MVP робимо для 10.
+    const followedIds = followingList.length > 0 ? followingList.slice(0, 10) : [ 'placeholder' ]; // Запобіжник, щоб запит не падав, якщо масив порожній
+    postsQuery = query(
+      collection(db, 'posts'),
+      where('authorUids', 'array-contains-any', followedIds),
+      orderBy('createdAt', 'desc'),
+      limit(20)
+    );
   } else {
-    // Якщо userId НЕ передано (для головної сторінки), завантажуємо всі пости
+    // Для неавторизованих користувачів або якщо немає підписок - показуємо останні пости
     postsQuery = query(
       collection(db, 'posts'), 
       orderBy('createdAt', 'desc'), 
@@ -30,15 +42,14 @@ const fetchPosts = async (userId) => {
   return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 };
 
-// <<< ЗМІНА: Компонент тепер приймає проп 'userId' >>>
-const Feed = ({ userId = null }) => {
-  // <<< ЗМІНА: Ключ запиту тепер унікальний для кожного користувача >>>
-  // Це важливо, щоб React Query кешував стрічку кожного користувача окремо
-  const queryKey = ['feedPosts', userId];
+// --- ЗМІНА: Компонент тепер приймає 'userId' та 'followingList' ---
+const Feed = ({ userId = null, followingList = null }) => {
+  // Ключ запиту тепер унікальний для кожної стрічки
+  const queryKey = ['feedPosts', userId, JSON.stringify(followingList)];
 
   const { data: posts, isLoading, error } = useQuery(
     queryKey, 
-    () => fetchPosts(userId) // Передаємо userId у функцію завантаження
+    () => fetchPosts(userId, followingList)
   );
 
   if (isLoading) {

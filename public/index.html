@@ -4,24 +4,39 @@
     <meta charset="utf-8" />
     <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    
     <meta name="theme-color" content="#121212" />
-    
     <meta
       name="description"
       content="Knitly — українська музично-соціальна платформа для незалежних артистів. Завантажуйте музику, спілкуйтесь з фанами та монетизуйте свою творчість."
     />
     <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
     <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
-    
     <meta property="og:title" content="Knitly - В'яжемо музику та спільноту" />
     <meta property="og:description" content="Відкривайте нову українську музику, підтримуйте незалежних артистів та станьте частиною унікальної спільноти." />
     <meta property="og:image" content="%PUBLIC_URL%/logo512.png" />
     <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://knitly.app" /> <meta name="twitter:card" content="summary_large_image" />
+    <meta property="og:url" content="https://knitly.app" />
+    <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="Knitly - В'яжемо музику та спільноту" />
     <meta name="twitter:description" content="Відкривайте нову українську музику, підтримуйте незалежних артистів та станьте частиною унікальної спільноти." />
     <meta name="twitter:image" content="%PUBLIC_URL%/logo512.png" />
+    
+    <script>
+      // Перевіряємо, чи існує об'єкт crypto взагалі
+      if (typeof crypto === 'undefined') {
+        window.crypto = {};
+      }
+      
+      // Перевіряємо, чи існує функція randomUUID
+      if (typeof crypto.randomUUID !== 'function') {
+        // Якщо ні, створюємо її
+        crypto.randomUUID = function randomUUID() {
+          return ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g, c =>
+            (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)
+          );
+        };
+      }
+    </script>
     <title>Knitly - В'яжемо музику та спільноту</title>
   </head>
   <body>

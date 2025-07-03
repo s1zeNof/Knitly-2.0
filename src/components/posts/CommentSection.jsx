@@ -1,6 +1,6 @@
 import React from 'react';
 import { useQuery, useMutation, useQueryClient } from 'react-query';
-import { collection, query, orderBy, getDocs, addDoc, doc, runTransaction, serverTimestamp, increment } from 'firebase/firestore';
+import { collection, query, orderBy, getDocs, addDoc, doc, runTransaction, serverTimestamp, increment, getDoc } from 'firebase/firestore'; // Додано getDoc
 import { useForm } from 'react-hook-form';
 import { db } from '../../firebase';
 import { useUserContext } from '../../UserContext';
@@ -19,7 +19,29 @@ const CommentSection = ({ postId, postAuthorId }) => {
     const queryClient = useQueryClient();
     const { register, handleSubmit, reset, formState: { isSubmitting } } = useForm();
 
-    const { data: comments, isLoading } = useQuery(['comments', postId], () => fetchComments(postId));
+    const { data: comments, isLoading: isLoadingComments } = useQuery(['comments', postId], () => fetchComments(postId));
+
+    // --- НОВИЙ ЗАПИТ: Отримуємо дані самого поста, щоб знайти ID закріпленого коментаря ---
+    const { data: postData } = useQuery(['post', postId], async () => {
+        const postRef = doc(db, 'posts', postId);
+        const postSnap = await getDoc(postRef);
+        return postSnap.exists() ? postSnap.data() : null;
+    });
+
+    const pinnedCommentId = postData?.pinnedCommentId;
+
+    // --- НОВИЙ ЗАПИТ: Якщо є ID закріпленого коментаря, завантажуємо його дані ---
+    const { data: pinnedComment, isLoading: isLoadingPinned } = useQuery(
+        ['pinnedComment', postId, pinnedCommentId],
+        async () => {
+            const commentRef = doc(db, 'posts', postId, 'comments', pinnedCommentId);
+            const commentSnap = await getDoc(commentRef);
+            return commentSnap.exists() ? { id: commentSnap.id, ...commentSnap.data() } : null;
+        },
+        {
+            enabled: !!pinnedCommentId, // Цей запит виконається, тільки якщо pinnedCommentId існує
+        }
+    );
 
     const addCommentMutation = useMutation(
         async (newCommentData) => {
@@ -41,7 +63,8 @@ const CommentSection = ({ postId, postAuthorId }) => {
             onSuccess: () => {
                 reset();
                 queryClient.invalidateQueries(['comments', postId]);
-                queryClient.invalidateQueries(['feedPosts', postAuthorId]);
+                // --- Оновлюємо також і сам пост (для лічильника) ---
+                queryClient.invalidateQueries(['post', postId]);
                 queryClient.invalidateQueries(['feedPosts', null]);
             },
             onError: (error) => {
@@ -58,21 +81,41 @@ const CommentSection = ({ postId, postAuthorId }) => {
             authorUsername: currentUser.nickname,
             authorAvatarUrl: currentUser.photoURL,
             createdAt: serverTimestamp(),
+            isEdited: false,
+            reactions: {}
         };
         addCommentMutation.mutate(newComment);
     };
+
+    const isLoading = isLoadingComments || isLoadingPinned;
 
     return (
         <div className="comment-section">
             <div className="comment-list">
                 {isLoading && <p>Завантаження коментарів...</p>}
-                {comments && comments.map(comment => 
+                
+                {/* --- РЕНДЕРИМО ЗАКРІПЛЕНИЙ КОМЕНТАР ПЕРШИМ --- */}
+                {pinnedComment && (
                     <Comment 
-                        key={comment.id} 
-                        comment={comment} 
+                        key={pinnedComment.id} 
+                        comment={pinnedComment} 
                         postId={postId}
                         postAuthorId={postAuthorId}
+                        isPinned={true} // Передаємо прапорець, що це закріплений коментар
                     />
+                )}
+
+                {/* --- РЕНДЕРИМО РЕШТУ, ВІДФІЛЬТРОВУЮЧИ ЗАКРІПЛЕНИЙ, ЩОБ НЕ БУЛО ДУБЛІВ --- */}
+                {comments && comments
+                    .filter(comment => comment.id !== pinnedCommentId) // Виключаємо закріплений
+                    .map(comment => 
+                        <Comment 
+                            key={comment.id} 
+                            comment={comment} 
+                            postId={postId}
+                            postAuthorId={postAuthorId}
+                            isPinned={false} // Це звичайний коментар
+                        />
                 )}
             </div>
             {currentUser && (
