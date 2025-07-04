@@ -1,7 +1,6 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import { auth, db } from '../services/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
-// --- ВИПРАВЛЕННЯ ТУТ: Додано getDocs до імпорту ---
 import { doc, getDoc, setDoc, serverTimestamp, collection, query, where, onSnapshot, getDocs } from 'firebase/firestore';
 import { cacheAnimatedPackId } from '../utils/emojiPackCache';
 
@@ -29,19 +28,19 @@ export const UserProvider = ({ children }) => {
     const [unreadNotificationsCount, setUnreadNotificationsCount] = useState(0);
 
     const refreshUser = async () => {
-        if (!user) return;
+        if (!auth?.currentUser?.uid) return;
         try {
-            const userRef = doc(db, 'users', user.uid);
+            const userRef = doc(db, 'users', auth.currentUser.uid);
             const userDoc = await getDoc(userRef);
             if (userDoc.exists()) {
                 const userData = userDoc.data();
                 setUser({ 
-                    uid: user.uid, 
+                    uid: auth.currentUser.uid, 
                     ...userData,
                     chatFolders: userData.chatFolders || [],
                     subscribedPackIds: userData.subscribedPackIds || []
                 });
-                await fetchAndCacheUserEmojiPacks(user.uid);
+                await fetchAndCacheUserEmojiPacks(auth.currentUser.uid);
             }
         } catch (error) {
             console.error("Error refreshing user:", error);
@@ -49,39 +48,44 @@ export const UserProvider = ({ children }) => {
     };
 
     useEffect(() => {
-        const unsubscribe = onAuthStateChanged(auth, async (authUser) => {
+        const authUnsubscribe = onAuthStateChanged(auth, (authUser) => {
             if (authUser) {
+                setAuthLoading(true);
                 const userRef = doc(db, 'users', authUser.uid);
-                const userDoc = await getDoc(userRef);
-                
-                await fetchAndCacheUserEmojiPacks(authUser.uid);
 
-                if (userDoc.exists()) {
-                    const userData = userDoc.data();
-                    setUser({ 
-                        uid: authUser.uid, 
-                        ...userData,
-                        chatFolders: userData.chatFolders || [],
-                        subscribedPackIds: userData.subscribedPackIds || []
-                    });
-                } else {
-                    const nickname = authUser.email ? authUser.email.split('@')[0].replace(/[^a-z0-9_.]/g, '') : `user${Date.now()}`;
-                    const newUser = {
-                        uid: authUser.uid, displayName: authUser.displayName || 'Новий Артист',
-                        email: authUser.email, photoURL: authUser.photoURL || null,
-                        nickname: nickname, followers: [], following: [], likedTracks: [],
-                        createdAt: serverTimestamp(), chatFolders: [], subscribedPackIds: []
-                    };
-                    await setDoc(userRef, newUser);
-                    setUser(newUser);
-                }
+                const userDocUnsubscribe = onSnapshot(userRef, async (userDoc) => {
+                    if (userDoc.exists()) {
+                        const userData = userDoc.data();
+                        setUser({ 
+                            uid: authUser.uid, 
+                            ...userData,
+                            chatFolders: userData.chatFolders || [],
+                            subscribedPackIds: userData.subscribedPackIds || []
+                        });
+                        await fetchAndCacheUserEmojiPacks(authUser.uid);
+                    } else {
+                        const nickname = authUser.email ? authUser.email.split('@')[0].replace(/[^a-z0-9_.]/g, '') : `user${Date.now()}`;
+                        const newUser = {
+                            uid: authUser.uid, displayName: authUser.displayName || 'Новий Артист',
+                            email: authUser.email, photoURL: authUser.photoURL || null,
+                            nickname: nickname, followers: [], following: [], likedTracks: [],
+                            createdAt: serverTimestamp(), chatFolders: [], subscribedPackIds: []
+                        };
+                        await setDoc(userRef, newUser);
+                        setUser(newUser);
+                    }
+                    setAuthLoading(false);
+                });
+
+                return () => userDocUnsubscribe();
+
             } else {
                 setUser(null);
+                setAuthLoading(false);
             }
-            setAuthLoading(false);
         });
 
-        return () => unsubscribe();
+        return () => authUnsubscribe();
     }, []);
 
     useEffect(() => {

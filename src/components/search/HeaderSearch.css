@@ -1,0 +1,108 @@
+.header-search-wrapper {
+    position: relative;
+    width: 100%;
+    max-width: 480px;
+}
+
+.desktop-search-form {
+    display: flex;
+    align-items: center;
+    background-color: var(--color-bg-light);
+    border-radius: 2rem;
+    padding: 0.5rem 1rem;
+    width: 100%;
+    border: 1px solid var(--color-bg-light);
+    transition: all 0.2s;
+}
+
+.desktop-search-form:focus-within {
+    background-color: var(--color-bg-deep);
+    border-color: var(--color-border);
+}
+
+.desktop-search-form svg {
+    color: var(--color-text-placeholder);
+    width: 20px;
+    height: 20px;
+    margin-right: 0.75rem;
+    flex-shrink: 0;
+}
+
+.desktop-search-form input {
+    background: none;
+    border: none;
+    outline: none;
+    color: var(--color-text-primary);
+    font-size: 1rem;
+    width: 100%;
+}
+
+.search-dropdown {
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 0;
+    right: 0;
+    background-color: var(--color-bg-light);
+    border: 1px solid var(--color-border);
+    border-radius: 0.75rem;
+    max-height: 400px;
+    overflow-y: auto;
+    z-index: 101;
+    box-shadow: 0 8px 16px rgba(0,0,0,0.3);
+}
+
+.dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.75rem 1rem;
+    color: var(--color-text-primary);
+    text-decoration: none;
+    transition: background-color 0.2s;
+}
+
+.dropdown-item:hover {
+    background-color: var(--color-border);
+}
+
+.dropdown-item img {
+    width: 40px;
+    height: 40px;
+    object-fit: cover;
+    flex-shrink: 0;
+}
+
+.dropdown-item.track img {
+    border-radius: 4px;
+}
+
+.dropdown-item.artist img {
+    border-radius: 50%;
+}
+
+.item-info {
+    overflow: hidden;
+}
+
+.item-info p {
+    margin: 0;
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.item-info span {
+    font-size: 0.85rem;
+    color: var(--color-text-secondary);
+}
+
+.dropdown-item.loader, .dropdown-item.see-all {
+    justify-content: center;
+    font-weight: 500;
+    color: var(--color-text-secondary);
+}
+
+.dropdown-item.see-all {
+    color: var(--color-accent);
+}

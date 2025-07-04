@@ -1,11 +1,10 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useDropzone } from 'react-dropzone';
 import { db, storage } from '../services/firebase';
 import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
-import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { collection, addDoc, serverTimestamp, doc, updateDoc, arrayUnion, increment } from 'firebase/firestore';
 import { useUserContext } from '../contexts/UserContext';
-
 import './UploadMusic.css';
 
 const PREDEFINED_HASHTAGS = [
@@ -45,7 +44,7 @@ const UploadMusic = () => {
 
     const { getRootProps: getTrackRootProps, getInputProps: getTrackInputProps, isDragActive: isTrackDragActive } = useDropzone({
         onDrop: onDropTrack,
-        accept: { 'audio/*': ['.mp3', '.wav', '.flac', '.m4a'] },
+        accept: { 'audio/*': ['.mp3', '.wav', '.flac'] },
         multiple: false,
         disabled: isUploading
     });
@@ -79,7 +78,6 @@ const UploadMusic = () => {
     };
 
     const handleTagInputChange = (e) => setTagInput(e.target.value);
-
     const handleTagKeyDown = (e) => {
         if (e.key === 'Enter' || e.key === 'Tab') {
             e.preventDefault();
@@ -89,9 +87,7 @@ const UploadMusic = () => {
             setTags(tags.slice(0, -1));
         }
     };
-
     const removeTag = (tagToRemove) => setTags(tags.filter((tag) => tag !== tagToRemove));
-
     const handleCoverArtChange = (e) => {
         if (e.target.files[0]) {
             setCoverArt(e.target.files[0]);
@@ -115,67 +111,63 @@ const UploadMusic = () => {
         const audioRef = ref(storage, `tracks/${user.uid}/${trackId}/${trackFile.name}`);
         const audioUploadTask = uploadBytesResumable(audioRef, trackFile);
 
-        audioUploadTask.on(
-            'state_changed',
-            (snapshot) => {
-                const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-                setUploadProgress(progress);
-            },
-            (error) => {
-                console.error("Помилка завантаження аудіо:", error);
-                setStatusMessage('Помилка завантаження аудіо.');
-                setIsUploading(false);
-            },
-            async () => {
-                const audioURL = await getDownloadURL(audioUploadTask.snapshot.ref);
-                let coverURL = null;
-
-                if (coverArt) {
-                    setStatusMessage('Завантаження обкладинки...');
-                    const coverRef = ref(storage, `covers/${user.uid}/${trackId}/${coverArt.name}`);
-                    const coverUploadTask = uploadBytesResumable(coverRef, coverArt);
-                    await new Promise((resolve, reject) => {
-                        coverUploadTask.on('state_changed', null,
-                            (error) => reject(error),
-                            async () => {
-                                coverURL = await getDownloadURL(coverUploadTask.snapshot.ref);
-                                resolve();
-                            }
-                        );
+        audioUploadTask.on('state_changed', (snapshot) => {
+            const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+            setUploadProgress(progress);
+        }, (error) => {
+            console.error("Помилка завантаження аудіо:", error);
+            setStatusMessage('Помилка завантаження аудіо.');
+            setIsUploading(false);
+        }, async () => {
+            const audioURL = await getDownloadURL(audioUploadTask.snapshot.ref);
+            let coverURL = null;
+            if (coverArt) {
+                setStatusMessage('Завантаження обкладинки...');
+                const coverRef = ref(storage, `covers/${user.uid}/${trackId}/${coverArt.name}`);
+                const coverUploadTask = uploadBytesResumable(coverRef, coverArt);
+                await new Promise((resolve, reject) => {
+                    coverUploadTask.on('state_changed', null, (error) => reject(error), async () => {
+                        coverURL = await getDownloadURL(coverUploadTask.snapshot.ref);
+                        resolve();
                     });
-                }
-
-                const tagsForDisplay = tags;
-                const tagsForSearch = tags.map(tag => tag.toLowerCase());
-
-                setStatusMessage('Збереження інформації про трек...');
-                try {
-                    await addDoc(collection(db, 'tracks'), {
-                        title: trackTitle,
-                        description,
-                        trackUrl: audioURL,
-                        coverArtUrl: coverURL,
-                        authorId: user.uid,
-                        authorName: user.displayName,
-                        authorNickname: user.nickname,
-                        createdAt: serverTimestamp(),
-                        playCount: 0,
-                        likesCount: 0,
-                        tags: tagsForDisplay,
-                        tags_search: tagsForSearch
-                    });
-                    setStatusMessage('Трек успішно опубліковано!');
-                    setTimeout(() => {
-                        setIsUploading(false);
-                        navigate(`/profile`);
-                    }, 2000);
-                } catch (error) {
-                    console.error("Помилка створення запису в Firestore:", error);
-                    setStatusMessage('Помилка збереження треку.');
-                    setIsUploading(false);
-                }
+                });
             }
-        );
+            const tagsForDisplay = tags;
+            const tagsForSearch = tags.map(tag => tag.toLowerCase());
+            setStatusMessage('Збереження інформації про трек...');
+            try {
+                const userRef = doc(db, 'users', user.uid);
+                await addDoc(collection(db, 'tracks'), {
+                    title: trackTitle,
+                    description,
+                    trackUrl: audioURL,
+                    coverArtUrl: coverURL,
+                    authorId: user.uid,
+                    authorName: user.displayName,
+                    authorNickname: user.nickname,
+                    createdAt: serverTimestamp(),
+                    playCount: 0,
+                    likesCount: 0,
+                    tags: tagsForDisplay,
+                    tags_search: tagsForSearch,
+                    title_lowercase: trackTitle.toLowerCase()
+                });
+                await updateDoc(userRef, {
+                    tracksCount: increment(1)
+                });
+                if (!user.roles?.includes('creator')) {
+                    await updateDoc(userRef, {
+                        roles: arrayUnion('creator')
+                    });
+                }
+                setStatusMessage('Трек успішно опубліковано!');
+                setTimeout(() => navigate(`/profile`), 2000);
+            } catch (error) {
+                console.error("Помилка створення запису в Firestore:", error);
+                setStatusMessage('Помилка збереження треку.');
+                setIsUploading(false);
+            }
+        });
     };
 
     return (
@@ -194,11 +186,10 @@ const UploadMusic = () => {
                             <div className="file-dropzone-inner">
                                 <UploadIcon />
                                 <div className="file-dropzone-text">
-                                    {isTrackDragActive ? (
-                                        <p>Відпустіть файл для завантаження</p>
-                                    ) : (
+                                    {isTrackDragActive ?
+                                        <p>Відпустіть файл для завантаження</p> :
                                         <p>Перетягніть файл сюди, або <span className="file-dropzone-button">виберіть файл</span></p>
-                                    )}
+                                    }
                                 </div>
                                 {trackFile ? <p className="file-name">{trackFile.name}</p> : <p className="file-hint">MP3, WAV, FLAC до 100MB</p>}
                             </div>

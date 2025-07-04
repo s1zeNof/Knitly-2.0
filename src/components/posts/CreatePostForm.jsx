@@ -1,11 +1,10 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useMutation, useQueryClient, useQuery } from 'react-query';
-import { collection, addDoc, serverTimestamp, doc, updateDoc, increment, getDoc, query, where, getDocs, limit } from 'firebase/firestore';
+import { collection, addDoc, serverTimestamp, doc, updateDoc, increment, getDoc, query, where, getDocs, limit, arrayUnion } from 'firebase/firestore';
 import { db } from '../../services/firebase';
 import { useUserContext } from '../../contexts/UserContext';
 import { useDebounce } from 'use-debounce';
 import toast from 'react-hot-toast';
-
 import { LexicalComposer } from '@lexical/react/LexicalComposer';
 import { RichTextPlugin } from '@lexical/react/LexicalRichTextPlugin';
 import { ContentEditable } from '@lexical/react/LexicalContentEditable';
@@ -14,15 +13,14 @@ import { OnChangePlugin } from '@lexical/react/LexicalOnChangePlugin';
 import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
 import { LexicalErrorBoundary } from '@lexical/react/LexicalErrorBoundary';
 import { $getRoot, $getSelection, $isRangeSelection, $createParagraphNode } from 'lexical';
-
 import { CustomEmojiNode, $createCustomEmojiNode } from '../lexical/CustomEmojiNode';
 import { EditorTheme } from '../lexical/EditorTheme';
-import '../lexical/Editor.css';
 import default_picture from '../../img/Default-Images/default-picture.svg';
 import ShareMusicModal from '../common/ShareMusicModal';
 import ExpandableMenu from './ExpandableMenu';
 import EmojiPickerPlus from '../chat/EmojiPickerPlus';
 import { isPackAnimated } from '../../utils/emojiPackCache';
+import '../lexical/Editor.css';
 import './Post.css';
 
 const EditorAccessPlugin = ({ onEditorReady }) => {
@@ -90,6 +88,11 @@ const CreatePostForm = () => {
             if (user?.uid) {
                 const userRef = doc(db, "users", user.uid);
                 await updateDoc(userRef, { postsCount: increment(1) });
+                if (!user.roles?.includes('creator')) {
+                    await updateDoc(userRef, {
+                        roles: arrayUnion('creator')
+                    });
+                }
             }
         },
         onSuccess: () => {
@@ -156,14 +159,12 @@ const CreatePostForm = () => {
         }
     };
 
-    // --- ПОЧАТОК ВИПРАВЛЕННЯ ---
     const handleEmojiSelect = (emoji, isCustom) => {
         if (editorInstance) {
             editorInstance.focus();
             editorInstance.update(() => {
                 const selection = $getSelection();
                 if ($isRangeSelection(selection)) {
-                    // Правильна логіка: для кастомних - вставляємо вузол, для звичайних - текст
                     if (isCustom) {
                         const emojiNode = $createCustomEmojiNode(emoji.url, emoji.name, isPackAnimated(emoji.packId));
                         selection.insertNodes([emojiNode]);
@@ -175,7 +176,6 @@ const CreatePostForm = () => {
         }
         setIsEmojiPickerOpen(false);
     };
-    // --- КІНЕЦЬ ВИПРАВЛЕННЯ ---
 
     const handleSelectMusic = async (item, type) => {
         setIsShareModalOpen(false);

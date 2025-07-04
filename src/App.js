@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Route, Routes, useLocation } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from 'react-query';
-import { UserProvider } from './contexts/UserContext';
+import { UserProvider, useUserContext } from './contexts/UserContext';
 import { PlayerProvider, usePlayerContext } from './contexts/PlayerContext';
 
 import Header from './components/layout/Header';
@@ -20,7 +20,7 @@ import Player from './components/player/Player';
 import CreateEmojiPack from './pages/CreateEmojiPack';
 import TrackPage from './pages/TrackPage';
 import TagPage from './pages/TagPage';
-import BottomNavBar from './components/layout/BottomNavBar'; 
+import BottomNavBar from './components/layout/BottomNavBar';
 import EmojiPacksSettings from './components/chat/EmojiPacksSettings';
 import EditEmojiPack from './pages/EditEmojiPack';
 import AdminRoute from './components/layout/AdminRoute';
@@ -28,26 +28,25 @@ import CreatorRoute from './components/layout/CreatorRoute';
 import AdminPage from './pages/AdminPage';
 import CreatorStudio from './pages/CreatorStudio';
 import NotificationsPage from './pages/NotificationsPage';
+import SearchPage from './pages/SearchPage';
 
 import './styles/index.css';
 import './components/posts/Post.css';
+import './styles/App.css';
 
 const queryClient = new QueryClient();
 
 const AppLayout = () => {
     const { notification, currentTrack } = usePlayerContext();
+    const { user } = useUserContext();
     const isPlayerVisible = !!currentTrack;
+    const location = useLocation();
 
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-    const location = useLocation();
-    
-    const isSidebarPage = location.pathname.startsWith('/tags/') || location.pathname === '/studio';
-
-    const handleToggleSidebar = () => {
-        setIsSidebarOpen(prev => !prev);
-    };
-
     const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+
+    const isSidebarPage = location.pathname.startsWith('/tags/') || location.pathname === '/studio';
+    const inChatView = location.pathname === '/messages' && document.body.classList.contains('in-chat-view');
 
     useEffect(() => {
         const handleResize = () => setIsMobile(window.innerWidth <= 768);
@@ -56,24 +55,27 @@ const AppLayout = () => {
     }, []);
 
     useEffect(() => {
-        if (isMobile) {
-            document.body.classList.add('mobile-view-active');
+        const hasBottomNav = isMobile && user && !inChatView;
+        if (hasBottomNav) {
+            document.body.classList.add('mobile-nav-visible');
         } else {
-            document.body.classList.remove('mobile-view-active');
+            document.body.classList.remove('mobile-nav-visible');
         }
-    }, [isMobile]);
 
-    useEffect(() => {
-        if (isPlayerVisible && isMobile) {
-             document.body.classList.add('player-visible-mobile');
+        if (isPlayerVisible && hasBottomNav) {
+            document.body.classList.add('player-on-mobile');
         } else {
-             document.body.classList.remove('player-visible-mobile');
+            document.body.classList.remove('player-on-mobile');
         }
-    }, [isPlayerVisible, isMobile])
+    }, [isMobile, user, isPlayerVisible, inChatView]);
+
+    const handleToggleSidebar = () => {
+        setIsSidebarOpen(prev => !prev);
+    };
 
     return (
         <>
-            <Header 
+            <Header
                 showTagPageMenu={isSidebarPage}
                 onTagPageMenuClick={handleToggleSidebar}
             />
@@ -82,6 +84,7 @@ const AppLayout = () => {
                     <Route path="/" element={<Home />} />
                     <Route path="/login" element={<Login />} />
                     <Route path="/register" element={<Register />} />
+                    <Route path="/search" element={<SearchPage />} />
                     <Route path="/profile" element={<Profile />} />
                     <Route path="/user/:userNickname" element={<UserProfile />} />
                     <Route path="/settings" element={<Settings />} />
@@ -96,31 +99,26 @@ const AppLayout = () => {
                     <Route path="/track/:trackId" element={<TrackPage />} />
                     <Route path="/tags/:tagName" element={<TagPage isSidebarOpen={isSidebarOpen} />} />
                     <Route path="/notifications" element={<NotificationsPage />} />
-
-                    <Route 
-                        path="/studio" 
+                    <Route
+                        path="/studio"
                         element={
                             <CreatorRoute>
                                 <CreatorStudio />
                             </CreatorRoute>
-                        } 
+                        }
                     />
-                    
-                    <Route 
-                        path="/admin" 
+                    <Route
+                        path="/admin"
                         element={
                             <AdminRoute>
                                 <AdminPage />
                             </AdminRoute>
-                        } 
+                        }
                     />
                 </Routes>
             </main>
-            
             <BottomNavBar isPlayerVisible={isPlayerVisible} />
-            
-            <Player className={isPlayerVisible ? 'visible' : ''} />
-            
+            <Player />
             {notification.message && (
                 <div className={`toast-notification ${notification.type}`}>
                     {notification.message}
@@ -128,7 +126,7 @@ const AppLayout = () => {
             )}
         </>
     );
-}
+};
 
 const AppContent = () => (
     <Router>
