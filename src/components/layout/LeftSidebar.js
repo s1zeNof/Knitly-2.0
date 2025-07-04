@@ -5,7 +5,6 @@ import { usePlayerContext } from '../../contexts/PlayerContext';
 import default_picture from '../../img/Default-Images/default-picture.svg';
 import './LeftSidebar.css';
 
-// Іконки
 const HomeIcon = () => <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>;
 const DashboardIcon = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 3v18h18"/><path d="M18.7 8a6 6 0 0 0-8.4 0l-6.3 6.3"/><path d="M12.3 14.7a2 2 0 0 0-2.8 0l-4.2 4.2"/></svg>;
 const UploadIcon = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12" /></svg>;
@@ -17,7 +16,6 @@ const HelpIcon = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor
 
 
 const LeftSidebar = ({ isOpen }) => {
-    // --- ОТРИМУЄМО НОВІ ЛІЧИЛЬНИКИ З КОНТЕКСТУ ---
     const { user, totalUnreadMessages, unreadNotificationsCount } = useUserContext();
     const { currentTrack } = usePlayerContext();
     const isPlayerVisible = !!currentTrack;
@@ -41,11 +39,10 @@ const LeftSidebar = ({ isOpen }) => {
                 )}
                 <nav className="sidebar-nav">
                     <NavLink to="/" className="nav-item"><HomeIcon /> Головна</NavLink>
-                    {user?.roles?.includes('admin') && <NavLink to="/dashboard" className="nav-item"><DashboardIcon /> Панель артиста</NavLink>}
+                    {(user?.roles?.includes('admin') || user?.roles?.includes('creator')) && <NavLink to="/studio" className="nav-item"><DashboardIcon /> Творча студія</NavLink>}
                     <NavLink to="/upload" className="nav-item"><UploadIcon /> Завантажити</NavLink>
                     <NavLink to="/library" className="nav-item"><LibraryIcon /> Моя бібліотека</NavLink>
                     
-                    {/* --- ДОДАЄМО БЕЙДЖІ --- */}
                     <NavLink to="/messages" className="nav-item">
                         <MessagesIcon /> Повідомлення
                         {totalUnreadMessages > 0 && <span className="sidebar-badge">{totalUnreadMessages}</span>}
