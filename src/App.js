@@ -4,8 +4,6 @@ import { QueryClient, QueryClientProvider } from 'react-query';
 import { UserProvider } from './contexts/UserContext';
 import { PlayerProvider, usePlayerContext } from './contexts/PlayerContext';
 
-
-
 import Header from './components/layout/Header';
 import Home from './pages/Home';
 import Login from './pages/Login';
@@ -26,9 +24,10 @@ import BottomNavBar from './components/layout/BottomNavBar';
 import EmojiPacksSettings from './components/chat/EmojiPacksSettings';
 import EditEmojiPack from './pages/EditEmojiPack';
 import AdminRoute from './components/layout/AdminRoute';
+import CreatorRoute from './components/layout/CreatorRoute';
 import AdminPage from './pages/AdminPage';
-import ArtistDashboard from './pages/ArtistDashboard';
-import NotificationsPage from './pages/NotificationsPage'; // <-- Додайте цей імпорт
+import CreatorStudio from './pages/CreatorStudio';
+import NotificationsPage from './pages/NotificationsPage';
 
 import './styles/index.css';
 import './components/posts/Post.css';
@@ -42,7 +41,7 @@ const AppLayout = () => {
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const location = useLocation();
     
-    const isSidebarPage = location.pathname.startsWith('/tags/') || location.pathname === '/dashboard';
+    const isSidebarPage = location.pathname.startsWith('/tags/') || location.pathname === '/studio';
 
     const handleToggleSidebar = () => {
         setIsSidebarOpen(prev => !prev);
@@ -96,14 +95,14 @@ const AppLayout = () => {
                     <Route path="/create-emoji-pack" element={<CreateEmojiPack />} />
                     <Route path="/track/:trackId" element={<TrackPage />} />
                     <Route path="/tags/:tagName" element={<TagPage isSidebarOpen={isSidebarOpen} />} />
-                    <Route path="/notifications" element={<NotificationsPage />} /> {/* <-- Додайте цей рядок */}
+                    <Route path="/notifications" element={<NotificationsPage />} />
 
                     <Route 
-                        path="/dashboard" 
+                        path="/studio" 
                         element={
-                            <AdminRoute>
-                                <ArtistDashboard isSidebarOpen={isSidebarOpen} />
-                            </AdminRoute>
+                            <CreatorRoute>
+                                <CreatorStudio />
+                            </CreatorRoute>
                         } 
                     />
                     

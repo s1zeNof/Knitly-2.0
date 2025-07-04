@@ -20,7 +20,7 @@
 }
 
 .post-snippet {
-    max-height: 60px; /* Обмежуємо висоту текстового блоку */
+    max-height: 60px;
     overflow: hidden;
     position: relative;
     font-size: 0.9rem;
@@ -28,7 +28,6 @@
     color: var(--color-text-secondary);
 }
 
-/* Створюємо ефект "згасання" для тексту, що не вміщується */
 .post-snippet::after {
     content: '';
     position: absolute;
@@ -74,6 +73,13 @@
     text-overflow: ellipsis;
 }
 
+.post-analytics-attachment.poll svg {
+    width: 32px;
+    height: 32px;
+    color: var(--color-accent);
+    flex-shrink: 0;
+}
+
 .post-analytics-stats {
     display: flex;
     gap: 1.5rem;
@@ -108,7 +114,7 @@
     z-index: 1;
     bottom: 150%;
     left: 50%;
-    margin-left: -50px; /* Use half of the width to center the tooltip */
+    margin-left: -50px;
     transition: opacity 0.2s;
     font-size: 0.8rem;
     width: 100px;
