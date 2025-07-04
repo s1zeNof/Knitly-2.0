@@ -28,6 +28,7 @@ import EditEmojiPack from './EditEmojiPack';
 import AdminRoute from './AdminRoute';
 import AdminPage from './AdminPage';
 import ArtistDashboard from './ArtistDashboard';
+import NotificationsPage from './NotificationsPage'; // <-- Додайте цей імпорт
 
 import './App.css';
 import './components/posts/Post.css';
@@ -95,6 +96,7 @@ const AppLayout = () => {
                     <Route path="/create-emoji-pack" element={<CreateEmojiPack />} />
                     <Route path="/track/:trackId" element={<TrackPage />} />
                     <Route path="/tags/:tagName" element={<TagPage isSidebarOpen={isSidebarOpen} />} />
+                    <Route path="/notifications" element={<NotificationsPage />} /> {/* <-- Додайте цей рядок */}
 
                     <Route 
                         path="/dashboard" 

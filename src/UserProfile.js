@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { db } from './firebase';
-import { query, collection, where, getDocs, doc, updateDoc, arrayUnion, arrayRemove, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
+import { query, collection, where, getDocs, doc, updateDoc, arrayUnion, arrayRemove, getDoc, setDoc, serverTimestamp, addDoc } from 'firebase/firestore';
 import { useUserContext } from './UserContext';
 import TrackList from './TrackList';
 import PlaylistTab from './PlaylistTab';
@@ -56,6 +56,7 @@ const UserProfile = () => {
                     }
                 } else {
                     console.error("Користувача не знайдено");
+                    setProfileUser(null);
                 }
             } catch (e) {
                 console.error("Помилка завантаження даних користувача:", e);
@@ -70,8 +71,10 @@ const UserProfile = () => {
     const handleFollowToggle = async () => {
         if (!currentUser || !profileUser || isProcessingFollow) return;
         setIsProcessingFollow(true);
+        
         const profileUserRef = doc(db, 'users', profileUser.uid);
         const currentUserRef = doc(db, 'users', currentUser.uid);
+
         try {
             if (isFollowing) {
                 await updateDoc(profileUserRef, { followers: arrayRemove(currentUser.uid) });
@@ -81,6 +84,21 @@ const UserProfile = () => {
                 await updateDoc(profileUserRef, { followers: arrayUnion(currentUser.uid) });
                 await updateDoc(currentUserRef, { following: arrayUnion(profileUser.uid) });
                 setIsFollowing(true);
+
+                // Створюємо сповіщення для користувача, на якого підписались
+                const notificationRef = collection(db, 'users', profileUser.uid, 'notifications');
+                await addDoc(notificationRef, {
+                    type: 'new_follower',
+                    fromUser: {
+                        uid: currentUser.uid,
+                        nickname: currentUser.nickname,
+                        photoURL: currentUser.photoURL
+                    },
+                    entityId: currentUser.uid,
+                    entityLink: `/user/${currentUser.nickname}`,
+                    timestamp: serverTimestamp(),
+                    read: false
+                });
             }
             await refreshUser();
             setProfileUser(prev => ({
@@ -97,33 +115,25 @@ const UserProfile = () => {
     };
 
     const handleStartConversation = async () => {
-        if (!currentUser || !profileUser) {
-            console.error("ВІДСУТНІ ДАНІ: currentUser або profileUser не визначені.", { currentUser, profileUser });
-            return;
-        }
+        if (!currentUser || !profileUser) return;
+        
         const chatId = [currentUser.uid, profileUser.uid].sort().join('_');
         const chatRef = doc(db, 'chats', chatId);
-
-        const unreadCounts = {
-            [currentUser.uid]: 0,
-            [profileUser.uid]: 0
-        };
-
-        const dataToCreate = {
-            isGroup: false,
-            participants: [currentUser.uid, profileUser.uid],
-            participantInfo: [
-                { uid: currentUser.uid, displayName: currentUser.displayName, photoURL: currentUser.photoURL || null },
-                { uid: profileUser.uid, displayName: profileUser.displayName, photoURL: profileUser.photoURL || null }
-            ],
-            lastMessage: null,
-            lastUpdatedAt: serverTimestamp(),
-            unreadCounts: unreadCounts, 
-        };
 
         try {
             const chatSnap = await getDoc(chatRef);
             if (!chatSnap.exists()) {
+                 const dataToCreate = {
+                    isGroup: false,
+                    participants: [currentUser.uid, profileUser.uid],
+                    participantInfo: [
+                        { uid: currentUser.uid, displayName: currentUser.displayName, photoURL: currentUser.photoURL || null },
+                        { uid: profileUser.uid, displayName: profileUser.displayName, photoURL: profileUser.photoURL || null }
+                    ],
+                    lastMessage: null,
+                    lastUpdatedAt: serverTimestamp(),
+                    unreadCounts: { [currentUser.uid]: 0, [profileUser.uid]: 0 }, 
+                };
                 await setDoc(chatRef, dataToCreate);
             }
             navigate('/messages', { state: { conversationId: chatId } });

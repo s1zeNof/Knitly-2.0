@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Link } from 'react-router-dom'; // <<< ІМПОРТ LINK
+import { Link } from 'react-router-dom';
 import { usePlayerContext } from './PlayerContext';
 import { useUserContext } from './UserContext';
 import { useUserTracks } from './hooks/useUserTracks';
 import { db, storage } from './firebase';
-import { doc, deleteDoc, updateDoc, arrayUnion, arrayRemove, increment, getDoc, collection, query, where, getDocs, runTransaction } from 'firebase/firestore'; 
+import { doc, deleteDoc, updateDoc, arrayUnion, arrayRemove, increment, getDoc, collection, query, where, getDocs, runTransaction, addDoc, serverTimestamp } from 'firebase/firestore'; 
 import { ref, deleteObject } from 'firebase/storage';
 import './TrackList.css';
 import AnimatedCounter from './AnimatedCounter';
@@ -23,7 +23,7 @@ const HeadsetIcon = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="
 const TrackList = ({ userId, initialTracks = null, isLoading: isLoadingInitial = false }) => {
     const { user: currentUser, refreshUser } = useUserContext();
     const { currentTrack, isPlaying, handlePlayPause, addToQueue, showNotification } = usePlayerContext();
-    const { tracks: fetchedTracks, loading, setTracks: setFetchedTracks } = useUserTracks(userId);
+    const { tracks: fetchedTracks, loading } = useUserTracks(userId);
     
     const [displayTracks, setDisplayTracks] = useState([]);
     const [isDataLoading, setIsDataLoading] = useState(true);
@@ -58,44 +58,53 @@ const TrackList = ({ userId, initialTracks = null, isLoading: isLoadingInitial =
         return () => document.removeEventListener("mousedown", handleClickOutside);
     }, []);
 
-    const handleLikeToggle = async (trackId, isLiked) => {
+    const handleLikeToggle = async (track) => {
         if (!currentUser) {
             showNotification("Будь ласка, увійдіть, щоб оцінити трек.", "error");
             return;
         }
-        if (processingLikes.includes(trackId)) return;
+        if (processingLikes.includes(track.id)) return;
 
-        setProcessingLikes(prev => [...prev, trackId]);
+        setProcessingLikes(prev => [...prev, track.id]);
 
-        const trackRef = doc(db, 'tracks', trackId);
+        const trackRef = doc(db, 'tracks', track.id);
         const userRef = doc(db, 'users', currentUser.uid);
+        const isLiked = currentUser.likedTracks?.includes(track.id);
 
         try {
             await runTransaction(db, async (transaction) => {
                 const trackDoc = await transaction.get(trackRef);
-                if (!trackDoc.exists()) {
-                    throw "Трек не знайдено!";
-                }
-
+                if (!trackDoc.exists()) throw "Трек не знайдено!";
                 const currentLikes = trackDoc.data().likesCount || 0;
-
                 if (isLiked) {
-                    if (currentLikes > 0) {
-                        transaction.update(trackRef, { likesCount: increment(-1) });
-                    }
-                    transaction.update(userRef, { likedTracks: arrayRemove(trackId) });
+                    if (currentLikes > 0) transaction.update(trackRef, { likesCount: increment(-1) });
+                    transaction.update(userRef, { likedTracks: arrayRemove(track.id) });
                 } else {
                     transaction.update(trackRef, { likesCount: increment(1) });
-                    transaction.update(userRef, { likedTracks: arrayUnion(trackId) });
+                    transaction.update(userRef, { likedTracks: arrayUnion(track.id) });
                 }
             });
 
             await refreshUser();
+            
+            if (!isLiked && track.authorId !== currentUser.uid) {
+                const notificationRef = collection(db, 'users', track.authorId, 'notifications');
+                await addDoc(notificationRef, {
+                    type: 'track_like',
+                    fromUser: { uid: currentUser.uid, nickname: currentUser.nickname, photoURL: currentUser.photoURL },
+                    entityId: track.id,
+                    entityTitle: track.title,
+                    entityLink: `/track/${track.id}`,
+                    timestamp: serverTimestamp(),
+                    read: false
+                });
+            }
+
         } catch (error) {
             console.error("Помилка транзакції лайку:", error);
             showNotification("Не вдалося оцінити трек. Спробуйте знову.", "error");
         } finally {
-            setProcessingLikes(prev => prev.filter(id => id !== trackId));
+            setProcessingLikes(prev => prev.filter(id => id !== track.id));
         }
     };
 
@@ -145,12 +154,8 @@ const TrackList = ({ userId, initialTracks = null, isLoading: isLoadingInitial =
                 await deleteObject(coverRef).catch(e => console.warn("Cover art not found or deletion failed:", e));
             }
             
-            if (initialTracks !== null) {
-                setDisplayTracks(prevTracks => prevTracks.filter(t => t.id !== trackToDelete.id));
-            } else {
-                setFetchedTracks(prevTracks => prevTracks.filter(t => t.id !== trackToDelete.id));
-            }
-
+            setDisplayTracks(prevTracks => prevTracks.filter(t => t.id !== trackToDelete.id));
+            
             showNotification(`Трек "${trackToDelete.title}" успішно видалено.`, 'info');
         } catch (error) {
             console.error("Помилка видалення треку:", error);
@@ -179,7 +184,6 @@ const TrackList = ({ userId, initialTracks = null, isLoading: isLoadingInitial =
                         const isLiked = currentUser?.likedTracks?.includes(track.id);
                         return (
                             <div key={track.id} className="track-item-list">
-                                {/* <<< ЗМІНА: Додано Link навколо зображення >>> */}
                                 <Link to={`/track/${track.id}`}>
                                     <img src={track.coverArtUrl || DEFAULT_COVER_URL} alt={track.title} className="track-cover-list"/>
                                 </Link>
@@ -187,7 +191,6 @@ const TrackList = ({ userId, initialTracks = null, isLoading: isLoadingInitial =
                                     {isPlaying && currentTrack?.id === track.id ? <PauseIcon /> : <PlayIcon />}
                                 </button>
                                 <div className="track-info-list">
-                                    {/* <<< ЗМІНА: Додано Link навколо назви >>> */}
                                     <Link to={`/track/${track.id}`} className="track-title-list-link">
                                         <p className="track-title-list">{track.title}</p>
                                     </Link>
@@ -201,7 +204,7 @@ const TrackList = ({ userId, initialTracks = null, isLoading: isLoadingInitial =
                                     <span className="stat-item">
                                         <button 
                                             className={`like-button ${isLiked ? 'liked' : ''}`} 
-                                            onClick={() => handleLikeToggle(track.id, isLiked)}
+                                            onClick={() => handleLikeToggle(track)}
                                             disabled={processingLikes.includes(track.id)}
                                         >
                                             <HeartIcon/>
@@ -242,7 +245,6 @@ const TrackList = ({ userId, initialTracks = null, isLoading: isLoadingInitial =
                                         {isPlaying && currentTrack?.id === track.id ? <PauseIcon /> : <PlayIcon />}
                                     </div>
                                 </div>
-                                {/* <<< ЗМІНА: Додано Link навколо назви >>> */}
                                 <Link to={`/track/${track.id}`}><p className="track-title-grid">{track.title}</p></Link>
                                 <div className="track-card-footer">
                                     <div className="track-stats-grid">
@@ -251,7 +253,7 @@ const TrackList = ({ userId, initialTracks = null, isLoading: isLoadingInitial =
                                     </div>
                                     <button 
                                         className={`like-button-grid ${isLiked ? 'liked' : ''}`} 
-                                        onClick={() => handleLikeToggle(track.id, isLiked)}
+                                        onClick={() => handleLikeToggle(track)}
                                         disabled={processingLikes.includes(track.id)}
                                     >
                                         <HeartIcon/>

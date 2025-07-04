@@ -1,14 +1,12 @@
-// src/UserContext.js
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import { auth, db } from './firebase';
 import { onAuthStateChanged } from 'firebase/auth';
-import { doc, getDoc, setDoc, serverTimestamp, collection, query, where, getDocs } from 'firebase/firestore';
-import { cacheAnimatedPackId } from './emojiPackCache'; // <-- ІМПОРТ
+// --- ВИПРАВЛЕННЯ ТУТ: Додано getDocs до імпорту ---
+import { doc, getDoc, setDoc, serverTimestamp, collection, query, where, onSnapshot, getDocs } from 'firebase/firestore';
+import { cacheAnimatedPackId } from './emojiPackCache';
 
 const UserContext = createContext();
 
-// --- НОВА ФУНКЦІЯ ---
-// Завантажує всі емоджі-паки користувача і кешує типи
 const fetchAndCacheUserEmojiPacks = async (userId) => {
     if (!userId) return;
     try {
@@ -27,6 +25,8 @@ const fetchAndCacheUserEmojiPacks = async (userId) => {
 export const UserProvider = ({ children }) => {
     const [user, setUser] = useState(null);
     const [authLoading, setAuthLoading] = useState(true);
+    const [totalUnreadMessages, setTotalUnreadMessages] = useState(0);
+    const [unreadNotificationsCount, setUnreadNotificationsCount] = useState(0);
 
     const refreshUser = async () => {
         if (!user) return;
@@ -41,7 +41,6 @@ export const UserProvider = ({ children }) => {
                     chatFolders: userData.chatFolders || [],
                     subscribedPackIds: userData.subscribedPackIds || []
                 });
-                // Оновлюємо кеш паків при оновленні користувача
                 await fetchAndCacheUserEmojiPacks(user.uid);
             }
         } catch (error) {
@@ -54,8 +53,7 @@ export const UserProvider = ({ children }) => {
             if (authUser) {
                 const userRef = doc(db, 'users', authUser.uid);
                 const userDoc = await getDoc(userRef);
-
-                // --- ПОКРАЩЕННЯ: Викликаємо кешування після отримання даних про користувача ---
+                
                 await fetchAndCacheUserEmojiPacks(authUser.uid);
 
                 if (userDoc.exists()) {
@@ -69,17 +67,10 @@ export const UserProvider = ({ children }) => {
                 } else {
                     const nickname = authUser.email ? authUser.email.split('@')[0].replace(/[^a-z0-9_.]/g, '') : `user${Date.now()}`;
                     const newUser = {
-                        uid: authUser.uid,
-                        displayName: authUser.displayName || 'Новий Артист',
-                        email: authUser.email,
-                        photoURL: authUser.photoURL || null,
-                        nickname: nickname,
-                        followers: [],
-                        following: [],
-                        likedTracks: [],
-                        createdAt: serverTimestamp(),
-                        chatFolders: [],
-                        subscribedPackIds: []
+                        uid: authUser.uid, displayName: authUser.displayName || 'Новий Артист',
+                        email: authUser.email, photoURL: authUser.photoURL || null,
+                        nickname: nickname, followers: [], following: [], likedTracks: [],
+                        createdAt: serverTimestamp(), chatFolders: [], subscribedPackIds: []
                     };
                     await setDoc(userRef, newUser);
                     setUser(newUser);
@@ -93,8 +84,50 @@ export const UserProvider = ({ children }) => {
         return () => unsubscribe();
     }, []);
 
+    useEffect(() => {
+        if (!user?.uid) {
+            setTotalUnreadMessages(0);
+            return;
+        }
+        
+        const q = query(collection(db, 'chats'), where('participants', 'array-contains', user.uid));
+        
+        const unsubscribe = onSnapshot(q, (querySnapshot) => {
+            let totalUnread = 0;
+            querySnapshot.forEach(doc => {
+                const chatData = doc.data();
+                if (chatData.unreadCounts && chatData.unreadCounts[user.uid]) {
+                    totalUnread += chatData.unreadCounts[user.uid];
+                }
+            });
+            setTotalUnreadMessages(totalUnread);
+        });
+
+        return () => unsubscribe();
+    }, [user?.uid]);
+
+    useEffect(() => {
+        if (!user?.uid) {
+            setUnreadNotificationsCount(0);
+            return;
+        }
+
+        const q = query(collection(db, 'users', user.uid, 'notifications'), where('read', '==', false));
+
+        const unsubscribe = onSnapshot(q, (snapshot) => {
+            setUnreadNotificationsCount(snapshot.size);
+        });
+
+        return () => unsubscribe();
+    }, [user?.uid]);
+
+    const value = {
+        user, setUser, authLoading, refreshUser,
+        totalUnreadMessages, unreadNotificationsCount
+    };
+
     return (
-        <UserContext.Provider value={{ user, setUser, authLoading, refreshUser }}>
+        <UserContext.Provider value={value}>
             {children}
         </UserContext.Provider>
     );

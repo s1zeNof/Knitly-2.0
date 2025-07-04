@@ -894,3 +894,53 @@
     border: none;
     padding-left: 0.25rem;
 }
+
+
+
+.poll-creator-container {
+    padding-left: 64px;
+    margin-top: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+.poll-options-creator {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+.poll-option-input-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+.poll-option-input-wrapper input {
+    flex-grow: 1;
+}
+.poll-option-input-wrapper button {
+    background: none;
+    border: none;
+    color: var(--color-text-secondary);
+    cursor: pointer;
+    font-size: 1.5rem;
+    padding: 0 0.5rem;
+}
+.add-option-btn {
+    background: none;
+    border: 1px solid var(--color-border);
+    color: var(--color-text-secondary);
+    padding: 0.5rem;
+    border-radius: 0.5rem;
+    cursor: pointer;
+    align-self: flex-start;
+}
+.poll-creator-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+}
+.attachment-preview.poll-preview span {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}

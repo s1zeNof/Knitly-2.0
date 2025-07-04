@@ -1,0 +1,35 @@
+.post-editor-wrapper {
+    background-color: var(--color-bg-deep);
+    border: 1px solid var(--color-accent); /* Підсвічуємо рамку в режимі редагування */
+    border-radius: 0.5rem;
+    padding: 0.75rem 1rem;
+    margin: 0.5rem 0;
+}
+
+.post-editor-input {
+    min-height: 100px;
+    resize: none;
+    font-size: 1rem;
+    line-height: 1.6;
+    caret-color: var(--color-accent);
+    outline: none;
+}
+
+.post-editor-placeholder {
+    font-size: 1rem;
+    color: var(--color-text-placeholder);
+    overflow: hidden;
+    position: absolute;
+    text-overflow: ellipsis;
+    top: 0.75rem;
+    left: 1rem;
+    user-select: none;
+    pointer-events: none;
+}
+
+.post-editor-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.75rem;
+    margin-top: 0.75rem;
+}
