@@ -10,142 +10,92 @@ header {
     position: sticky;
     top: 0;
     z-index: 100;
+    height: 70px;
+    box-sizing: border-box;
 }
-
-.header-left-section {
+.header-left-section, .right-side-header {
     display: flex;
     align-items: center;
-    gap: 1rem;
-    flex: 1; /* Займає 1 частину простору */
+    flex: 1;
 }
-
-.header-menu-toggle {
+.header-left-section {
+    justify-content: flex-start;
+}
+.right-side-header {
+    justify-content: flex-end;
+}
+.header-center-section {
+    flex: 2;
+    display: flex;
+    justify-content: center;
+}
+.desktop-search-form {
+    display: flex;
+    align-items: center;
+    background-color: var(--color-bg-light);
+    border-radius: 2rem;
+    padding: 0.5rem 1rem;
+    width: 100%;
+    max-width: 480px;
+    border: 1px solid var(--color-bg-light);
+    transition: all 0.2s;
+}
+.desktop-search-form:focus-within {
+    background-color: var(--color-bg-deep);
+    border-color: var(--color-border);
+}
+.desktop-search-form svg {
+    color: var(--color-text-placeholder);
+    margin-right: 0.75rem;
+}
+.desktop-search-form input {
     background: none;
     border: none;
-    color: white;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0.5rem;
-    border-radius: 50%;
-    transition: background-color 0.2s;
+    outline: none;
+    color: var(--color-text-primary);
+    font-size: 1rem;
+    width: 100%;
 }
-
-.header-menu-toggle:hover {
-    background-color: #333;
-}
-
 .header-logo {
     transform: rotate(-9deg);
 }
-
 .header-logo a {
     color: white;
     text-decoration: none;
     font-size: 24px;
     font-family: 'Knewave';
 }
-
-.header-menu {
-    display: flex;
-    align-items: center;
-    justify-content: center; /* Центрує посилання */
-    flex: 2; /* Займає 2 частини простору, щоб бути по центру */
-}
-
-.header-menu a {
-    color: white;
-    text-decoration: none;
-    padding: 0px 15px;
-}
-
-.auth-buttons {
-    display: flex;
-    align-items: center;
-}
-
-.btn-signup {
-    background-color: #6f32a8;
-    color: white;
-    margin-left: 20px;
-    transition: 0.2s;
-    padding: 5px 15px;
-    border: 1px solid #6f32a8;
-    border-radius: 5px;
-    cursor: pointer;
-}
-
-.btn-signup:hover {
-    background-color: #5c2a91;
-    transition: 0.2s;
-}
-
-.btn-login {
-    background-color: transparent;
-    color: white;
-    border: 1px solid white;
-    transition: 0.2s;
-    padding: 5px 15px;
-    border-radius: 5px;
-    cursor: pointer;
-}
-
-.btn-login:hover {
-    background-color: white;
-    color: #333;
-    transition: 0.2s;
-}
-
-.right-side-header {
-    display: flex;
-    justify-content: flex-end; /* Вирівнюємо по правому краю */
-    align-items: center;
-    flex: 1; /* Займає 1 частину простору */
-}
-
 .notification-icon {
     margin-right: 25px;
     position: relative;
 }
-
-.notification-icon .notif-icon {
-    width: 28px;
-    cursor: pointer;
+.notif-icon-link {
+    color: white;
+    display: flex;
 }
-
+.notif-icon-link svg {
+    width: 24px;
+    height: 24px;
+}
 .notification-count {
     position: absolute;
     top: -5px;
     right: -8px;
-}
-
-.notification-count.active {
-    background-color: #6f32a8;
+    background-color: #a855f7;
     padding: 1px 6px;
     font-size: 12px;
-    animation: pulse 1s infinite;
     border-radius: 50px;
 }
-
-@keyframes pulse {
-    0% { transform: scale(1); }
-    50% { transform: scale(1.1); }
-    100% { transform: scale(1); }
-}
-
 .user-profile {
     position: relative;
     cursor: pointer;
 }
-
 .user-profile .profile-picture {
     border-radius: 50%;
     width: 40px;
     height: 40px;
     object-fit: cover;
 }
-
 .dropdown-menu {
     display: none;
     position: absolute;
@@ -159,116 +109,64 @@ header {
     z-index: 1000;
     margin-top: 10px;
 }
-
 .user-profile:hover .dropdown-menu {
     display: block;
 }
-
-.dropdown-menu a,
-.dropdown-menu button {
-    color: white;
-    padding: 10px;
-    text-decoration: none;
-    display: block;
-    width: 100%;
-    text-align: left;
-    background: none;
-    border: none;
-    cursor: pointer;
-    border-radius: 5px;
+.dropdown-menu a, .dropdown-menu button {
+    color: white; padding: 10px; text-decoration: none;
+    display: block; width: 100%; text-align: left;
+    background: none; border: none; cursor: pointer; border-radius: 5px;
 }
-
-.dropdown-menu a:hover,
-.dropdown-menu button:hover {
+.dropdown-menu a:hover, .dropdown-menu button:hover {
     background-color: #444;
 }
-
-.notifications-popup {
-    z-index: 1000;
-    width: 350px;
-    height: auto;
-    max-height: 400px;
-    overflow-y: auto;
+.mobile-header {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.mobile-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+.mobile-header-action {
+    color: var(--color-text-primary);
+    position: relative;
+    padding: 0.5rem;
+}
+.mobile-header-action svg {
+    width: 28px;
+    height: 28px;
+}
+.mobile-badge {
     position: absolute;
-    background-color: rgba(40, 40, 40, 0.8);
-    backdrop-filter: blur(10px);
-    right: 70px;
-    top: 70px;
-    border-radius: 10px;
-    padding: 20px;
-    border: 1px solid #444;
-    transform: translateY(-20px) scale(0.95);
-    opacity: 0;
-    transition: transform 0.3s ease, opacity 0.3s ease;
-    visibility: hidden;
+    top: 2px;
+    right: 2px;
+    background-color: var(--color-error);
+    color: white;
+    font-size: 0.65rem;
+    font-weight: 700;
+    padding: 1px 5px;
+    border-radius: 50px;
+    border: 1px solid var(--color-bg-medium);
 }
-
-.notifications-popup.show {
-    transform: translateY(0) scale(1);
-    opacity: 1;
-    visibility: visible;
-}
-
-.notification-item {
+.profile-context-header {
+    width: 100%;
     display: flex;
+    justify-content: space-between;
     align-items: center;
-    gap: 10px;
 }
-
-.notification-item:not(:last-child) {
-    padding-bottom: 15px;
-    margin-bottom: 15px;
-    border-bottom: 1px solid #444;
+.profile-context-username {
+    font-size: 1.2rem;
+    font-weight: 600;
 }
-
-.notification-item-picture img {
-    width: 60px;
-    height: 60px;
-    object-fit: cover;
-    border-radius: 8px;
+@media (min-width: 769px) {
+    .mobile-header { display: none; }
 }
-
-.notification-item-info {
-    flex-grow: 1;
-}
-
-.notification-item-info .notify-name {
-    display: flex;
-    align-items: center;
-    font-weight: bold;
-}
-
-.notification-item-info .verified-badge {
-    height: 15px;
-    width: auto;
-    margin-left: 5px;
-}
-
-.notification-item-btns {
-    display: flex;
-    gap: 10px;
-    margin-top: 8px;
-}
-
-/* Media Queries */
 @media (max-width: 768px) {
-    .header-menu {
+    .header-left-section, .header-center-section, .right-side-header, .auth-buttons, .header-menu {
         display: none;
-    }
-    
-    .header-menu-toggle {
-        display: none; /* Ховаємо гамбургер, оскільки є BottomNavBar */
-    }
-
-    .right-side-header .notification-icon {
-        margin-right: 1rem;
-    }
-
-    .header-left-section, .right-side-header {
-        flex: none; /* Забираємо гнучкість, щоб розмістити елементи по краях */
-    }
-
-    header {
-        justify-content: space-between;
     }
 }
