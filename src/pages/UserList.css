@@ -1,0 +1,179 @@
+/*.user-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    justify-content: center;
+    flex-direction: column;
+}*/
+
+.user-list {
+    display: flex;
+    gap: 20px;
+    justify-content: flex-start !important;
+    flex-wrap: wrap;
+    width: 100%;
+    flex-direction: row;
+}
+
+/*.user-card {
+    width: 100%;
+    display: flex;
+    border: 1px solid #282828;
+    border-radius: 10px;
+    padding: 15px;
+    text-align: center;
+    flex-direction: row;
+}*/
+
+.user-card {
+    width: 29%;
+    display: flex;
+    border: 1px solid #282828;
+    border-radius: 10px;
+    padding: 15px;
+    text-align: center;
+    flex-direction: row;
+}
+
+.user-card-in-sidebar {
+    display: flex;
+    margin-bottom: 15px;
+    padding: 10px 10px 10px 10px;
+    border-radius: 10px;
+    max-width: 356px;
+    background-color: #333333b8;
+    align-items: center;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+}
+
+.user-card-in-sidebar p {
+    display: flex;
+    align-items: flex-end;
+    color: #fff;
+    font-size: 14px;
+    padding-left: 15px;
+}
+
+@media (max-width: 768px) {
+    .user-card {
+        width: calc(50% - 20px); /* Два карточки в ряд на середніх екранах */
+    }
+}
+
+@media (max-width: 480px) {
+    .user-card {
+        width: 100%; /* Один в ряд на малих екранах/телефонах */
+    }
+}
+
+.user-list-info {
+    padding-left: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.user-list-info h3 a {
+    color: #fff;
+    text-decoration: none;
+}
+
+.user-list-info p {
+    color: #939393;
+}
+
+.user-avatar {
+    width: 100%;
+    height: auto;
+    border-radius: 50%;
+}
+
+
+/* UserList.css */
+.settings-container {
+    display: flex;
+    background-color: #121212;
+    color: white;
+    height: 100vh;
+}
+
+.sidebar {
+    width: 250px;
+    background-color: #1f1f1f !important;
+    padding: 20px;
+
+}
+
+
+
+.sidebar-background {
+    background: url("../img/no-messages-yet.svg");
+    background-repeat: no-repeat;
+    background-position-x: center;
+    background-position-y: center;
+    background-size: contain;
+    background-origin: content-box;
+    
+}
+
+.settings-content {
+    flex-grow: 1;
+    padding: 20px;
+}
+
+.settings-section {
+    background-color: #333;
+    padding: 20px 40px 20px 20px;
+    border-radius: 8px;
+}
+
+.user-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    justify-content: center;
+}
+
+.profile-picture {
+    border-radius: 50%;
+    width: 100px;
+    height: 100px;
+    object-fit: cover; /* Adjust as needed */
+}
+
+.sidebar-user-picture {
+    border-radius: 50%;
+    width: 50px;
+    height: auto;
+    object-fit: cover; /* Adjust as needed */
+}
+
+/* Add more styles as needed to match your design */
+
+/*Badge*/
+
+.sidebar-content .verified-badge {
+    width: 15px;
+    height: 15px;
+    padding-left: 5px;
+}
+
+
+.user-list-info h3 a {
+    width: 100% !important;
+    display: flex;
+    align-items: flex-end;
+}
+
+.user-list-info .verified-badge {
+    width: 20px;
+    display: flex;
+}
+
+  .user-list-info .verified-badge {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-left: 5px;
+  }

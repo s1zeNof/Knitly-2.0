@@ -1,8 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useMutation, useQueryClient, useQuery } from 'react-query';
 import { collection, addDoc, serverTimestamp, doc, updateDoc, increment, getDoc, query, where, getDocs, limit } from 'firebase/firestore';
-import { db } from '../../firebase';
-import { useUserContext } from '../../UserContext';
+import { db } from '../../services/firebase';
+import { useUserContext } from '../../contexts/UserContext';
 import { useDebounce } from 'use-debounce';
 import toast from 'react-hot-toast';
 
@@ -19,10 +19,10 @@ import { CustomEmojiNode, $createCustomEmojiNode } from '../lexical/CustomEmojiN
 import { EditorTheme } from '../lexical/EditorTheme';
 import '../lexical/Editor.css';
 import default_picture from '../../img/Default-Images/default-picture.svg';
-import ShareMusicModal from '../../ShareMusicModal';
+import ShareMusicModal from '../common/ShareMusicModal';
 import ExpandableMenu from './ExpandableMenu';
-import EmojiPickerPlus from '../../EmojiPickerPlus';
-import { isPackAnimated } from '../../emojiPackCache';
+import EmojiPickerPlus from '../chat/EmojiPickerPlus';
+import { isPackAnimated } from '../../utils/emojiPackCache';
 import './Post.css';
 
 const EditorAccessPlugin = ({ onEditorReady }) => {

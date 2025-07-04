@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useMutation, useQueryClient } from 'react-query';
 import { doc, runTransaction } from 'firebase/firestore';
-import { db } from '../../firebase';
-import { useUserContext } from '../../UserContext';
+import { db } from '../../services/firebase';
+import { useUserContext } from '../../contexts/UserContext';
 import toast from 'react-hot-toast';
 import './PollAttachment.css';
 

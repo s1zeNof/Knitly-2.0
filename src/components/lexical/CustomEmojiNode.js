@@ -1,6 +1,6 @@
 import { DecoratorNode } from 'lexical';
 import React from 'react';
-import LottieRenderer from '../../LottieRenderer';
+import LottieRenderer from '../common/LottieRenderer';
 
 function CustomEmojiComponent({ src, alt, isAnimated }) {
   if (isAnimated) {

@@ -1,0 +1,164 @@
+/* ==========================================================================
+   Knitly - Global Stylesheet
+   ========================================================================== */
+
+/* --- Шрифти та Глобальні змінні (CSS Custom Properties) --- */
+@import url('https://fonts.googleapis.com/css2?family=Urbanist:ital,wght@0,100..900;1,100..900&display=swap');
+
+:root {
+  --font-main: 'Urbanist', sans-serif;
+  
+  --color-bg-deep: #121212;
+  --color-bg-medium: #181818;
+  --color-bg-light: #282828;
+  --color-border: #3f3f46;
+  --color-border-dashed: #52525b;
+  
+  --color-text-primary: #e5e7eb;
+  --color-text-secondary: #a1a1aa;
+  --color-text-placeholder: #71717a;
+
+  /*--color-accent: #2ddfb8;*/
+  --color-accent: #a855f7;
+  --color-accent-hover: #a855f7;
+  
+  --color-success: #22c55e;
+  --color-error: #ef4444;
+  --color-disabled: #4b5563;
+
+  --header-height: 70px;
+}
+
+/* --- Базові стилі для всього додатку --- */
+body {
+  /* Новий, більш надійний набір шрифтів */
+  font-family: 'Urbanist', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';
+  
+  background-color: var(--color-bg-deep);
+  color: var(--color-text-primary);
+  margin: 0;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+}
+
+a {
+    color: inherit;
+    text-decoration: none;
+}
+
+/* --- Скролбар --- */
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-track { background: var(--color-bg-medium); }
+::-webkit-scrollbar-thumb { background: var(--color-bg-light); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: var(--color-border); }
+
+/* --- Універсальні компоненти --- */
+
+/* Сповіщення (Toast) */
+@keyframes fadeInOut {
+  0% { opacity: 0; transform: translate(-50%, 20px); }
+  15% { opacity: 1; transform: translate(-50%, 0); }
+  85% { opacity: 1; transform: translate(-50%, 0); }
+  100% { opacity: 0; transform: translate(-50%, 20px); }
+}
+.toast-notification {
+  position: fixed;
+  bottom: 110px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: var(--color-accent);
+  color: white;
+  padding: 1rem 1.5rem;
+  border-radius: 0.5rem;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  z-index: 3000;
+  font-weight: 500;
+  animation: fadeInOut 3s ease-in-out forwards;
+}
+.toast-notification.error {
+    background-color: var(--color-error);
+}
+
+/* Поля вводу */
+.form-input,
+.form-textarea {
+  display: block;
+  width: 100%;
+  background-color: var(--color-bg-light);
+  border: 1px solid var(--color-border);
+  border-radius: 0.5rem;
+  padding: 0.75rem 1rem;
+  color: var(--color-text-primary);
+  transition: border-color 0.2s, box-shadow 0.2s;
+  font-size: 1rem;
+  box-sizing: border-box;
+}
+.form-input:focus,
+.form-textarea:focus {
+  outline: none;
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 3px rgba(168, 85, 247, 0.3);
+}
+.form-input::placeholder,
+.form-textarea::placeholder {
+  color: var(--color-text-placeholder);
+}
+
+/* Модальні вікна */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(18, 18, 18, 0.5);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2000;
+    padding: 1rem;
+    box-sizing: border-box;
+}
+.modal-content {
+    background-color: rgba(40, 40, 40, 0.8);
+    padding: 2rem;
+    border-radius: 0.75rem;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    width: 100%;
+    max-width: 550px;
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+}
+.modal-content h4 {
+    margin-top: 0;
+    font-size: 1.5rem;
+}
+.modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    margin-top: 1.5rem;
+}
+.modal-button-cancel, .modal-button-confirm {
+    padding: 0.75rem 1.5rem;
+    border-radius: 0.5rem;
+    border: none;
+    font-weight: 600;
+    cursor: pointer;
+}
+.modal-button-cancel {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: var(--color-text-primary);
+}
+.modal-button-confirm {
+    background-color: var(--color-error);
+    color: white;
+}
+.modal-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    margin-top: 1.5rem;
+}
