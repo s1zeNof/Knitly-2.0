@@ -1,15 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { db } from '../firebase';
+import { db } from '../services/firebase';
 import { collection, query, where, orderBy, limit, getDocs } from 'firebase/firestore';
 import { getTagIllustration } from '../config/tagConfig';
-import { usePlayerContext } from '../PlayerContext'; 
+import { usePlayerContext } from '../contexts/PlayerContext'; 
 
 // --- ПОЧАТОК ЗМІН ---
-import LeftSidebar from '../LeftSidebar'; // Імпортуємо новий компонент
+import LeftSidebar from '../components/layout/LeftSidebar'; // Імпортуємо новий компонент
 // --- КІНЕЦЬ ЗМІН ---
 
-import TrackList from '../TrackList';
+import TrackList from '../components/common/TrackList';
 import './TagPage.css';
 import default_picture from '../img/Default-Images/default-picture.svg';
 

@@ -2,7 +2,7 @@ import React from 'react';
 import { useQuery } from 'react-query';
 // --- ЗМІНА: Додаємо limit ---
 import { collection, query, orderBy, getDocs, limit, where } from 'firebase/firestore';
-import { db } from '../../firebase';
+import { db } from '../../services/firebase';
 import PostCard from './PostCard';
 import './Post.css';
 

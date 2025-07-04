@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { db } from '../firebase';
+import { db } from '../services/firebase';
 import { collection, query, where, orderBy, onSnapshot, limit } from 'firebase/firestore';
 
 export const useUserTracks = (userId, options = {}) => {
