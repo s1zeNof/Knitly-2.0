@@ -41,24 +41,14 @@ const CollaboratorTag = ({ user, onRemove }) => (
 
 const searchUsers = async (searchTerm, currentUser) => {
     if (!searchTerm) return { following: [], others: [] };
-
     const term = searchTerm.toLowerCase();
     const endTerm = term + '\uf8ff';
-
-    const nicknameQuery = query(
-        collection(db, "users"),
-        where("nickname", ">=", term),
-        where("nickname", "<=", endTerm),
-        limit(5)
-    );
-    
+    const nicknameQuery = query(collection(db, "users"), where("nickname", ">=", term), where("nickname", "<=", endTerm), limit(5));
     const snapshot = await getDocs(nicknameQuery);
     const allResults = snapshot.docs.map(doc => ({ uid: doc.id, ...doc.data() }));
-
     const followingIds = currentUser.following || [];
     const following = allResults.filter(u => followingIds.includes(u.uid) && u.uid !== currentUser.uid);
     const others = allResults.filter(u => !followingIds.includes(u.uid) && u.uid !== currentUser.uid);
-
     return { following, others };
 };
 
@@ -71,11 +61,13 @@ const CreatePostForm = () => {
     const [isEmojiPickerOpen, setIsEmojiPickerOpen] = useState(false);
     const [editorState, setEditorState] = useState(null);
     const [isEditorEmpty, setIsEditorEmpty] = useState(true);
-
     const [showCollabInput, setShowCollabInput] = useState(false);
     const [collaborators, setCollaborators] = useState([]);
     const [collabSearchTerm, setCollabSearchTerm] = useState("");
     const [debouncedSearchTerm] = useDebounce(collabSearchTerm, 300);
+    const [isCreatingPoll, setIsCreatingPoll] = useState(false);
+    const [pollQuestion, setPollQuestion] = useState("");
+    const [pollOptions, setPollOptions] = useState([{ id: 1, text: "" }, { id: 2, text: "" }]);
 
     const { data: searchResults, isLoading: isSearchingCollab } = useQuery(
         ['collabSearch', debouncedSearchTerm, user],
@@ -102,16 +94,12 @@ const CreatePostForm = () => {
         },
         onSuccess: () => {
             toast.success('Ваш допис опубліковано!');
-            if (editorInstance) {
-                editorInstance.update(() => {
-                    const root = $getRoot();
-                    root.clear().append($createParagraphNode());
-                });
-            }
+            if (editorInstance) editorInstance.update(() => { $getRoot().clear().append($createParagraphNode()); });
             setAttachment(null);
             setCollaborators([]);
             setShowCollabInput(false);
             setCollabSearchTerm('');
+            handleCancelPoll();
             queryClient.invalidateQueries('feedPosts');
         },
         onError: (error) => {
@@ -122,65 +110,32 @@ const CreatePostForm = () => {
 
     const onSubmit = (e) => {
         e.preventDefault();
-        if (!user || !user.uid || !user.nickname) { // Додаткова перевірка
-            toast.error('Ваш профіль ще завантажується, зачекайте хвилинку.');
-            return;
-        }
-        if (isEditorEmpty && !attachment) {
-            toast.error("Допис не може бути порожнім без вкладення.");
-            return;
-        }
+        if (!user || !user.uid || !user.nickname) { toast.error('Ваш профіль ще завантажується, зачекайте хвилинку.'); return; }
+        if (isEditorEmpty && !attachment) { toast.error("Допис не може бути порожнім без вкладення."); return; }
 
-        const mainAuthor = {
-            uid: user.uid,
-            nickname: user.nickname,
-            photoURL: user.photoURL,
-            displayName: user.displayName,
-        };
-
-        const allAuthors = [mainAuthor, ...collaborators.map(c => ({
-            uid: c.uid,
-            nickname: c.nickname,
-            photoURL: c.photoURL,
-            displayName: c.displayName,
-        }))];
-
+        const mainAuthor = { uid: user.uid, nickname: user.nickname, photoURL: user.photoURL, displayName: user.displayName };
+        const allAuthors = [mainAuthor, ...collaborators.map(c => ({ uid: c.uid, nickname: c.nickname, photoURL: c.photoURL, displayName: c.displayName }))];
         const authorUids = allAuthors.map(a => a.uid);
 
         const newPost = {
             editorState: editorState ? JSON.stringify(editorState) : null,
-            authors: allAuthors,
-            authorUids: authorUids,
-            createdAt: serverTimestamp(),
-            attachment: attachment,
-            likesCount: 0,
-            commentsCount: 0,
-            reactions: {},
-            isEdited: false,
+            authors: allAuthors, authorUids: authorUids,
+            createdAt: serverTimestamp(), attachment: attachment,
+            likesCount: 0, commentsCount: 0, reactions: {}, isEdited: false,
         };
+        
         createPostMutation.mutate(newPost);
     };
 
     const handleAddCollaborator = (userToAdd) => {
-        if (collaborators.length >= 3) {
-            toast.error("Можна додати не більше 3 співавторів.");
-            return;
-        }
-        if (userToAdd.uid === user.uid) {
-             toast.error("Ви не можете додати себе в співавтори.");
-            return;
-        }
-        if (collaborators.some(c => c.uid === userToAdd.uid)) {
-            toast.error("Цей користувач вже є співавтором.");
-            return;
-        }
+        if (collaborators.length >= 3) { toast.error("Можна додати не більше 3 співавторів."); return; }
+        if (userToAdd.uid === user.uid) { toast.error("Ви не можете додати себе в співавтори."); return; }
+        if (collaborators.some(c => c.uid === userToAdd.uid)) { toast.error("Цей користувач вже є співавтором."); return; }
         setCollaborators(prev => [...prev, userToAdd]);
         setCollabSearchTerm("");
     };
 
-    const handleRemoveCollaborator = (uid) => {
-        setCollaborators(prev => prev.filter(c => c.uid !== uid));
-    };
+    const handleRemoveCollaborator = (uid) => setCollaborators(prev => prev.filter(c => c.uid !== uid));
 
     const handleEditorChange = (currentEditorState) => {
         setEditorState(currentEditorState);
@@ -188,25 +143,27 @@ const CreatePostForm = () => {
             const root = $getRoot();
             const textContent = root.getTextContent().trim();
             const children = root.getChildren();
-            const isEffectivelyEmpty = textContent === '' && children.every(node => node.getType() === 'paragraph' && node.isEmpty());
-            setIsEditorEmpty(isEffectivelyEmpty);
+            setIsEditorEmpty(textContent === '' && children.every(node => node.getType() === 'paragraph' && node.isEmpty()));
         });
     };
 
     const handleMenuAction = (actionId) => {
         switch (actionId) {
-            case 'music': setIsShareModalOpen(true); break;
+            case 'music': setIsCreatingPoll(false); setIsShareModalOpen(true); break;
             case 'emoji': setIsEmojiPickerOpen(true); break;
+            case 'poll': setAttachment(null); setIsCreatingPoll(true); break;
             default: toast('Цей функціонал буде додано згодом.'); break;
         }
     };
 
+    // --- ПОЧАТОК ВИПРАВЛЕННЯ ---
     const handleEmojiSelect = (emoji, isCustom) => {
         if (editorInstance) {
             editorInstance.focus();
             editorInstance.update(() => {
                 const selection = $getSelection();
                 if ($isRangeSelection(selection)) {
+                    // Правильна логіка: для кастомних - вставляємо вузол, для звичайних - текст
                     if (isCustom) {
                         const emojiNode = $createCustomEmojiNode(emoji.url, emoji.name, isPackAnimated(emoji.packId));
                         selection.insertNodes([emojiNode]);
@@ -218,42 +175,66 @@ const CreatePostForm = () => {
         }
         setIsEmojiPickerOpen(false);
     };
+    // --- КІНЕЦЬ ВИПРАВЛЕННЯ ---
 
     const handleSelectMusic = async (item, type) => {
         setIsShareModalOpen(false);
-        if (type === 'track') {
-            try {
-                const trackRef = doc(db, 'tracks', item.id);
-                const trackSnap = await getDoc(trackRef);
-                if (trackSnap.exists()) {
-                    const freshTrackData = trackSnap.data();
-                    setAttachment({
-                        id: item.id,
-                        type: 'track',
-                        title: freshTrackData.title,
-                        authorName: freshTrackData.authorName,
-                        coverArtUrl: freshTrackData.coverArtUrl,
-                        trackUrl: freshTrackData.trackUrl,
-                    });
-                } else {
-                    toast.error('Вибраний трек не знайдено в базі.');
-                }
-            } catch (error) {
-                console.error("Error fetching full track data:", error);
-                toast.error('Не вдалося додати трек.');
-            }
-        } else if (type === 'album') {
-            setAttachment({
-                id: item.id,
-                type: 'album',
-                title: item.title,
-                artistName: item.artistName,
-                coverArtUrl: item.coverArtUrl,
-            });
-        }
+        setAttachment({
+            id: item.id, type: type, title: item.title,
+            coverArtUrl: item.coverArtUrl,
+            ...(type === 'track' && { authorName: item.authorName, trackUrl: item.trackUrl }),
+            ...(type === 'album' && { artistName: item.artistName }),
+        });
+    };
+    
+    const handlePollOptionChange = (index, value) => {
+        const newOptions = [...pollOptions];
+        newOptions[index].text = value;
+        setPollOptions(newOptions);
+    };
+
+    const addPollOption = () => { if (pollOptions.length < 10) setPollOptions([...pollOptions, { id: Date.now(), text: "" }]); };
+    
+    const removePollOption = (index) => { if (pollOptions.length > 2) setPollOptions(pollOptions.filter((_, i) => i !== index)); };
+    
+    const handleAttachPoll = () => {
+        if (!pollQuestion.trim()) { toast.error("Питання не може бути порожнім"); return; }
+        const validOptions = pollOptions.filter(opt => opt.text.trim() !== "");
+        if (validOptions.length < 2) { toast.error("Потрібно мінімум два варіанти відповіді"); return; }
+        setAttachment({
+            type: 'poll', question: pollQuestion,
+            options: validOptions.map(opt => ({ id: crypto.randomUUID(), text: opt.text, votes: 0 })),
+            voters: {}, totalVotes: 0,
+        });
+        setIsCreatingPoll(false);
+    };
+
+    const handleCancelPoll = () => {
+        setIsCreatingPoll(false);
+        setPollQuestion("");
+        setPollOptions([{id: 1, text: ""}, {id: 2, text: ""}]);
     };
 
     if (!user) { return null; }
+
+    const renderPollCreator = () => (
+        <div className="poll-creator-container">
+            <input type="text" className="form-input" placeholder="Ваше питання..." value={pollQuestion} onChange={e => setPollQuestion(e.target.value)} maxLength="250"/>
+            <div className="poll-options-creator">
+                {pollOptions.map((opt, index) => (
+                    <div key={opt.id} className="poll-option-input-wrapper">
+                        <input type="text" className="form-input" placeholder={`Варіант ${index + 1}`} value={opt.text} onChange={e => handlePollOptionChange(index, e.target.value)} maxLength="80"/>
+                         {pollOptions.length > 2 && <button type="button" onClick={() => removePollOption(index)}>&times;</button>}
+                    </div>
+                ))}
+            </div>
+            {pollOptions.length < 10 && <button type="button" className="add-option-btn" onClick={addPollOption}>+ Додати варіант</button>}
+            <div className="poll-creator-actions">
+                <button type="button" className="button-secondary" onClick={handleCancelPoll}>Скасувати</button>
+                <button type="button" className="button-primary" onClick={handleAttachPoll}>Додати опитування</button>
+            </div>
+        </div>
+    );
 
     return (
         <>
@@ -262,27 +243,34 @@ const CreatePostForm = () => {
                     <img src={user.photoURL || default_picture} alt="Ваш аватар" className="user-avatar" />
                     <LexicalComposer initialConfig={initialConfig}>
                         <div className="editor-container">
-                            <RichTextPlugin
-                                contentEditable={<ContentEditable className="editor-input" />}
-                                placeholder={<div className="editor-placeholder">{`Що нового, ${user.displayName}?`}</div>}
-                                ErrorBoundary={LexicalErrorBoundary}
-                            />
+                            <RichTextPlugin contentEditable={<ContentEditable className="editor-input" />} placeholder={<div className="editor-placeholder">{`Що нового, ${user.displayName}?`}</div>} ErrorBoundary={LexicalErrorBoundary} />
                             <HistoryPlugin />
                             <OnChangePlugin onChange={handleEditorChange} />
                             <EditorAccessPlugin onEditorReady={setEditorInstance} />
                         </div>
                     </LexicalComposer>
                 </div>
-                {attachment && (
-                    <div className="attachment-preview">
-                        <img src={attachment.coverArtUrl || default_picture} alt="preview" />
-                        <div className="attachment-preview-info">
-                            <p className="attachment-preview-type">{attachment.type === 'track' ? 'Трек' : 'Альбом'}</p>
-                            <p className="attachment-preview-title">{attachment.title}</p>
-                        </div>
-                        <button type="button" className="remove-attachment-btn" onClick={() => setAttachment(null)}>&times;</button>
-                    </div>
+
+                {isCreatingPoll ? renderPollCreator() : (
+                    attachment && (
+                        attachment.type === 'poll' ? (
+                             <div className="attachment-preview poll-preview">
+                                <span>📊 Опитування: "{attachment.question}"</span>
+                                <button type="button" className="remove-attachment-btn" onClick={() => setAttachment(null)}>&times;</button>
+                            </div>
+                        ) : (
+                             <div className="attachment-preview">
+                                <img src={attachment.coverArtUrl || default_picture} alt="preview" />
+                                <div className="attachment-preview-info">
+                                    <p className="attachment-preview-type">{attachment.type === 'track' ? 'Трек' : 'Альбом'}</p>
+                                    <p className="attachment-preview-title">{attachment.title}</p>
+                                </div>
+                                <button type="button" className="remove-attachment-btn" onClick={() => setAttachment(null)}>&times;</button>
+                            </div>
+                        )
+                    )
                 )}
+
                 <div className="collaborators-section">
                     <div className="collaborators-display">
                         {collaborators.map(c => <CollaboratorTag key={c.uid} user={c} onRemove={handleRemoveCollaborator}/>)}
@@ -291,42 +279,20 @@ const CreatePostForm = () => {
                         <div className="collaborator-input-container">
                             <div className="collaborator-input-wrapper">
                                 <span className="at-symbol">@</span>
-                                <input
-                                    type="text"
-                                    value={collabSearchTerm}
-                                    onChange={(e) => setCollabSearchTerm(e.target.value)}
-                                    placeholder="Нікнейм..."
-                                    className="collaborator-input"
-                                />
+                                <input type="text" value={collabSearchTerm} onChange={(e) => setCollabSearchTerm(e.target.value)} placeholder="Нікнейм..." className="collaborator-input" />
                             </div>
                             { (debouncedSearchTerm && (isSearchingCollab || searchResults)) && (
                                 <div className="collaborator-search-results">
                                     {isSearchingCollab && <div className="search-loader">Пошук...</div>}
-                                    {searchResults?.following.length > 0 && (
-                                        <>
-                                            <div className="results-separator">Ви підписані</div>
-                                            {searchResults.following.map(u => (
-                                                <div key={u.uid} className="search-item" onClick={() => handleAddCollaborator(u)}>
-                                                    <img src={u.photoURL || default_picture} alt={u.displayName}/>
-                                                    <span>{u.displayName} <small>@{u.nickname}</small></span>
-                                                </div>
-                                            ))}
-                                        </>
-                                    )}
-                                    {searchResults?.others.length > 0 && (
-                                         <>
-                                            <div className="results-separator">Інші користувачі</div>
-                                            {searchResults.others.map(u => (
-                                                <div key={u.uid} className="search-item" onClick={() => handleAddCollaborator(u)}>
-                                                    <img src={u.photoURL || default_picture} alt={u.displayName}/>
-                                                    <span>{u.displayName} <small>@{u.nickname}</small></span>
-                                                </div>
-                                            ))}
-                                        </>
-                                    )}
-                                    {!isSearchingCollab && !searchResults?.following.length && !searchResults?.others.length && debouncedSearchTerm &&
-                                        <div className="search-loader">Не знайдено</div>
-                                    }
+                                    {searchResults?.following.length > 0 && (<>
+                                        <div className="results-separator">Ви підписані</div>
+                                        {searchResults.following.map(u => (<div key={u.uid} className="search-item" onClick={() => handleAddCollaborator(u)}><img src={u.photoURL || default_picture} alt={u.displayName}/><span>{u.displayName} <small>@{u.nickname}</small></span></div>))}
+                                    </>)}
+                                    {searchResults?.others.length > 0 && (<>
+                                        <div className="results-separator">Інші користувачі</div>
+                                        {searchResults.others.map(u => (<div key={u.uid} className="search-item" onClick={() => handleAddCollaborator(u)}><img src={u.photoURL || default_picture} alt={u.displayName}/><span>{u.displayName} <small>@{u.nickname}</small></span></div>))}
+                                    </>)}
+                                    {!isSearchingCollab && !searchResults?.following.length && !searchResults?.others.length && debouncedSearchTerm && <div className="search-loader">Не знайдено</div>}
                                 </div>
                             )}
                         </div>
@@ -349,17 +315,8 @@ const CreatePostForm = () => {
                     </button>
                 </div>
             </form>
-            <ShareMusicModal
-                isOpen={isShareModalOpen}
-                onClose={() => setIsShareModalOpen(false)}
-                onShare={handleSelectMusic}
-            />
-            {isEmojiPickerOpen && (
-                <EmojiPickerPlus
-                    onClose={() => setIsEmojiPickerOpen(false)}
-                    onEmojiSelect={handleEmojiSelect}
-                />
-            )}
+            <ShareMusicModal isOpen={isShareModalOpen} onClose={() => setIsShareModalOpen(false)} onShare={handleSelectMusic}/>
+            {isEmojiPickerOpen && (<EmojiPickerPlus onClose={() => setIsEmojiPickerOpen(false)} onEmojiSelect={handleEmojiSelect}/>)}
         </>
     );
 };

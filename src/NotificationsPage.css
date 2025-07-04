@@ -1,0 +1,128 @@
+.notifications-page-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 2rem;
+}
+
+.notifications-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid var(--color-border);
+}
+
+.notifications-header h1 {
+    font-size: 2rem;
+    margin: 0;
+}
+
+.mark-all-read-btn {
+    background: none;
+    border: 1px solid var(--color-border);
+    color: var(--color-text-secondary);
+    padding: 0.6rem 1.2rem;
+    border-radius: 0.5rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.mark-all-read-btn:hover {
+    background-color: var(--color-bg-light);
+    color: var(--color-text-primary);
+}
+
+.mark-all-read-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.notifications-list {
+    display: flex;
+    flex-direction: column;
+}
+
+.notification-item-wrapper {
+    display: flex;
+    gap: 1rem;
+    padding: 1rem;
+    border-radius: 0.5rem;
+    text-decoration: none;
+    position: relative;
+    transition: background-color 0.2s;
+}
+
+.notification-item-wrapper:hover {
+    background-color: var(--color-bg-light);
+}
+
+.notification-item-wrapper.unread {
+    background-color: rgba(168, 85, 247, 0.08);
+}
+
+.notification-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0;
+}
+
+.notification-content {
+    flex-grow: 1;
+}
+
+.notification-text {
+    margin: 0;
+    line-height: 1.5;
+    color: var(--color-text-primary);
+}
+
+.notification-user-link {
+    font-weight: 600;
+}
+
+.notification-text strong {
+    font-weight: 600;
+    color: var(--color-text-secondary);
+}
+
+.notification-timestamp {
+    font-size: 0.85rem;
+    color: var(--color-text-secondary);
+    margin-top: 0.25rem;
+    display: block;
+}
+
+.unread-dot {
+    width: 8px;
+    height: 8px;
+    background-color: var(--color-accent);
+    border-radius: 50%;
+    position: absolute;
+    top: 50%;
+    right: 1rem;
+    transform: translateY(-50%);
+}
+
+.no-notifications-placeholder {
+    text-align: center;
+    padding: 4rem 2rem;
+    color: var(--color-text-secondary);
+}
+
+.no-notifications-placeholder svg {
+    width: 60px;
+    height: 60px;
+    stroke: var(--color-border);
+    stroke-width: 1.5;
+    fill: none;
+    margin-bottom: 1.5rem;
+}
+
+.no-notifications-placeholder h3 {
+    color: var(--color-text-primary);
+    margin: 0 0 0.5rem 0;
+}
