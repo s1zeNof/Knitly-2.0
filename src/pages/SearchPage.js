@@ -17,15 +17,30 @@ const searchAll = async (term) => {
     const endTerm = lowerCaseTerm + '\uf8ff';
 
     const tracksQuery = query(collection(db, 'tracks'), where('title_lowercase', '>=', lowerCaseTerm), where('title_lowercase', '<=', endTerm), limit(10));
-    const usersQuery = query(collection(db, 'users'), where('nickname', '>=', lowerCaseTerm), where('nickname', '<=', endTerm), limit(10));
+    
+    const usersByNicknameQuery = query(collection(db, 'users'), where('nickname', '>=', lowerCaseTerm), where('nickname', '<=', endTerm), limit(10));
+    
+    const usersByDisplayNameQuery = query(collection(db, 'users'), where('displayName_lowercase', '>=', lowerCaseTerm), where('displayName_lowercase', '<=', endTerm), limit(10));
 
-    const [tracksSnap, usersSnap] = await Promise.all([
+    const [tracksSnap, usersByNicknameSnap, usersByDisplayNameSnap] = await Promise.all([
         getDocs(tracksQuery),
-        getDocs(usersQuery),
+        getDocs(usersByNicknameQuery),
+        getDocs(usersByDisplayNameQuery),
     ]);
 
     const tracks = tracksSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-    const allUsers = usersSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+    const usersMap = new Map();
+    usersByNicknameSnap.docs.forEach(doc => {
+        usersMap.set(doc.id, { id: doc.id, ...doc.data() });
+    });
+    usersByDisplayNameSnap.docs.forEach(doc => {
+        if (!usersMap.has(doc.id)) {
+            usersMap.set(doc.id, { id: doc.id, ...doc.data() });
+        }
+    });
+    
+    const allUsers = Array.from(usersMap.values());
     
     const artists = allUsers.filter(u => u.tracksCount > 0);
     const users = allUsers.filter(u => !u.tracksCount || u.tracksCount === 0);

@@ -65,11 +65,20 @@ export const UserProvider = ({ children }) => {
                         await fetchAndCacheUserEmojiPacks(authUser.uid);
                     } else {
                         const nickname = authUser.email ? authUser.email.split('@')[0].replace(/[^a-z0-9_.]/g, '') : `user${Date.now()}`;
+                        const newUserName = authUser.displayName || 'Новий Артист';
                         const newUser = {
-                            uid: authUser.uid, displayName: authUser.displayName || 'Новий Артист',
-                            email: authUser.email, photoURL: authUser.photoURL || null,
-                            nickname: nickname, followers: [], following: [], likedTracks: [],
-                            createdAt: serverTimestamp(), chatFolders: [], subscribedPackIds: []
+                            uid: authUser.uid, 
+                            displayName: newUserName,
+                            displayName_lowercase: newUserName.toLowerCase(),
+                            email: authUser.email, 
+                            photoURL: authUser.photoURL || null,
+                            nickname: nickname, 
+                            followers: [], 
+                            following: [], 
+                            likedTracks: [],
+                            createdAt: serverTimestamp(), 
+                            chatFolders: [], 
+                            subscribedPackIds: []
                         };
                         await setDoc(userRef, newUser);
                         setUser(newUser);

@@ -16,12 +16,31 @@ const fetchLiveResults = async (term) => {
     const endTerm = lowerCaseTerm + '\uf8ff';
 
     const tracksQuery = query(collection(db, 'tracks'), where('title_lowercase', '>=', lowerCaseTerm), where('title_lowercase', '<=', endTerm), limit(3));
-    const artistsQuery = query(collection(db, 'users'), where('nickname', '>=', lowerCaseTerm), where('nickname', '<=', endTerm), limit(2));
+    const usersByNicknameQuery = query(collection(db, 'users'), where('nickname', '>=', lowerCaseTerm), where('nickname', '<=', endTerm), limit(2));
+    const usersByDisplayNameQuery = query(collection(db, 'users'), where('displayName_lowercase', '>=', lowerCaseTerm), where('displayName_lowercase', '<=', endTerm), limit(2));
 
-    const [tracksSnap, artistsSnap] = await Promise.all([getDocs(tracksQuery), getDocs(artistsQuery)]);
+    // --- ПОЧАТОК ВИПРАВЛЕННЯ ---
+    // Виправлено помилку: usersByDisplayNameSnap -> usersByDisplayNameQuery
+    const [tracksSnap, usersByNicknameSnap, usersByDisplayNameSnap] = await Promise.all([
+        getDocs(tracksQuery),
+        getDocs(usersByNicknameQuery),
+        getDocs(usersByDisplayNameQuery) 
+    ]);
+    // --- КІНЕЦЬ ВИПРАВЛЕННЯ ---
 
     const tracks = tracksSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-    const artists = artistsSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+    const artistsMap = new Map();
+    usersByNicknameSnap.docs.forEach(doc => {
+        artistsMap.set(doc.id, { id: doc.id, ...doc.data() });
+    });
+    usersByDisplayNameSnap.docs.forEach(doc => {
+        if (!artistsMap.has(doc.id)) {
+            artistsMap.set(doc.id, { id: doc.id, ...doc.data() });
+        }
+    });
+
+    const artists = Array.from(artistsMap.values());
 
     return { tracks, artists };
 };
