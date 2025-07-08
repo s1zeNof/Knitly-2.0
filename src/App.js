@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Analytics } from '@vercel/analytics/react';
 import { BrowserRouter as Router, Route, Routes, useLocation } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from 'react-query';
 import { UserProvider, useUserContext } from './contexts/UserContext';
@@ -99,14 +100,7 @@ const AppLayout = () => {
                     <Route path="/track/:trackId" element={<TrackPage />} />
                     <Route path="/tags/:tagName" element={<TagPage isSidebarOpen={isSidebarOpen} />} />
                     <Route path="/notifications" element={<NotificationsPage />} />
-                    <Route
-                        path="/studio"
-                        element={
-                            <CreatorRoute>
-                                <CreatorStudio />
-                            </CreatorRoute>
-                        }
-                    />
+                    <Route path="/studio" element={<CreatorStudio />} />
                     <Route
                         path="/admin"
                         element={

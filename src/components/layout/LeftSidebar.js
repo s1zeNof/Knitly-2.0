@@ -39,7 +39,8 @@ const LeftSidebar = ({ isOpen }) => {
                 )}
                 <nav className="sidebar-nav">
                     <NavLink to="/" className="nav-item"><HomeIcon /> Головна</NavLink>
-                    {(user?.roles?.includes('admin') || user?.roles?.includes('creator')) && <NavLink to="/studio" className="nav-item"><DashboardIcon /> Творча студія</NavLink>}
+                    {/* Тепер посилання буде видимим для будь-якого авторизованого користувача */}
+{user && <NavLink to="/studio" className="nav-item"><DashboardIcon /> Творча студія</NavLink>}
                     <NavLink to="/upload" className="nav-item"><UploadIcon /> Завантажити</NavLink>
                     <NavLink to="/library" className="nav-item"><LibraryIcon /> Моя бібліотека</NavLink>
                     
