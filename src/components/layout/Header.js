@@ -30,7 +30,7 @@ const Header = () => {
     };
     
     const renderMobileHeader = () => {
-        if (location.pathname === '/profile') {
+        if (location.pathname === '/profile' && user) {
             return (
                 <div className="mobile-header profile-context-header">
                     <span className="profile-context-username">@{user?.nickname}</span>
@@ -46,7 +46,7 @@ const Header = () => {
                 <div className="header-logo">
                     <Link to="/">Knitly</Link>
                 </div>
-                {user && (
+                {user ? (
                     <div className="mobile-header-actions">
                         <Link to="/notifications" className="mobile-header-action notification">
                             <BellIcon />
@@ -57,6 +57,14 @@ const Header = () => {
                             {totalUnreadMessages > 0 && <span className="mobile-badge">{totalUnreadMessages}</span>}
                         </Link>
                     </div>
+                ) : (
+                    // --- ПОЧАТОК ВИПРАВЛЕННЯ ---
+                    // Додано блок, який відображається, коли користувач не залогінений
+                    <div className="mobile-header-actions auth-buttons-mobile">
+                        <button className="btn-login" onClick={() => navigate('/login')}>Увійти</button>
+                        <button className="btn-signup" onClick={() => navigate('/register')}>Реєстрація</button>
+                    </div>
+                    // --- КІНЕЦЬ ВИПРАВЛЕННЯ ---
                 )}
             </div>
         );
@@ -85,6 +93,12 @@ const Header = () => {
                         <Link to="/notifications" className="notif-icon-link">
                             <BellIcon />
                             {unreadNotificationsCount > 0 && <span className="notification-count active">{unreadNotificationsCount}</span>}
+                        </Link>
+                    </div>
+                     <div className="notification-icon">
+                        <Link to="/messages" className="notif-icon-link">
+                           <MessagesIcon />
+                            {totalUnreadMessages > 0 && <span className="notification-count active">{totalUnreadMessages}</span>}
                         </Link>
                     </div>
                     <div className="user-profile">

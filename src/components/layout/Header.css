@@ -317,6 +317,20 @@ header {
     font-weight: 600;
 }
 
+/* Додайте це в кінець Header.css */
+.auth-buttons-mobile {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.auth-buttons-mobile .btn-login,
+.auth-buttons-mobile .btn-signup {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
 /* --- Медіа-запити для адаптивності --- */
 @media (min-width: 769px) {
     .mobile-header { display: none; }
