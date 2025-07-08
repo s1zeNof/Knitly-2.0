@@ -47,6 +47,7 @@
     align-items: flex-start;
     padding: 3rem 4rem;
     color: white;
+    z-index: 0;
 }
 .tag-hero-overlay {
     position: absolute;

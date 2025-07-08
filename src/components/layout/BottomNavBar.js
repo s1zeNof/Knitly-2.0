@@ -72,12 +72,11 @@ const BottomNavBar = ({ isPlayerVisible }) => {
                             transition={{ type: "spring", stiffness: 400, damping: 40 }}
                             onClick={(e) => e.stopPropagation()}
                         >
-                             {userIsCreator && (
-                                <div className="creation-menu-item" onClick={() => handleNavigationAction('/studio')}>
-                                    <div className="creation-item-icon color-green"><StudioIcon /></div>
-                                    <span>Творча студія</span>
-                                </div>
-                            )}
+                             {/* Тепер цей пункт меню буде доступний усім */}
+<div className="creation-menu-item" onClick={() => handleNavigationAction('/studio')}>
+    <div className="creation-item-icon color-green"><StudioIcon /></div>
+    <span>Творча студія</span>
+</div>
                             <div className="creation-menu-item" onClick={() => handleNavigationAction('/upload')}>
                                 <div className="creation-item-icon color-purple"><UploadTrackIcon /></div>
                                 <span>Завантажити трек</span>
