@@ -14,7 +14,7 @@ import LottieRenderer from '../common/LottieRenderer';
 import { isPackAnimated } from '../../utils/emojiPackCache';
 import PostRenderer from '../lexical/PostRenderer';
 import PollAttachment from './PollAttachment';
-import PostEditor from './PostEditor'; // <-- Імпортуємо новий редактор
+import PostEditor from './PostEditor';
 import './Post.css';
 
 // Іконки
@@ -47,12 +47,13 @@ const PostCard = ({ post }) => {
     const [showMenu, setShowMenu] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
     const [isPlayAttachmentLoading, setIsPlayAttachmentLoading] = useState(false);
-    
+    const [isAvatarLoaded, setAvatarLoaded] = useState(false); // <-- ДОДАНО: Стан для завантаження аватара
+
     const isNewFormat = !!post.authors;
     const primaryAuthor = isNewFormat ? post.authors[0] : { uid: post.authorId, nickname: post.authorUsername, photoURL: post.authorAvatarUrl };
     const allAuthors = isNewFormat ? post.authors : [primaryAuthor];
     const authorUids = isNewFormat ? post.authorUids : [post.authorId];
-    
+
     const canManagePost = currentUser?.uid && authorUids?.includes(currentUser.uid);
     const isLiked = currentUser && post.reactions?.['unicode_❤️']?.uids.includes(currentUser.uid);
 
@@ -105,15 +106,15 @@ const PostCard = ({ post }) => {
         },
         onError: (error) => console.error("Reaction error:", error),
     });
-    
+
     const updatePostMutation = useMutation(
-        (newEditorStateJSON) => updateDoc(doc(db, 'posts', post.id), { 
-            editorState: newEditorStateJSON, 
-            isEdited: true 
+        (newEditorStateJSON) => updateDoc(doc(db, 'posts', post.id), {
+            editorState: newEditorStateJSON,
+            isEdited: true
         }),
-        { 
-            onSuccess: () => { 
-                queryClient.invalidateQueries(['feedPosts', null]); 
+        {
+            onSuccess: () => {
+                queryClient.invalidateQueries(['feedPosts', null]);
                 setIsEditing(false);
                 toast.success("Допис оновлено!");
             },
@@ -143,7 +144,7 @@ const PostCard = ({ post }) => {
         reactionMutation.mutate({ reactionId, customUrl, isAnimated });
         setShowFullPicker(false);
     };
-    
+
     const handleDeletePost = () => { if (window.confirm('Ви впевнені, що хочете видалити цей допис?')) deletePostMutation.mutate(); };
 
     const renderAuthors = (authors) => {
@@ -160,7 +161,7 @@ const PostCard = ({ post }) => {
             </div>
         );
     };
-    
+
     const renderAttachment = (attachment) => {
         if (!attachment) return null;
         if (attachment.type === 'poll') {
@@ -177,7 +178,7 @@ const PostCard = ({ post }) => {
                 const trackSnap = await getDoc(trackRef);
                 if (trackSnap.exists()) handlePlayPause({ id: trackSnap.id, ...trackSnap.data() });
                 else toast.error("На жаль, цей трек більше не доступний.");
-            } catch (error) { toast.error("Не вдалося відтворити трек."); } 
+            } catch (error) { toast.error("Не вдалося відтворити трек."); }
             finally { setIsPlayAttachmentLoading(false); }
         };
         return (
@@ -202,16 +203,37 @@ const PostCard = ({ post }) => {
             <div className="post-card">
                 <div className="post-thread-container">
                     <div className="post-main-content">
-                        <Link to={`/user/${primaryAuthor.nickname}`}>
-                            <img src={primaryAuthor.photoURL || default_picture} alt={primaryAuthor.nickname} className="post-author-avatar" />
+                        
+                        {/* ================================================= */}
+                        {/* --- ОСЬ ОНОВЛЕНИЙ БЛОК АВАТАРА --- */}
+                        {/* ================================================= */}
+                        <Link to={`/user/${primaryAuthor.nickname}`} className="post-avatar-link">
+                            <div className={`post-avatar-wrapper ${!isAvatarLoaded ? 'skeleton' : ''}`}>
+                                <img
+                                    key={post.id} 
+                                    src={primaryAuthor.photoURL || default_picture}
+                                    alt={primaryAuthor.nickname}
+                                    className="post-author-avatar"
+                                    onLoad={() => setAvatarLoaded(true)}
+                                    onError={() => setAvatarLoaded(true)}
+                                    style={{ opacity: isAvatarLoaded ? 1 : 0 }}
+                                />
+                            </div>
                         </Link>
+
                         <div className="post-content">
                             <div className="post-header">
-                                {renderAuthors(allAuthors)}
-                                <span className="post-timestamp">· {formatPostTime(post.createdAt)} {post.isEdited && '(ред.)'}</span>
+                                <div className="post-header-main">
+                                    {renderAuthors(allAuthors)}
+                                    <span className="post-timestamp">
+                                        · {formatPostTime(post.createdAt)} {post.isEdited && '(ред.)'}
+                                    </span>
+                                </div>
                                 {canManagePost && (
                                     <div className="post-options-container" ref={menuRef}>
-                                        <button className="options-button" onClick={() => setShowMenu(!showMenu)}><OptionsIcon /></button>
+                                        <button className="options-button" onClick={() => setShowMenu(!showMenu)}>
+                                            <OptionsIcon />
+                                        </button>
                                         {showMenu && (
                                             <div className="options-menu-small">
                                                 {(post.editorState && post.editorState !== 'null') && <button onClick={() => { setIsEditing(true); setShowMenu(false); }}>Редагувати</button>}
@@ -221,7 +243,7 @@ const PostCard = ({ post }) => {
                                     </div>
                                 )}
                             </div>
-                            
+
                             {isEditing ? (
                                 <PostEditor
                                     initialStateJSON={post.editorState}
@@ -237,7 +259,7 @@ const PostCard = ({ post }) => {
                                     {renderAttachment(post.attachment)}
                                 </>
                             )}
-                            
+
                             {!isEditing && (
                                 <>
                                     {post.reactions && Object.keys(post.reactions).length > 0 && (
