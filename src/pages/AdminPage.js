@@ -3,7 +3,8 @@ import { useQuery, useQueryClient } from 'react-query';
 import { collection, getDocs, orderBy, query, doc, updateDoc } from 'firebase/firestore';
 import { db } from '../services/firebase';
 import UserManagementTable from '../components/admin/UserManagementTable';
-import EditUserRolesModal from '../components/common/EditUserRolesModal'; // <-- ІМПОРТ
+import EditUserRolesModal from '../components/common/EditUserRolesModal';
+import GiftManagement from '../components/admin/GiftManagement'; // <-- ІМПОРТ
 import './AdminPage.css';
 
 const fetchUsers = async () => {
@@ -19,16 +20,13 @@ const AdminPage = () => {
     const queryClient = useQueryClient();
     const { data: users, isLoading, error } = useQuery('allUsers', fetchUsers);
 
-    // --- ПОЧАТОК ЗМІН: Стан для модального вікна ---
     const [isRolesModalOpen, setIsRolesModalOpen] = useState(false);
     const [selectedUser, setSelectedUser] = useState(null);
-    // --- КІНЕЦЬ ЗМІН ---
 
     const refetchUsers = () => {
         queryClient.invalidateQueries('allUsers');
     };
 
-    // --- ПОЧАТОК ЗМІН: Функції для управління модальним вікном ---
     const handleOpenRolesModal = (user) => {
         setSelectedUser(user);
         setIsRolesModalOpen(true);
@@ -52,8 +50,7 @@ const AdminPage = () => {
             handleCloseRolesModal();
         }
     };
-    // --- КІНЕЦЬ ЗМІН ---
-
+    
     if (isLoading) {
         return <div className="admin-page-loader">Завантаження користувачів...</div>;
     }
@@ -66,16 +63,19 @@ const AdminPage = () => {
         <div className="admin-page-container">
             <header className="admin-page-header">
                 <h1>Панель Адміністратора</h1>
-                <p>Керування користувачами платформи Knitly.</p>
+                <p>Керування користувачами та контентом платформи Knitly.</p>
             </header>
             
+            {/* Додаємо новий блок керування подарунками */}
+            <GiftManagement />
+            
+            <h2 style={{marginTop: '3rem'}}>Керування користувачами</h2>
             <UserManagementTable 
                 users={users} 
                 onActionSuccess={refetchUsers}
-                onEditRoles={handleOpenRolesModal} // <-- ПЕРЕДАЄМО ФУНКЦІЮ
+                onEditRoles={handleOpenRolesModal}
             />
 
-            {/* --- ПОЧАТОК ЗМІН: Відображення модального вікна --- */}
             {isRolesModalOpen && selectedUser && (
                 <EditUserRolesModal
                     user={selectedUser}
@@ -83,7 +83,6 @@ const AdminPage = () => {
                     onSave={handleSaveRoles}
                 />
             )}
-            {/* --- КІНЕЦЬ ЗМІН --- */}
         </div>
     );
 };

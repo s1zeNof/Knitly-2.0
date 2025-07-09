@@ -1,0 +1,44 @@
+.app-card-container {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    background-color: var(--color-bg-medium);
+    padding: 1.5rem;
+    border-radius: 0.75rem;
+    border: 1px solid var(--color-border);
+    cursor: pointer;
+    transition: background-color 0.2s, transform 0.2s;
+}
+
+.app-card-container:hover {
+    background-color: var(--color-bg-light);
+    transform: translateY(-5px);
+}
+
+.app-card-icon {
+    width: 64px;
+    height: 64px;
+    border-radius: 12px;
+    object-fit: cover;
+    flex-shrink: 0;
+}
+
+.app-card-info {
+    overflow: hidden;
+}
+
+.app-card-name {
+    margin: 0;
+    font-size: 1.2rem;
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.app-card-description {
+    margin: 0.25rem 0 0 0;
+    font-size: 0.9rem;
+    color: var(--color-text-secondary);
+    line-height: 1.4;
+}

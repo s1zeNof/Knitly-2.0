@@ -34,9 +34,9 @@ const formatRelativeTime = (timestamp) => {
     return past.toLocaleDateString('uk-UA', { day: 'numeric', month: 'long' });
 };
 
-const Home = () => {
+// Приймаємо функцію openBrowser як пропс
+const Home = ({ openBrowser }) => {
     const { handlePlayPause } = usePlayerContext();
-    // --- ЗМІНА: Отримуємо не тільки користувача, а й статус завантаження ---
     const { user: currentUser, authLoading } = useUserContext(); 
 
     const [newRelease, setNewRelease] = useState(null);
@@ -103,11 +103,18 @@ const Home = () => {
             <LeftSidebar isOpen={true} />
             
             <main className="main-content">
+                 {/* Тестова кнопка, яка тепер працює */}
+                <button 
+                    onClick={() => openBrowser('https://telegra.ph/Knitly--Rozshirennya-funkc-onalu-07-08')}
+                    style={{padding: '10px 20px', marginBottom: '20px', cursor: 'pointer', background: 'var(--color-accent)', border: 'none', color: 'white', borderRadius: '8px'}}
+                >
+                    Тест: Відкрити статтю у браузері
+                </button>
+
                 {(loading || authLoading) ? <HomeLoader /> : (
                     <>
                         <h1 className="feed-title">Стрічка</h1>
                         
-                        {/* --- ЗМІНА: Перевіряємо authLoading перед рендерингом --- */}
                         {!authLoading && currentUser && <CreatePostForm />}
 
                         <Feed followingList={feedIds} />

@@ -10,6 +10,7 @@ import EmojiPicker from 'emoji-picker-react';
 import FolderEditModal from '../components/common/FolderEditModal';
 import EmojiPacksSettings from '../components/chat/EmojiPacksSettings';
 import WalletTab from '../components/settings/WalletTab';
+import GiftHistoryTab from '../components/settings/GiftHistoryTab'; // <-- ІМПОРТ
 import './Settings.css';
 
 const UserIcon = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>;
@@ -18,6 +19,8 @@ const FolderIcon = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentCol
 const ChatIcon = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>;
 const EmojiIcon = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"></circle><path d="M8 14s1.5 2 4 2 4-2 4-2"></path><line x1="9" y1="9" x2="9.01" y2="9"></line><line x1="15" y1="9" x2="15.01" y2="9"></line></svg>;
 const WalletIcon = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 12V7a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h7"></path><path d="M16 12h4a2 2 0 1 1 0 4h-4v-4z"></path><path d="M18 10V8"></path><path d="M18 16v2"></path></svg>;
+// 👇 НОВА ІКОНКА 👇
+const HistoryIcon = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M1 4v6h6"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>;
 
 const Settings = () => {
     const { user, refreshUser } = useUserContext();
@@ -375,6 +378,8 @@ const Settings = () => {
                 <aside className="settings-sidebar">
                     <button className={activeTab === 'profile' ? 'active' : ''} onClick={() => setActiveTab('profile')}><UserIcon /> Профіль</button>
                     <button className={activeTab === 'wallet' ? 'active' : ''} onClick={() => setActiveTab('wallet')}><WalletIcon /> Гаманець</button>
+                    {/* 👇 ДОДАЄМО НОВУ КНОПКУ В САЙДБАР 👇 */}
+                    <button className={activeTab === 'giftHistory' ? 'active' : ''} onClick={() => setActiveTab('giftHistory')}><HistoryIcon /> Історія подарунків</button>
                     <button className={activeTab === 'chat' ? 'active' : ''} onClick={() => setActiveTab('chat')}><ChatIcon /> Чати</button>
                     <button className={activeTab === 'emoji' ? 'active' : ''} onClick={() => setActiveTab('emoji')}><EmojiIcon /> Емоджі-паки</button>
                     <button className={activeTab === 'privacy' ? 'active' : ''} onClick={() => setActiveTab('privacy')}><PrivacyIcon /> Приватність</button>
@@ -383,12 +388,13 @@ const Settings = () => {
                 <main className="settings-main-content">
                     {activeTab === 'profile' && renderProfileTab()}
                     {activeTab === 'wallet' && <WalletTab />}
+                    {activeTab === 'giftHistory' && <GiftHistoryTab />} {/* <-- РЕНДЕРИМО НОВИЙ КОМПОНЕНТ */}
                     {activeTab === 'chat' && renderChatTab()}
                     {activeTab === 'emoji' && <EmojiPacksSettings />}
                     {activeTab === 'privacy' && renderPrivacyTab()}
                     {activeTab === 'folders' && renderFoldersTab()}
                     
-                    {activeTab !== 'folders' && activeTab !== 'emoji' && activeTab !== 'wallet' && (
+                    {activeTab !== 'folders' && activeTab !== 'emoji' && activeTab !== 'wallet' && activeTab !== 'giftHistory' && (
                         <div className="settings-actions">
                             <button className="button-primary" onClick={handleSaveChanges} disabled={isSaving || !!nicknameError}>
                                 {isSaving ? "Збереження..." : "Зберегти зміни"}
