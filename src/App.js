@@ -29,6 +29,9 @@ import AdminPage from './pages/AdminPage';
 import CreatorStudio from './pages/CreatorStudio';
 import NotificationsPage from './pages/NotificationsPage';
 import SearchPage from './pages/SearchPage';
+import InAppBrowser from './components/common/InAppBrowser';
+import AppsMarketplace from './pages/AppsMarketplace'; // <-- ІМПОРТ НОВОЇ СТОРІНКИ
+import GiftsMarketplace from './pages/GiftsMarketplace';
 
 import './styles/index.css';
 import './components/posts/Post.css';
@@ -45,6 +48,19 @@ const AppLayout = () => {
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
 
+    const [browserUrl, setBrowserUrl] = useState('');
+    const [isBrowserOpen, setIsBrowserOpen] = useState(false);
+
+    const openBrowser = (url) => {
+        setBrowserUrl(url);
+        setIsBrowserOpen(true);
+    };
+
+    const closeBrowser = () => {
+        setIsBrowserOpen(false);
+        setBrowserUrl('');
+    };
+    
     const isSidebarPage = location.pathname.startsWith('/tags/') || location.pathname === '/studio';
     const inChatView = location.pathname === '/messages' && document.body.classList.contains('in-chat-view');
 
@@ -81,7 +97,10 @@ const AppLayout = () => {
             />
             <main className="app-main-content">
                 <Routes>
-                    <Route path="/" element={<Home />} />
+                    <Route path="/" element={<Home openBrowser={openBrowser} />} />
+                    {/* 👇 ДОДАЙТЕ ЦЕЙ РЯДОК 👇 */}
+                    <Route path="/apps" element={<AppsMarketplace openBrowser={openBrowser} />} />
+                    <Route path="/gifts" element={<GiftsMarketplace />} /> 
                     <Route path="/login" element={<Login />} />
                     <Route path="/register" element={<Register />} />
                     <Route path="/search" element={<SearchPage />} />
@@ -112,6 +131,9 @@ const AppLayout = () => {
             </main>
             <BottomNavBar isPlayerVisible={isPlayerVisible} />
             <Player />
+            
+            {isBrowserOpen && <InAppBrowser initialUrl={browserUrl} onClose={closeBrowser} />}
+            
             {notification.message && (
                 <div className={`toast-notification ${notification.type}`}>
                     {notification.message}

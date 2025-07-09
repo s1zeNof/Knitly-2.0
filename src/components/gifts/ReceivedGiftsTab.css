@@ -1,0 +1,42 @@
+.received-gifts-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 1.5rem;
+    padding: 1rem;
+}
+
+/* Оновлюємо стилі, щоб елемент був кнопкою */
+.received-gift-item {
+    background-color: var(--color-bg-medium);
+    border-radius: 0.75rem;
+    padding: 1rem;
+    text-align: center;
+    /* Додаємо стилі для кнопки */
+    border: 1px solid var(--color-border);
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+    color: inherit;
+    font-family: inherit;
+}
+
+.received-gift-item:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+}
+
+
+.received-gift-media {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    margin-bottom: 0.75rem;
+}
+
+.received-gift-name {
+    font-weight: 600;
+    margin: 0;
+}
+
+.received-gift-info small {
+    font-size: 0.8rem;
+    color: var(--color-text-secondary);
+}

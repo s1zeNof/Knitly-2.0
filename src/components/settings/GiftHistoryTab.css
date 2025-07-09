@@ -1,0 +1,65 @@
+.gift-history-container h3 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid var(--color-border);
+    margin: 0 0 1rem 0;
+}
+
+.history-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-top: 2rem;
+}
+
+.history-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    background-color: var(--color-bg-light);
+    padding: 1rem 1.5rem;
+    border-radius: 0.5rem;
+    border: 1px solid var(--color-border);
+}
+
+/* Оновлені стилі для іконки */
+.history-item-icon {
+    width: 44px;
+    height: 44px;
+    background-color: var(--color-bg-medium);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    padding: 5px; /* Додаємо внутрішній відступ */
+    box-sizing: border-box; /* Важливо для коректного розміру */
+}
+
+.history-item-details {
+    flex-grow: 1;
+}
+
+.history-item-details p {
+    margin: 0;
+    font-weight: 500;
+}
+
+.history-item-details small {
+    color: var(--color-text-secondary);
+    font-size: 0.85rem;
+}
+
+.history-item-price {
+    font-weight: 700;
+    font-size: 1.1rem;
+}
+
+.history-item-price.sent {
+    color: var(--color-error);
+}
+
+.history-item-price.received {
+    color: var(--color-success);
+}

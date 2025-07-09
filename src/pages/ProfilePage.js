@@ -1,14 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { db } from '../services/firebase';
-import { query, collection, where, getDocs, doc, updateDoc, arrayUnion, arrayRemove, getDoc, setDoc, serverTimestamp, addDoc, increment } from 'firebase/firestore';
+import { query, collection, where, getDocs, doc, updateDoc, arrayUnion, arrayRemove, getDoc, setDoc, serverTimestamp, addDoc } from 'firebase/firestore';
 import { useUserContext } from '../contexts/UserContext';
-import { useUserTracks } from '../hooks/useUserTracks'; // Імпортуємо хук
+import { useUserTracks } from '../hooks/useUserTracks';
 import TrackList from '../components/common/TrackList';
 import PlaylistTab from '../components/common/PlaylistTab';
 import LikedTracks from '../components/common/LikedTracks';
 import Feed from '../components/posts/Feed';
 import CreatePostForm from '../components/posts/CreatePostForm';
+import ReceivedGiftsTab from '../components/gifts/ReceivedGiftsTab'; // <-- ІМПОРТ
 import { signOut } from 'firebase/auth';
 import { auth } from '../services/firebase';
 
@@ -37,10 +38,8 @@ const ProfilePage = () => {
     const isOwnProfile = !userNickname || (profileUser && currentUser && profileUser.uid === currentUser.uid);
     const targetUserId = profileUser?.uid;
 
-    // --- ПОЧАТОК ЗМІН: Використовуємо хук для завантаження різних списків треків ---
     const { tracks: topTracks, loading: loadingTop } = useUserTracks(targetUserId, { orderByField: 'playCount', orderByDirection: 'desc', limit: 5 });
     const { tracks: latestTracks, loading: loadingLatest } = useUserTracks(targetUserId, { orderByField: 'createdAt', orderByDirection: 'desc', limit: 5 });
-    // --- КІНЕЦЬ ЗМІН ---
 
     useEffect(() => {
         const fetchUserData = async () => {
@@ -151,7 +150,6 @@ const ProfilePage = () => {
     const renderTabContent = () => {
         if (!profileUser) return null;
         
-        // --- ПОЧАТОК ЗМІН: Оновлено рендеринг вкладки "Музика" ---
         switch (activeTab) {
             case 'music':
                 const hasTracks = (profileUser.tracksCount || 0) > 0;
@@ -175,13 +173,13 @@ const ProfilePage = () => {
                         </div>
                     </>
                 );
-            // --- КІНЕЦЬ ЗМІН ---
             case 'playlists': 
                 return <PlaylistTab userId={profileUser.uid} />;
             case 'albums':
                  return <div className="page-profile-tab-placeholder">Альбоми цього користувача будуть відображатися тут.</div>;
             case 'gifts':
-                return <div className="page-profile-tab-placeholder">Користувачу ще не дарували подарунків.</div>;
+                // 👇 ЗАМІНЮЄМО СТАРИЙ ТЕКСТ НА НОВИЙ КОМПОНЕНТ 👇
+                return <ReceivedGiftsTab userId={profileUser.uid} />;
             case 'feed': 
                 return (
                     <div>
@@ -224,6 +222,9 @@ const ProfilePage = () => {
                                 </button>
                                 <button className="page-profile-secondary-button" onClick={handleStartConversation}>
                                     Повідомлення
+                                </button>
+                                <button className="page-profile-secondary-button" onClick={() => navigate('/gifts')}>
+                                    Подарувати
                                 </button>
                             </>
                         )}
