@@ -104,12 +104,12 @@ const Home = ({ openBrowser }) => {
             
             <main className="main-content">
                  {/* Тестова кнопка, яка тепер працює */}
-                <button 
+                {/*<button 
                     onClick={() => openBrowser('https://telegra.ph/Knitly--Rozshirennya-funkc-onalu-07-08')}
                     style={{padding: '10px 20px', marginBottom: '20px', cursor: 'pointer', background: 'var(--color-accent)', border: 'none', color: 'white', borderRadius: '8px'}}
                 >
                     Тест: Відкрити статтю у браузері
-                </button>
+                </button>*/ }
 
                 {(loading || authLoading) ? <HomeLoader /> : (
                     <>
