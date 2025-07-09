@@ -262,8 +262,14 @@
 }
 @media (max-width: 768px) {
     .page-profile-tabs {
-        flex-wrap: wrap; /* Дозволяємо вкладкам переноситись */
-        justify-content: center;
+        flex-wrap: nowrap;      /* Забороняємо переносити вкладки на новий рядок */
+        overflow-x: auto;       /* Додаємо горизонтальну прокрутку, якщо вони не вміщаються */
+        justify-content: flex-start; /* Вирівнюємо по лівому краю */
+        -ms-overflow-style: none;     /* Приховуємо скролбар в IE та Edge */
+        scrollbar-width: none;        /* Приховуємо скролбар в Firefox */
+    }
+    .page-profile-tabs::-webkit-scrollbar {
+        display: none; /* Приховуємо скролбар в Chrome, Safari, та Opera */
     }
     .page-profile-tab-button {
         padding: 0.75rem 1rem;
