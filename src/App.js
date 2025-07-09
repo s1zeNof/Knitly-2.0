@@ -9,10 +9,9 @@ import Header from './components/layout/Header';
 import Home from './pages/Home';
 import Login from './pages/Login';
 import Register from './pages/Register';
-import Profile from './pages/Profile';
+import ProfilePage from './pages/ProfilePage';
 import Settings from './pages/Settings';
 import UserList from './pages/UserList';
-import UserProfile from './pages/UserProfile';
 import UploadMusic from './pages/UploadMusic';
 import CreateAlbum from './pages/CreateAlbum';
 import PlaylistPage from './pages/PlaylistPage';
@@ -86,8 +85,8 @@ const AppLayout = () => {
                     <Route path="/login" element={<Login />} />
                     <Route path="/register" element={<Register />} />
                     <Route path="/search" element={<SearchPage />} />
-                    <Route path="/profile" element={<Profile />} />
-                    <Route path="/user/:userNickname" element={<UserProfile />} />
+                    <Route path="/profile" element={<ProfilePage />} />
+                    <Route path="/user/:userNickname" element={<ProfilePage />} />
                     <Route path="/settings" element={<Settings />} />
                     <Route path="/settings/emoji-packs" element={<EmojiPacksSettings />} />
                     <Route path="/settings/emoji-packs/edit/:packId" element={<EditEmojiPack />} />

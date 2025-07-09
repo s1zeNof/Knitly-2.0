@@ -35,8 +35,9 @@ const TrackList = ({ userId, initialTracks = null, isLoading: isLoadingInitial =
     const [userPlaylists, setUserPlaylists] = useState([]);
     const [selectedTrack, setSelectedTrack] = useState(null);
     
-    const menuRef = useRef(null);
-    
+    const menuRefs = useRef({}); // Використовуємо об'єкт для рефів
+    const [menuPosition, setMenuPosition] = useState({});
+
     useEffect(() => {
         if (initialTracks !== null) {
             setDisplayTracks(initialTracks);
@@ -47,16 +48,36 @@ const TrackList = ({ userId, initialTracks = null, isLoading: isLoadingInitial =
         }
     }, [initialTracks, fetchedTracks, loading, isLoadingInitial]);
 
-
     useEffect(() => {
         const handleClickOutside = (event) => {
-            if (menuRef.current && !menuRef.current.contains(event.target)) {
-                setActiveMenu(null);
+            if (activeMenu && menuRefs.current[activeMenu] && !menuRefs.current[activeMenu].contains(event.target)) {
+                 if (!event.target.closest('.options-button-list')) {
+                    setActiveMenu(null);
+                 }
             }
         };
+
         document.addEventListener("mousedown", handleClickOutside);
         return () => document.removeEventListener("mousedown", handleClickOutside);
-    }, []);
+    }, [activeMenu]);
+
+    const handleMenuClick = (e, trackId) => {
+        const currentlyActive = activeMenu === trackId;
+        setActiveMenu(currentlyActive ? null : trackId);
+
+        if (!currentlyActive) {
+            const buttonRect = e.currentTarget.getBoundingClientRect();
+            const viewportHeight = window.innerHeight;
+            const spaceBelow = viewportHeight - buttonRect.bottom;
+            const menuHeight = 150; // Приблизна висота меню
+
+            setMenuPosition({
+                [trackId]: {
+                    opensUp: spaceBelow < menuHeight
+                }
+            });
+        }
+    };
 
     const handleLikeToggle = async (track) => {
         if (!currentUser) {
@@ -99,7 +120,6 @@ const TrackList = ({ userId, initialTracks = null, isLoading: isLoadingInitial =
                     read: false
                 });
             }
-
         } catch (error) {
             console.error("Помилка транзакції лайку:", error);
             showNotification("Не вдалося оцінити трек. Спробуйте знову.", "error");
@@ -212,12 +232,15 @@ const TrackList = ({ userId, initialTracks = null, isLoading: isLoadingInitial =
                                         <AnimatedCounter count={track.likesCount || 0} />
                                     </span>
                                 </div>
-                                <div className="options-container" ref={activeMenu === track.id ? menuRef : null}>
-                                    <button className="options-button-list" onClick={() => setActiveMenu(activeMenu === track.id ? null : track.id)}>
+                                <div className="options-container">
+                                    <button className="options-button-list" onClick={(e) => handleMenuClick(e, track.id)}>
                                         <OptionsIcon/>
                                     </button>
                                     {activeMenu === track.id && (
-                                        <div className="options-menu">
+                                        <div 
+                                            ref={el => menuRefs.current[track.id] = el} 
+                                            className={`options-menu active ${menuPosition[track.id]?.opensUp ? 'opens-up' : ''}`}
+                                        >
                                             <button onClick={() => { addToQueue(track); setActiveMenu(null); }}>Додати в чергу</button>
                                             <button onClick={() => openAddToPlaylistModal(track)}>Додати в плейлист</button>
                                             {track.authorId === currentUser?.uid && (
