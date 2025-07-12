@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import { useQuery } from 'react-query';
 import { useUserContext } from '../../contexts/UserContext';
-import { db } from '../../services/firebase';
+import { db } from '../../shared/services/firebase';
 import { collection, query, where, getDocs } from 'firebase/firestore';
 import EmojiPicker from 'emoji-picker-react';
 import Lottie from 'lottie-react';
-import { cacheAnimatedPackId } from '../../utils/emojiPackCache';
+import { cacheAnimatedPackId } from '../../shared/utils/emojiPackCache';
 import toast from 'react-hot-toast';
 import './EmojiPickerPlus.css';
 

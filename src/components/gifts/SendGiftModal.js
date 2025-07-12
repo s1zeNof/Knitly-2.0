@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useQuery } from 'react-query';
-import { db } from '../../services/firebase';
+import { db } from '../../shared/services/firebase';
 import { collection, getDocs } from 'firebase/firestore';
 import GiftCard from './GiftCard';
 import './SendGiftModal.css';

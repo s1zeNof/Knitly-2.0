@@ -2,11 +2,11 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import Lottie from 'lottie-react';
-import { db, storage } from '../services/firebase';
+import { db, storage } from '../shared/services/firebase';
 import { doc, collection, writeBatch, serverTimestamp, setDoc } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { useUserContext } from '../contexts/UserContext';
-import { usePlayerContext } from '../contexts/PlayerContext';
+import { usePlayerContext } from '../shared/contexts/PlayerContext';
 import './CreateEmojiPack.css';
 
 const UploadIcon = () => <svg className="upload-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>;

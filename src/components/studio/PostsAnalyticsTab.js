@@ -1,6 +1,6 @@
 import React from 'react';
 import { useQuery } from 'react-query';
-import { db } from '../../services/firebase';
+import { db } from '../../shared/services/firebase';
 import { collection, query, where, orderBy, limit, getDocs } from 'firebase/firestore';
 import { useUserContext } from '../../contexts/UserContext';
 import PostAnalyticsCard from '../posts/PostAnalyticsCard';

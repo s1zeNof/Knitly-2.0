@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useUserContext } from '../contexts/UserContext';
-import { usePlayerContext } from '../contexts/PlayerContext';
-import { db, storage } from '../services/firebase';
+import { usePlayerContext } from '../shared/contexts/PlayerContext';
+import { db, storage } from '../shared/services/firebase';
 import { ref as storageRef, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 import { collection, query, where, onSnapshot, orderBy, doc, addDoc, serverTimestamp, updateDoc, getDocs, writeBatch, arrayUnion, arrayRemove, deleteDoc, getDoc, increment, runTransaction } from 'firebase/firestore';
 import { useLocation, useNavigate } from 'react-router-dom';
@@ -24,7 +24,7 @@ import ForwardModal from '../components/common/ForwardModal';
 import ShareMusicModal from '../components/common/ShareMusicModal';
 import EmojiPickerPlus from '../components/chat/EmojiPickerPlus';
 import ImageEditorModal from '../components/common/ImageEditorModal';
-import { isPackAnimated } from '../utils/emojiPackCache';
+import { isPackAnimated } from '../shared/utils/emojiPackCache';
 
 // Іконки
 const AllChatsIcon = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>;

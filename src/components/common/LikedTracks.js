@@ -1,6 +1,6 @@
 import React from 'react';
 import { useUserContext } from '../../contexts/UserContext';
-import { db } from '../../services/firebase';
+import { db } from '../../shared/services/firebase';
 import { collection, query, where, getDocs, documentId } from 'firebase/firestore';
 import { useQuery } from 'react-query';
 import TrackList from './TrackList';

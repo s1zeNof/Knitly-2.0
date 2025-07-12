@@ -1,6 +1,6 @@
 import React, { useRef, useEffect } from 'react';
 import { useUserContext } from '../../contexts/UserContext';
-import { usePlayerContext } from '../../contexts/PlayerContext';
+import { usePlayerContext } from '../../shared/contexts/PlayerContext';
 import Lottie from 'lottie-react';
 import default_picture from '../../img/Default-Images/default-picture.svg';
 import './MessageBubble.css';

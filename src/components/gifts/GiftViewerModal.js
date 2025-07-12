@@ -1,6 +1,6 @@
 import React from 'react';
 import Lottie from 'lottie-react';
-import { useLottieData } from '../../hooks/useLottieData';
+import { useLottieData } from '../../shared/hooks/useLottieData';
 import './GiftViewerModal.css';
 
 const GiftViewerModal = ({ gift, onClose }) => {

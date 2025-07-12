@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useQuery, useQueryClient } from 'react-query';
 import { collection, getDocs, orderBy, query, doc, updateDoc } from 'firebase/firestore';
-import { db } from '../services/firebase';
+import { db } from '../shared/services/firebase';
 import UserManagementTable from '../components/admin/UserManagementTable';
 import EditUserRolesModal from '../components/common/EditUserRolesModal';
 import GiftManagement from '../components/admin/GiftManagement'; // <-- ІМПОРТ

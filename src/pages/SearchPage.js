@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useQuery } from 'react-query';
-import { db } from '../services/firebase';
+import { db } from '../shared/services/firebase';
 import { collection, query, where, orderBy, limit, getDocs } from 'firebase/firestore';
 import { useDebounce } from 'use-debounce';
 import TrackList from '../components/common/TrackList';

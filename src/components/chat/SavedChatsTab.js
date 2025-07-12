@@ -2,7 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { useUserContext } from '../../contexts/UserContext';
 import { useQuery } from 'react-query';
 import { collection, query, orderBy, getDocs } from 'firebase/firestore';
-import { db } from '../../services/firebase';
+import { db } from '../../shared/services/firebase';
 import MessageBubble from './MessageBubble';
 import default_picture from '../../img/Default-Images/default-picture.svg';
 import BookmarkIcon from '../common/BookmarkIcon';

@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useUserContext } from '../../contexts/UserContext';
-import { db } from '../../services/firebase';
+import { db } from '../../shared/services/firebase';
 import { doc, runTransaction, increment } from 'firebase/firestore';
-import { usePlayerContext } from '../../contexts/PlayerContext';
+import { usePlayerContext } from '../../shared/contexts/PlayerContext';
 import { motion } from 'framer-motion';
 import PurchaseNotesModal from '../common/PurchaseNotesModal';
 import AnimatedCounter from '../common/AnimatedCounter';

@@ -1,9 +1,9 @@
 import React, { useMemo } from 'react';
 import { useQuery } from 'react-query';
-import { db } from '../../services/firebase';
+import { db } from '../../shared/services/firebase';
 import { collection, query, where, documentId, getDocs } from 'firebase/firestore';
 import { useUserContext } from '../../contexts/UserContext';
-import { useUserTracks } from '../../hooks/useUserTracks';
+import { useUserTracks } from '../../shared/hooks/useUserTracks';
 import TrackList from '../common/TrackList';
 import default_picture from '../../img/Default-Images/default-picture.svg';
 

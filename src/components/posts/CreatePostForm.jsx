@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useMutation, useQueryClient, useQuery } from 'react-query';
 import { collection, addDoc, serverTimestamp, doc, updateDoc, increment, getDoc, query, where, getDocs, limit, arrayUnion } from 'firebase/firestore';
-import { db } from '../../services/firebase';
+import { db } from '../../shared/services/firebase';
 import { useUserContext } from '../../contexts/UserContext';
 import { useDebounce } from 'use-debounce';
 import toast from 'react-hot-toast';
@@ -25,7 +25,7 @@ import default_picture from '../../img/Default-Images/default-picture.svg';
 import ShareMusicModal from '../common/ShareMusicModal';
 import ExpandableMenu from './ExpandableMenu';
 import EmojiPickerPlus from '../chat/EmojiPickerPlus';
-import { isPackAnimated } from '../../utils/emojiPackCache';
+import { isPackAnimated } from '../../shared/utils/emojiPackCache';
 import '../lexical/Editor.css';
 import './Post.css';
 

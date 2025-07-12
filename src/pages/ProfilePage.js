@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { db } from '../services/firebase';
+import { db } from '../shared/services/firebase';
 import { query, collection, where, getDocs, doc, updateDoc, arrayUnion, arrayRemove, getDoc, setDoc, serverTimestamp, addDoc, runTransaction } from 'firebase/firestore';
 import { useUserContext } from '../contexts/UserContext';
-import { useUserTracks } from '../hooks/useUserTracks';
+import { useUserTracks } from '../shared/hooks/useUserTracks';
 import TrackList from '../components/common/TrackList';
 import PlaylistTab from '../components/common/PlaylistTab';
 import LikedTracks from '../components/common/LikedTracks';
@@ -11,7 +11,7 @@ import Feed from '../components/posts/Feed';
 import CreatePostForm from '../components/posts/CreatePostForm';
 import ReceivedGiftsTab from '../components/gifts/ReceivedGiftsTab';
 import { signOut } from 'firebase/auth';
-import { auth } from '../services/firebase';
+import { auth } from '../shared/services/firebase';
 import SendGiftModal from '../components/gifts/SendGiftModal'; // Імпортуємо модальне вікно
 import toast from 'react-hot-toast'; // Для сповіщень
 

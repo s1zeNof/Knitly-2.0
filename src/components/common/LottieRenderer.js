@@ -1,6 +1,6 @@
 import React from 'react';
 import Lottie from 'lottie-react';
-import { useLottieData } from '../../hooks/useLottieData';
+import { useLottieData } from '../../shared/hooks/useLottieData';
 
 const LottieRenderer = ({ url, className }) => {
     const { animationData, loading } = useLottieData(url);

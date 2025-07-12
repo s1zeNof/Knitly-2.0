@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link, NavLink, useLocation } from 'react-router-dom';
 import { useUserContext } from '../../contexts/UserContext';
-import { usePlayerContext } from '../../contexts/PlayerContext'; 
+import { usePlayerContext } from '../../shared/contexts/PlayerContext';
 import default_picture from '../../img/Default-Images/default-picture.svg';
 import './LeftSidebar.css';
 

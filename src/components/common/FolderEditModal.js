@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { db } from '../../services/firebase';
+import { db } from '../../shared/services/firebase';
 import { collection, query, where, getDocs } from 'firebase/firestore';
 import { useUserContext } from '../../contexts/UserContext';
 import default_picture from '../../img/Default-Images/default-picture.svg';

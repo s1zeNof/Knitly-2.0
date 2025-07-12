@@ -1,7 +1,7 @@
 import React from 'react';
 import { useQuery } from 'react-query';
 import { collection, query, orderBy, getDocs, limit, where } from 'firebase/firestore';
-import { db } from '../../services/firebase';
+import { db } from '../../shared/services/firebase';
 import PostCard from './PostCard';
 import './Post.css';
 

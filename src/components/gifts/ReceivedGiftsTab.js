@@ -1,9 +1,9 @@
 import React, { useState } from 'react'; // Додаємо useState
 import { useQuery } from 'react-query';
 import { collection, query, orderBy, getDocs } from 'firebase/firestore';
-import { db } from '../../services/firebase';
+import { db } from '../../shared/services/firebase';
 import Lottie from 'lottie-react';
-import { useLottieData } from '../../hooks/useLottieData';
+import { useLottieData } from '../../shared/hooks/useLottieData';
 import GiftViewerModal from './GiftViewerModal'; // Імпортуємо вьюер
 import './ReceivedGiftsTab.css';
 

@@ -2,7 +2,7 @@ import React from 'react';
 import { useQuery, useMutation, useQueryClient } from 'react-query';
 import { collection, query, orderBy, getDocs, addDoc, doc, runTransaction, serverTimestamp, increment, getDoc } from 'firebase/firestore';
 import { useForm } from 'react-hook-form';
-import { db } from '../../services/firebase';
+import { db } from '../../shared/services/firebase';
 import { useUserContext } from '../../contexts/UserContext';
 import Comment from './Comment';
 import toast from 'react-hot-toast';

@@ -1,7 +1,7 @@
 import React from 'react';
 import { useQuery } from 'react-query';
 import { collection, getDocs } from 'firebase/firestore';
-import { db } from '../services/firebase';
+import { db } from '../shared/services/firebase';
 import GiftCard from '../components/gifts/GiftCard';
 import './GiftsMarketplace.css';
 

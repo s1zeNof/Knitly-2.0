@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { signOut } from 'firebase/auth';
-import { auth } from '../../services/firebase';
+import { auth } from '../../shared/services/firebase';
 import { useUserContext } from '../../contexts/UserContext';
 import default_picture from '../../img/Default-Images/default-picture.svg';
 import HeaderSearch from '../search/HeaderSearch';

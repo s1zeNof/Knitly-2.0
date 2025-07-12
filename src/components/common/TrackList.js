@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { usePlayerContext } from '../../contexts/PlayerContext';
+import { usePlayerContext } from '../../shared/contexts/PlayerContext';
 import { useUserContext } from '../../contexts/UserContext';
-import { useUserTracks } from '../../hooks/useUserTracks';
-import { db, storage } from '../../services/firebase';
+import { useUserTracks } from '../../shared/hooks/useUserTracks';
+import { db, storage } from '../../shared/services/firebase';
 import { doc, deleteDoc, updateDoc, arrayUnion, arrayRemove, increment, getDoc, collection, query, where, getDocs, runTransaction, addDoc, serverTimestamp } from 'firebase/firestore'; 
 import { ref, deleteObject } from 'firebase/storage';
 import './TrackList.css';

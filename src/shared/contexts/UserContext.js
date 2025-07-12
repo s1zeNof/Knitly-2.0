@@ -1,8 +1,8 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
-import { auth, db } from '../shared/services/firebase';
+import { auth, db } from '../services/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
 import { doc, getDoc, setDoc, serverTimestamp, collection, query, where, onSnapshot, getDocs } from 'firebase/firestore';
-import { cacheAnimatedPackId } from '../shared/utils/emojiPackCache';
+import { cacheAnimatedPackId } from '../utils/emojiPackCache';
 
 const UserContext = createContext();
 

@@ -1,10 +1,10 @@
 import React from 'react';
 import { useQuery } from 'react-query';
-import { db } from '../../services/firebase';
+import { db } from '../../shared/services/firebase';
 import { collection, query, where, orderBy, getDocs, or } from 'firebase/firestore';
 import { useUserContext } from '../../contexts/UserContext';
 import Lottie from 'lottie-react'; // Імпортуємо Lottie
-import { useLottieData } from '../../hooks/useLottieData'; // Імпортуємо хук
+import { useLottieData } from '../../shared/hooks/useLottieData';
 import './GiftHistoryTab.css';
 
 const formatHistoryTime = (timestamp) => {

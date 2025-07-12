@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { db, storage } from '../services/firebase';
+import { db, storage } from '../shared/services/firebase';
 import { doc, setDoc, collection, serverTimestamp } from 'firebase/firestore';
 import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
 import { useUserContext } from '../contexts/UserContext';

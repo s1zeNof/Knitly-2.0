@@ -3,7 +3,7 @@ import { Analytics } from '@vercel/analytics/react';
 import { BrowserRouter as Router, Route, Routes, useLocation } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from 'react-query';
 import { UserProvider, useUserContext } from './contexts/UserContext';
-import { PlayerProvider, usePlayerContext } from './contexts/PlayerContext';
+import { PlayerProvider, usePlayerContext } from './shared/contexts/PlayerContext';
 
 import Header from './components/layout/Header';
 import Home from './pages/Home';

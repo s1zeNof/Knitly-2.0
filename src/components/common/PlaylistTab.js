@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useUserContext } from '../../contexts/UserContext';
-import { db, storage } from '../../services/firebase';
+import { db, storage } from '../../shared/services/firebase';
 import { collection, query, where, getDocs, setDoc, doc, serverTimestamp, orderBy } from 'firebase/firestore';
 import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
 import { Link } from 'react-router-dom';

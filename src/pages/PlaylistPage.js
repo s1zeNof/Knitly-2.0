@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { db } from '../services/firebase';
+import { db } from '../shared/services/firebase';
 import { doc, getDoc, collection, query, where, documentId, getDocs, updateDoc } from 'firebase/firestore';
-import { usePlayerContext } from '../contexts/PlayerContext';
+import { usePlayerContext } from '../shared/contexts/PlayerContext';
 import { useUserContext } from '../contexts/UserContext';
 import TrackList from '../components/common/TrackList';
 import './PlaylistPage.css';

@@ -1,10 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { db, storage } from '../services/firebase';
+import { db, storage } from '../shared/services/firebase';
 import { doc, getDoc, collection, getDocs, writeBatch, updateDoc, deleteDoc } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
 import { useUserContext } from '../contexts/UserContext';
-import { usePlayerContext } from '../contexts/PlayerContext';
+import { usePlayerContext } from '../shared/contexts/PlayerContext';
+
+
 import Lottie from 'lottie-react';
 import ConfirmationModal from '../components/common/ConfirmationModal';
 import './EditEmojiPack.css';

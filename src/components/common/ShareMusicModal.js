@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { useUserContext } from '../../contexts/UserContext';
 import { useQuery } from 'react-query';
-import { db } from '../../services/firebase';
+import { db } from '../../shared/services/firebase';
 import { collection, query, where, getDocs, documentId, orderBy } from 'firebase/firestore';
 import './ShareMusicModal.css';
 import default_picture from '../../img/Default-Images/default-picture.svg';

@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import WaveSurfer from 'wavesurfer.js';
-import { usePlayerContext } from '../../contexts/PlayerContext';
+import { usePlayerContext } from '../../shared/contexts/PlayerContext';
 
 const DynamicWaveform = () => {
     const waveformRef = useRef(null);

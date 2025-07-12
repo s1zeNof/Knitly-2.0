@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { usePlayerContext } from '../contexts/PlayerContext';
+import { usePlayerContext } from '../shared/contexts/PlayerContext';
 import { useUserContext } from '../contexts/UserContext';
-import { db } from '../services/firebase';
+import { db } from '../shared/services/firebase';
 import { collection, getDocs, query, where, orderBy, limit } from 'firebase/firestore';
-import { getTagIllustration } from '../config/tagConfig'; 
+import { getTagIllustration } from '../shared/config/tagConfig';
 
 import LeftSidebar from '../components/layout/LeftSidebar'; 
 import './Home.css';

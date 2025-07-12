@@ -1,6 +1,6 @@
 import React from 'react';
 import { useQuery, useMutation, useQueryClient } from 'react-query';
-import { db } from '../services/firebase';
+import { db } from '../shared/services/firebase';
 // --- ВИПРАВЛЕННЯ: Додано 'limit' до списку імпортів ---
 import { collection, query, orderBy, getDocs, writeBatch, doc, limit } from 'firebase/firestore';
 import { useUserContext } from '../contexts/UserContext';

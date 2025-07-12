@@ -2,12 +2,12 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { useMutation, useQueryClient } from 'react-query';
 import { doc, deleteDoc, updateDoc, runTransaction, increment, getDoc } from 'firebase/firestore';
-import { db } from '../../services/firebase';
+import { db } from '../../shared/services/firebase';
 import { useUserContext } from '../../contexts/UserContext';
 import default_picture from '../../img/Default-Images/default-picture.svg';
 import EmojiPickerPlus from '../chat/EmojiPickerPlus';
 import LottieRenderer from '../common/LottieRenderer';
-import { isPackAnimated } from '../../utils/emojiPackCache';
+import { isPackAnimated } from '../../shared/utils/emojiPackCache';
 import './Post.css';
 
 // Іконки

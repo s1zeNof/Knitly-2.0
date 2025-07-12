@@ -10,7 +10,7 @@ function importAll(r) {
   return images;
 }
 
-const imagesContext = require.context('../img/tags', false, /\.(png|jpe?g|svg)$/);
+const imagesContext = require.context('../../img/tags', false, /\.(png|jpe?g|svg)$/);
 const illustrationsMap = importAll(imagesContext);
 
 // Запасне зображення також шукаємо за ключем в нижньому регістрі

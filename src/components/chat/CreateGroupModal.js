@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useUserContext } from '../../contexts/UserContext';
-import { db } from '../../services/firebase';
+import { db } from '../../shared/services/firebase';
 import { collection, query, where, getDocs, doc, setDoc, serverTimestamp, documentId } from 'firebase/firestore';
 import './CreateGroupModal.css';
 import default_picture from '../../img/Default-Images/default-picture.svg';

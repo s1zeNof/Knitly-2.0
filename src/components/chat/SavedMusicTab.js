@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useUserContext } from '../../contexts/UserContext';
-import { usePlayerContext } from '../../contexts/PlayerContext';
-import { db } from '../../services/firebase';
+import { usePlayerContext } from '../../shared/contexts/PlayerContext'; // <-- Оновлений шлях
+import { db } from '../../shared/services/firebase';
 import { collection, query, where, onSnapshot, orderBy, getDocs, documentId } from 'firebase/firestore';
 import { useQuery } from 'react-query';
 import TrackList from '../common/TrackList'; // Ми будемо повторно використовувати цей компонент

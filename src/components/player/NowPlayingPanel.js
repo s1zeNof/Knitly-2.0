@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { usePlayerContext } from '../../contexts/PlayerContext';
+import { usePlayerContext } from '../../shared/contexts/PlayerContext';
 import { useUserContext } from '../../contexts/UserContext'; // <<< 1. ІМПОРТУЄМО КОНТЕКСТ КОРИСТУВАЧА
-import { db } from '../../services/firebase'; // <<< 2. ІМПОРТУЄМО БАЗУ ДАНИХ
+import { db } from '../../shared/services/firebase'; // <<< 2. ІМПОРТУЄМО БАЗУ ДАНИХ
 import { doc, runTransaction, increment, arrayUnion, arrayRemove } from 'firebase/firestore'; // <<< 3. ІМПОРТУЄМО ФУНКЦІЇ FIRESTORE
 import DynamicWaveform from './DynamicWaveform';
 import './NowPlayingPanel.css';

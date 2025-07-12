@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useMutation, useQueryClient } from 'react-query';
 import { Link, useNavigate } from 'react-router-dom'; // <-- Імпорт для навігації
-import { db, storage } from '../../services/firebase';
+import { db, storage } from '../../shared/services/firebase';
 import { collection, query, where, getDocs, writeBatch, doc, deleteDoc } from 'firebase/firestore';
 import { ref, deleteObject, listAll } from 'firebase/storage';
 import { useUserContext } from '../../contexts/UserContext';

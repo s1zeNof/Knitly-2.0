@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { usePlayerContext } from '../../contexts/PlayerContext';
+import { usePlayerContext } from '../../shared/contexts/PlayerContext';
 import NowPlayingPanel from './NowPlayingPanel';
 import './Player.css';
 
