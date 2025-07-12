@@ -36,7 +36,8 @@ const formatPostTime = (timestamp) => {
     return postDate.toLocaleDateString('uk-UA', { day: 'numeric', month: 'long' });
 };
 
-const PostCard = ({ post }) => {
+// Приймаємо openBrowser
+const PostCard = ({ post, openBrowser }) => {
     const { user: currentUser } = useUserContext();
     const { handlePlayPause } = usePlayerContext();
     const queryClient = useQueryClient();
@@ -47,7 +48,7 @@ const PostCard = ({ post }) => {
     const [showMenu, setShowMenu] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
     const [isPlayAttachmentLoading, setIsPlayAttachmentLoading] = useState(false);
-    const [isAvatarLoaded, setAvatarLoaded] = useState(false); // <-- ДОДАНО: Стан для завантаження аватара
+    const [isAvatarLoaded, setAvatarLoaded] = useState(false);
 
     const isNewFormat = !!post.authors;
     const primaryAuthor = isNewFormat ? post.authors[0] : { uid: post.authorId, nickname: post.authorUsername, photoURL: post.authorAvatarUrl };
@@ -204,9 +205,6 @@ const PostCard = ({ post }) => {
                 <div className="post-thread-container">
                     <div className="post-main-content">
                         
-                        {/* ================================================= */}
-                        {/* --- ОСЬ ОНОВЛЕНИЙ БЛОК АВАТАРА --- */}
-                        {/* ================================================= */}
                         <Link to={`/user/${primaryAuthor.nickname}`} className="post-avatar-link">
                             <div className={`post-avatar-wrapper ${!isAvatarLoaded ? 'skeleton' : ''}`}>
                                 <img
@@ -255,7 +253,7 @@ const PostCard = ({ post }) => {
                                 />
                             ) : (
                                 <>
-                                    {post.editorState && post.editorState !== 'null' ? <PostRenderer content={post.editorState} /> : null}
+                                    {post.editorState && post.editorState !== 'null' ? <PostRenderer content={post.editorState} openBrowser={openBrowser} /> : null}
                                     {renderAttachment(post.attachment)}
                                 </>
                             )}

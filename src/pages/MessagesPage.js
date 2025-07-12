@@ -24,7 +24,7 @@ import ForwardModal from '../components/common/ForwardModal';
 import ShareMusicModal from '../components/common/ShareMusicModal';
 import EmojiPickerPlus from '../components/chat/EmojiPickerPlus';
 import ImageEditorModal from '../components/common/ImageEditorModal';
-import { isPackAnimated } from '../utils/emojiPackCache'; // <-- Імпортуємо наш кеш
+import { isPackAnimated } from '../utils/emojiPackCache';
 
 // Іконки
 const AllChatsIcon = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>;
@@ -47,7 +47,7 @@ const getMessagePreviewText = (message) => {
     }
 };
 
-const MessagesPage = () => {
+const MessagesPage = ({ openBrowser }) => {
     const { user: currentUser, authLoading } = useUserContext();
     const { showNotification, currentTrack } = usePlayerContext();
     const [conversations, setConversations] = useState([]);
@@ -122,7 +122,7 @@ const MessagesPage = () => {
             setLoading(false);
         }, (error) => { console.error("Помилка завантаження чатів:", error); setLoading(false); });
         return () => unsubscribe();
-    }, [currentUser, authLoading, location.pathname, navigate, selectedConversationId]); // Added selectedConversationId to deps
+    }, [currentUser, authLoading, location.pathname, navigate, selectedConversationId]);
     
     useEffect(() => {
         if (!selectedConversationId || !currentUser?.uid) {
@@ -191,7 +191,6 @@ const MessagesPage = () => {
         if (!selectedConversationId || selectedConversationId === 'saved_messages' || !currentUser) return;
         const messageRef = doc(db, 'chats', selectedConversationId, 'messages', message.id);
         
-        // --- ВИПРАВЛЕНО: Визначаємо, чи анімована реакція ---
         const [packId] = reactionId.split('_');
         const isAnimated = isPackAnimated(packId);
 
@@ -215,7 +214,6 @@ const MessagesPage = () => {
 
                 if (customUrl) {
                     reactionData.url = customUrl;
-                    // --- ВИПРАВЛЕНО: Додаємо прапорець isAnimated ---
                     if (isAnimated) {
                         reactionData.isAnimated = true;
                     }
@@ -235,7 +233,6 @@ const MessagesPage = () => {
         }
     };
     
-    // ... (решта коду залишається без змін)
     const handleEmojiSelect = (emoji, isCustom = false) => {
         if (contextMenu.message) {
             let reactionId, customUrl = null;
@@ -493,7 +490,24 @@ const MessagesPage = () => {
                                     const isSent = msg.senderId === currentUser.uid;
                                     const senderInfo = selectedConversation.id === 'saved_messages' ? { displayName: msg.originalSender?.name, photoURL: msg.originalSender?.photoURL } : (isSent ? currentUser : (selectedConversation.isGroup ? selectedConversation.participantInfo.find(p => p.uid === msg.senderId) : companion));
                                     return (<MessageBubble 
-                                        key={msg.id} message={msg} isGroup={selectedConversation.isGroup} isSent={selectedConversationId !== 'saved_messages' && isSent} senderInfo={senderInfo} selectionMode={selectionMode} isSelected={selectedMessages.includes(msg.id)} isDeleting={deletingMessages.includes(msg.id)} deleteAnimationClass={currentUser.settings?.chat?.deleteAnimation || 'animation-vortex-out'} onContextMenu={handleContextMenu} onLongPress={handleLongPress} onTap={handleToggleSelect} isSavedContext={selectedConversationId === 'saved_messages'} onReaction={handleMessageReaction} isContextMenuOpen={contextMenu.show} onCloseContextMenu={handleCloseContextMenu} onOpenImage={handleOpenImageViewer}
+                                        key={msg.id}
+                                        message={msg}
+                                        isGroup={selectedConversation.isGroup}
+                                        isSent={selectedConversationId !== 'saved_messages' && isSent}
+                                        senderInfo={senderInfo}
+                                        selectionMode={selectionMode}
+                                        isSelected={selectedMessages.includes(msg.id)}
+                                        isDeleting={deletingMessages.includes(msg.id)}
+                                        deleteAnimationClass={currentUser.settings?.chat?.deleteAnimation || 'animation-vortex-out'}
+                                        onContextMenu={handleContextMenu}
+                                        onLongPress={handleLongPress}
+                                        onTap={handleToggleSelect}
+                                        isSavedContext={selectedConversationId === 'saved_messages'}
+                                        onReaction={handleMessageReaction}
+                                        isContextMenuOpen={contextMenu.show}
+                                        onCloseContextMenu={handleCloseContextMenu}
+                                        onOpenImage={handleOpenImageViewer}
+                                        openBrowser={openBrowser}
                                     />);
                                 }))}
                                 {selectedConversationId === 'saved_messages' && messages.length === 0 && !loadingMessages && (<div className="chat-placeholder"> <BookmarkIcon className="placeholder-icon" /> <h3>Збережені повідомлення</h3> <p>Пересилайте сюди повідомлення, щоб зберегти їх. Цей чат бачите тільки ви.</p> </div>)}

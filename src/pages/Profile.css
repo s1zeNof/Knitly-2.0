@@ -243,6 +243,72 @@
     color: var(--color-text-primary);
 }
 
+/* --- СТИЛІ ДЛЯ НОВОГО СПАДАЮЧОГО МЕНЮ ДІЙ (ВІДКРИВАННЯ ВНИЗ) --- */
+.profile-actions-menu-container {
+    position: relative;
+    width: 100%;
+}
+
+.page-profile-secondary-button.with-icon {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.profile-actions-dropdown {
+    position: absolute;
+    /* ЗМІНА 1: Позиціонуємо від верхнього краю кнопки, а не від нижнього */
+    top: calc(100% + 5px); /* 100% висоти кнопки + 5px відступу */
+    left: 0;
+    right: 0;
+    background-color: var(--color-bg-light);
+    border-radius: 0.5rem;
+    border: 1px solid var(--color-border);
+    padding: 0.5rem;
+    z-index: 10;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    
+    /* ЗМІНА 2: Анімація тепер відбувається вниз */
+    opacity: 0;
+    transform: translateY(-10px); /* Початковий стан - трохи вище */
+    visibility: hidden;
+    transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s;
+}
+
+.profile-actions-dropdown.visible {
+    opacity: 1;
+    transform: translateY(0); /* Кінцевий стан - на своєму місці */
+    visibility: visible;
+}
+
+.dropdown-action-button {
+    width: 100%;
+    background: none;
+    border: none;
+    padding: 0.75rem 1rem;
+    color: var(--color-text-primary);
+    text-align: left;
+    border-radius: 0.375rem;
+    cursor: pointer;
+    font-weight: 500;
+    font-size: 0.9rem;
+    transition: background-color 0.2s;
+}
+
+.dropdown-action-button:hover {
+    background-color: var(--color-border);
+}
+
+.dropdown-action-button.danger {
+    color: var(--color-error);
+}
+
+.dropdown-action-button.danger:hover {
+    background-color: rgba(239, 68, 68, 0.1);
+    color: #fca5a5;
+}
+
 /* Адаптивність для Profile */
 @media (max-width: 1024px) {
     .page-profile-container {
