@@ -1,4 +1,3 @@
-// src/MessageBubble.js
 import React, { useRef, useEffect } from 'react';
 import { useUserContext } from '../../contexts/UserContext';
 import { usePlayerContext } from '../../contexts/PlayerContext';
@@ -10,15 +9,59 @@ const PlayIcon = () => <svg height="24" width="24" viewBox="0 0 24 24"><path fil
 const CheckmarkIcon = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M20 6L9 17l-5-5" /></svg>;
 const ForwardIcon = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 12l-7.5-7.5v4.5H4v6h8.5v4.5L20 12z" /></svg>;
 
+// --- ПОЧАТОК ЗМІН: Повністю переписаний компонент Linkify ---
+const Linkify = ({ text, openBrowser }) => {
+    if (!text || typeof text !== 'string') {
+        return text;
+    }
+
+    const urlRegex = /((https?:\/\/(www\.)?)|(www\.))[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_+.~#?&//=]*)/gi;
+    
+    const parts = [];
+    let lastIndex = 0;
+    let match;
+
+    while ((match = urlRegex.exec(text)) !== null) {
+        // Додаємо текст перед посиланням
+        if (match.index > lastIndex) {
+            parts.push(text.substring(lastIndex, match.index));
+        }
+
+        // Додаємо саме посилання
+        const url = match[0];
+        const fullUrl = url.startsWith('http') ? url : `https://` + url;
+        parts.push(
+            <a
+                key={match.index}
+                href={fullUrl}
+                onClick={(e) => { e.preventDefault(); openBrowser(fullUrl); }}
+                target="_blank"
+                rel="noopener noreferrer"
+            >
+                {url}
+            </a>
+        );
+
+        lastIndex = match.index + url.length;
+    }
+
+    // Додаємо решту тексту після останнього посилання
+    if (lastIndex < text.length) {
+        parts.push(text.substring(lastIndex));
+    }
+
+    return <>{parts}</>;
+};
+// --- КІНЕЦЬ ЗМІН ---
+
 const LottieReaction = React.memo(({ url }) => {
     return <Lottie path={url} autoplay={true} loop={true} className="reaction-lottie" />;
 });
 
-const MessageBubble = ({ message, isGroup, isSent, senderInfo, onContextMenu, onLongPress, onTap, isSelected, selectionMode, isDeleting, deleteAnimationClass, isSavedContext = false, onReaction, isContextMenuOpen, onCloseContextMenu, onOpenImage }) => {
+const MessageBubble = ({ message, isGroup, isSent, senderInfo, onContextMenu, onLongPress, onTap, isSelected, selectionMode, isDeleting, deleteAnimationClass, isSavedContext = false, onReaction, isContextMenuOpen, onCloseContextMenu, onOpenImage, openBrowser }) => {
     const { user: currentUser } = useUserContext();
     const { handlePlayPause } = usePlayerContext();
 
-    // ... весь код обробників дотиків залишається без змін ...
     const touchTimeoutRef = useRef(null), longPressTimeoutRef = useRef(null), isLongPressRef = useRef(false), isDragRef = useRef(false), touchStartPosRef = useRef({ x: 0, y: 0 });
     useEffect(() => () => { if (touchTimeoutRef.current) clearTimeout(touchTimeoutRef.current); if (longPressTimeoutRef.current) clearTimeout(longPressTimeoutRef.current); }, []);
     const isMediaMessage = (msg) => ['track', 'album', 'image', 'video', 'image_gif'].includes(msg.type);
@@ -39,7 +82,7 @@ const MessageBubble = ({ message, isGroup, isSent, senderInfo, onContextMenu, on
                 {message.replyTo && <div className="reply-preview-bubble"><p className="reply-sender">{message.replyTo.senderName}</p><p className="reply-text" dangerouslySetInnerHTML={{ __html: message.replyTo.text.replace(/\n/g, '<br />') }}></p></div>}
                 {message.forwardedFrom && !isSavedContext && <div className="forwarded-header"><ForwardIcon /> Переслано від {message.forwardedFrom.name}</div>}
                 <div className={`message-bubble ${isMediaMessage(message) ? `${message.type}-message` : ''}`}>
-                    {message.type === 'text' && <p>{message.content}</p>}
+                    {message.type === 'text' && <p><Linkify text={message.content} openBrowser={openBrowser} /></p>}
                     {message.type === 'image' && message.content && <div className="image-message-content"><img src={message.content.url} alt={message.content.originalName || 'Зображення в чаті'} className="chat-image"/>{message.content.quality === 'HD' && <span className="hd-badge">HD</span>}</div>}
                     {message.type === 'video' && message.content && <div className="video-message-content"><video src={message.content.url} controls className="chat-video" preload="metadata" /></div>}
                     {message.type === 'image_gif' && message.content && <div className="image-message-content"><img src={message.content.url} alt={message.content.originalName || 'GIF анімація'} className="chat-image chat-gif"/></div>}

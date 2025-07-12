@@ -29,7 +29,7 @@
 .browser-header {
     display: flex;
     align-items: center;
-    gap: 1rem;
+    gap: 0.75rem;
     padding: 0.75rem 1rem;
     background-color: var(--color-bg-medium);
     border-bottom: 1px solid var(--color-border);
@@ -57,18 +57,118 @@
     border: none;
     color: var(--color-text-primary);
     font-size: 0.9rem;
+    outline: none;
 }
 
+.browser-action-btn,
 .browser-close-btn {
     background: none;
     border: none;
     color: var(--color-text-secondary);
-    font-size: 2rem;
     cursor: pointer;
+    flex-shrink: 0;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: background-color 0.2s, color 0.2s;
+}
+
+.browser-action-btn:hover,
+.browser-close-btn:hover {
+    background-color: var(--color-bg-light);
+    color: var(--color-text-primary);
+}
+
+.browser-close-btn {
+    font-size: 2rem;
+}
+
+.browser-action-btn svg {
+    width: 18px;
+    height: 18px;
+}
+
+.browser-content-area {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    background-color: #fff;
 }
 
 .browser-iframe {
     width: 100%;
     height: 100%;
     border: none;
+    position: relative;
+    z-index: 1;
+}
+
+.browser-loader-container,
+.browser-fallback-message {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 2rem;
+    background-color: var(--color-bg-deep);
+    color: var(--color-text-secondary);
+}
+
+.browser-loader {
+    width: 48px;
+    height: 48px;
+    border: 5px solid var(--color-border);
+    border-bottom-color: var(--color-accent);
+    border-radius: 50%;
+    display: inline-block;
+    animation: rotation 1s linear infinite;
+    margin-bottom: 1rem;
+}
+
+@keyframes rotation {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.browser-fallback-message h4 {
+    font-size: 1.5rem;
+    margin: 0 0 1rem 0;
+    color: var(--color-text-primary);
+}
+
+.browser-fallback-message p {
+    max-width: 400px;
+    line-height: 1.6;
+    margin-bottom: 2rem;
+}
+
+.fallback-open-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    background-color: var(--color-accent);
+    color: white;
+    border: none;
+    padding: 0.8rem 1.75rem;
+    font-size: 1rem;
+    font-weight: 700;
+    border-radius: 2rem;
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+.fallback-open-button:hover {
+    transform: scale(1.05);
+}
+
+.fallback-open-button svg {
+    width: 20px;
+    height: 20px;
 }

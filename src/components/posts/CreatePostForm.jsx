@@ -5,6 +5,7 @@ import { db } from '../../services/firebase';
 import { useUserContext } from '../../contexts/UserContext';
 import { useDebounce } from 'use-debounce';
 import toast from 'react-hot-toast';
+
 import { LexicalComposer } from '@lexical/react/LexicalComposer';
 import { RichTextPlugin } from '@lexical/react/LexicalRichTextPlugin';
 import { ContentEditable } from '@lexical/react/LexicalContentEditable';
@@ -13,6 +14,11 @@ import { OnChangePlugin } from '@lexical/react/LexicalOnChangePlugin';
 import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
 import { LexicalErrorBoundary } from '@lexical/react/LexicalErrorBoundary';
 import { $getRoot, $getSelection, $isRangeSelection, $createParagraphNode } from 'lexical';
+// --- ПОЧАТОК ЗМІН: Імпортуємо AutoLinkNode разом з LinkNode ---
+import { LinkNode, AutoLinkNode } from '@lexical/link';
+import { AutoLinkPlugin } from '@lexical/react/LexicalAutoLinkPlugin';
+// --- КІНЕЦЬ ЗМІН ---
+
 import { CustomEmojiNode, $createCustomEmojiNode } from '../lexical/CustomEmojiNode';
 import { EditorTheme } from '../lexical/EditorTheme';
 import default_picture from '../../img/Default-Images/default-picture.svg';
@@ -22,6 +28,27 @@ import EmojiPickerPlus from '../chat/EmojiPickerPlus';
 import { isPackAnimated } from '../../utils/emojiPackCache';
 import '../lexical/Editor.css';
 import './Post.css';
+
+
+const URL_MATCHER = /((https?:\/\/(www\.)?)|(www\.))[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)/;
+
+const MATCHERS = [
+  (text) => {
+    const match = URL_MATCHER.exec(text);
+    if (match === null) {
+      return null;
+    }
+    const fullMatch = match[0];
+    return {
+      index: match.index,
+      length: fullMatch.length,
+      text: fullMatch,
+      url: fullMatch.startsWith('http') ? fullMatch : `https://` + fullMatch,
+      attributes: { rel: 'noopener noreferrer', target: '_blank' },
+    };
+  },
+];
+
 
 const EditorAccessPlugin = ({ onEditorReady }) => {
     const [editor] = useLexicalComposerContext();
@@ -76,7 +103,9 @@ const CreatePostForm = () => {
     const initialConfig = {
         namespace: 'KnitlyPostEditor',
         theme: EditorTheme,
-        nodes: [CustomEmojiNode],
+        // --- ПОЧАТОК ЗМІН: Додаємо AutoLinkNode до списку ---
+        nodes: [CustomEmojiNode, LinkNode, AutoLinkNode],
+        // --- КІНЕЦЬ ЗМІН ---
         onError(error) { throw error; },
     };
 
@@ -247,6 +276,7 @@ const CreatePostForm = () => {
                             <HistoryPlugin />
                             <OnChangePlugin onChange={handleEditorChange} />
                             <EditorAccessPlugin onEditorReady={setEditorInstance} />
+                            <AutoLinkPlugin matchers={MATCHERS} />
                         </div>
                     </LexicalComposer>
                 </div>

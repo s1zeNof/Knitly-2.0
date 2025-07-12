@@ -112,7 +112,7 @@ const AppLayout = () => {
                     <Route path="/upload" element={<UploadMusic />} />
                     <Route path="/create-album" element={<CreateAlbum />} />
                     <Route path="/playlist/:playlistId" element={<PlaylistPage />} />
-                    <Route path="/messages" element={<MessagesPage />} />
+                    <Route path="/messages" element={<MessagesPage openBrowser={openBrowser} />} />
                     <Route path="/userlist" element={<UserList />} />
                     <Route path="/create-emoji-pack" element={<CreateEmojiPack />} />
                     <Route path="/track/:trackId" element={<TrackPage />} />

@@ -39,6 +39,18 @@
     margin-bottom: 0;
 }
 
+/* --- ПОЧАТОК НОВИХ СТИЛІВ --- */
+.editor-link {
+    color: var(--color-accent);
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.editor-link:hover {
+    text-decoration: underline;
+}
+/* --- КІНЕЦЬ НОВИХ СТИЛІВ --- */
+
 .editor-container.read-only .editor-input {
     min-height: auto;
 }
