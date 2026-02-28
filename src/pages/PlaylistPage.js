@@ -16,7 +16,7 @@ const CustomizeIcon = () => <svg width="24" height="24" viewBox="0 0 24 24" fill
 const PlaylistPage = () => {
     const { playlistId } = useParams();
     const { user: currentUser } = useUserContext();
-    const { addToQueue, handlePlayPause, showNotification } = usePlayerContext();
+    const { handlePlayPause, showNotification } = usePlayerContext();
     const [playlist, setPlaylist] = useState(null);
     const [tracks, setTracks] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -31,7 +31,7 @@ const PlaylistPage = () => {
     const heroHeaderRef = useRef(null); // Ref на великий хедер
 
     useEffect(() => {
-        if (loading) return; 
+        if (loading) return;
 
         // Спостерігаємо за великим хедером
         const observer = new IntersectionObserver(
@@ -40,22 +40,18 @@ const PlaylistPage = () => {
                 // ми робимо "липкий" хедер видимим.
                 setIsStickyHeaderVisible(!entry.isIntersecting);
             },
-            { 
+            {
                 root: null,
                 // `rootMargin` змушує обсервер спрацювати, коли хедер ховається під головну навігацію
                 rootMargin: `-70px 0px 0px 0px`,
-                threshold: 0 
+                threshold: 0
             }
         );
 
-        if (heroHeaderRef.current) {
-            observer.observe(heroHeaderRef.current);
-        }
-
+        const heroEl = heroHeaderRef.current;
+        if (heroEl) observer.observe(heroEl);
         return () => {
-            if (heroHeaderRef.current) {
-                observer.unobserve(heroHeaderRef.current);
-            }
+            if (heroEl) observer.unobserve(heroEl);
         };
     }, [loading]);
     // --- КІНЕЦЬ ЗМІН ---
@@ -105,9 +101,9 @@ const PlaylistPage = () => {
         document.addEventListener("mousedown", handleClickOutside);
         return () => document.removeEventListener("mousedown", handleClickOutside);
     }, []);
-    
+
     const playAllTracks = () => {
-        if(tracks.length > 0){
+        if (tracks.length > 0) {
             handlePlayPause(tracks[0], tracks);
         }
     }
@@ -141,7 +137,7 @@ const PlaylistPage = () => {
                 <h3>{playlist.title}</h3>
                 <button className="sticky-play-button" onClick={playAllTracks}><PlayIcon /></button>
             </div>
-            
+
             <header className="playlist-header" ref={heroHeaderRef}>
                 <div className="playlist-cover-art">
                     {playlist.coverArtUrl ? (
@@ -173,7 +169,7 @@ const PlaylistPage = () => {
                         <OptionsIcon />
                     </button>
                     {showOptionsMenu && (
-                         <div className="options-menu">
+                        <div className="options-menu">
                             {isOwner ? (
                                 <>
                                     <button>Редагувати деталі</button>
@@ -182,7 +178,7 @@ const PlaylistPage = () => {
                             ) : (
                                 <button>Поскаржитись</button>
                             )}
-                             <button>Поділитися</button>
+                            <button>Поділитися</button>
                         </div>
                     )}
                 </div>
@@ -191,7 +187,7 @@ const PlaylistPage = () => {
             <main className="playlist-content">
                 <TrackList initialTracks={tracks} />
             </main>
-            
+
             {showCustomizePanel && (
                 <div className="customize-panel">
                     <div className="customize-panel-header">
@@ -202,7 +198,7 @@ const PlaylistPage = () => {
                         <h5>Оберіть фон</h5>
                         <div className="gradient-grid">
                             {gradients.map(gradientClass => (
-                                <div 
+                                <div
                                     key={gradientClass}
                                     className={`gradient-option ${gradientClass} ${selectedGradient === gradientClass ? 'selected' : ''}`}
                                     onClick={() => setSelectedGradient(gradientClass)}

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useQuery } from 'react-query';
 import { db } from '../services/firebase';
-import { collection, query, where, orderBy, limit, getDocs } from 'firebase/firestore';
+import { collection, query, where, limit, getDocs } from 'firebase/firestore';
 import { useDebounce } from 'use-debounce';
 import TrackList from '../components/common/TrackList';
 import { Link } from 'react-router-dom';
@@ -17,9 +17,9 @@ const searchAll = async (term) => {
     const endTerm = lowerCaseTerm + '\uf8ff';
 
     const tracksQuery = query(collection(db, 'tracks'), where('title_lowercase', '>=', lowerCaseTerm), where('title_lowercase', '<=', endTerm), limit(10));
-    
+
     const usersByNicknameQuery = query(collection(db, 'users'), where('nickname', '>=', lowerCaseTerm), where('nickname', '<=', endTerm), limit(10));
-    
+
     const usersByDisplayNameQuery = query(collection(db, 'users'), where('displayName_lowercase', '>=', lowerCaseTerm), where('displayName_lowercase', '<=', endTerm), limit(10));
 
     const [tracksSnap, usersByNicknameSnap, usersByDisplayNameSnap] = await Promise.all([
@@ -39,9 +39,9 @@ const searchAll = async (term) => {
             usersMap.set(doc.id, { id: doc.id, ...doc.data() });
         }
     });
-    
+
     const allUsers = Array.from(usersMap.values());
-    
+
     const artists = allUsers.filter(u => u.tracksCount > 0);
     const users = allUsers.filter(u => !u.tracksCount || u.tracksCount === 0);
 
@@ -74,9 +74,9 @@ const SearchPage = () => {
 
         const isResultsEmpty = results.tracks.length === 0 && results.artists.length === 0 && results.users.length === 0;
         if (isResultsEmpty) {
-             return <div className="search-placeholder">Нічого не знайдено за запитом "{debouncedSearchTerm}".</div>;
+            return <div className="search-placeholder">Нічого не знайдено за запитом "{debouncedSearchTerm}".</div>;
         }
-        
+
         return (
             <div className="search-results-tabs">
                 <div className="tabs-header">
@@ -98,7 +98,7 @@ const SearchPage = () => {
                             <div className="artist-results-grid">
                                 {results.artists.map(artist => (
                                     <Link to={`/user/${artist.nickname}`} key={artist.id} className="artist-card">
-                                        <img src={artist.photoURL || default_picture} alt={artist.displayName}/>
+                                        <img src={artist.photoURL || default_picture} alt={artist.displayName} />
                                         <p>{artist.displayName}</p>
                                         <span>@{artist.nickname}</span>
                                     </Link>
@@ -106,13 +106,13 @@ const SearchPage = () => {
                             </div>
                         </div>
                     )}
-                     {(activeTab === 'all' || activeTab === 'users') && results.users.length > 0 && (
+                    {(activeTab === 'all' || activeTab === 'users') && results.users.length > 0 && (
                         <div className="result-section">
                             <h4>Слухачі</h4>
                             <div className="artist-results-grid">
                                 {results.users.map(user => (
                                     <Link to={`/user/${user.nickname}`} key={user.id} className="artist-card">
-                                        <img src={user.photoURL || default_picture} alt={user.displayName}/>
+                                        <img src={user.photoURL || default_picture} alt={user.displayName} />
                                         <p>{user.displayName}</p>
                                         <span>@{user.nickname}</span>
                                     </Link>

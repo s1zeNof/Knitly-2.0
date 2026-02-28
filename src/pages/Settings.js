@@ -3,7 +3,7 @@ import { doc, updateDoc } from 'firebase/firestore';
 import { uploadFile } from '../services/supabase';
 import { useUserContext } from '../contexts/UserContext';
 import { usePlayerContext } from '../contexts/PlayerContext';
-import { auth, db } from '../services/firebase';
+import { db } from '../services/firebase';
 import { Country, City } from 'country-state-city';
 import Select from 'react-select';
 import EmojiPicker from 'emoji-picker-react';
