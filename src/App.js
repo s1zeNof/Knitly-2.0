@@ -30,8 +30,9 @@ import CreatorStudio from './pages/CreatorStudio';
 import NotificationsPage from './pages/NotificationsPage';
 import SearchPage from './pages/SearchPage';
 import InAppBrowser from './components/common/InAppBrowser';
-import AppsMarketplace from './pages/AppsMarketplace'; // <-- ІМПОРТ НОВОЇ СТОРІНКИ
+import AppsMarketplace from './pages/AppsMarketplace';
 import GiftsMarketplace from './pages/GiftsMarketplace';
+import ShareModal from './components/common/ShareModal';
 
 import './styles/index.css';
 import './components/posts/Post.css';
@@ -51,6 +52,9 @@ const AppLayout = () => {
     const [browserUrl, setBrowserUrl] = useState('');
     const [isBrowserOpen, setIsBrowserOpen] = useState(false);
 
+    const [isShareModalOpen, setIsShareModalOpen] = useState(false);
+    const [postToShare, setPostToShare] = useState(null);
+
     const openBrowser = (url) => {
         setBrowserUrl(url);
         setIsBrowserOpen(true);
@@ -61,6 +65,16 @@ const AppLayout = () => {
         setBrowserUrl('');
     };
     
+    const openShareModal = (post) => {
+        setPostToShare(post);
+        setIsShareModalOpen(true);
+    };
+
+    const closeShareModal = () => {
+        setIsShareModalOpen(false);
+        setPostToShare(null);
+    };
+
     const isSidebarPage = location.pathname.startsWith('/tags/') || location.pathname === '/studio';
     const inChatView = location.pathname === '/messages' && document.body.classList.contains('in-chat-view');
 
@@ -97,15 +111,14 @@ const AppLayout = () => {
             />
             <main className="app-main-content">
                 <Routes>
-                    <Route path="/" element={<Home openBrowser={openBrowser} />} />
-                    {/* 👇 ДОДАЙТЕ ЦЕЙ РЯДОК 👇 */}
+                    <Route path="/" element={<Home openBrowser={openBrowser} openShareModal={openShareModal} />} />
                     <Route path="/apps" element={<AppsMarketplace openBrowser={openBrowser} />} />
                     <Route path="/gifts" element={<GiftsMarketplace />} /> 
                     <Route path="/login" element={<Login />} />
                     <Route path="/register" element={<Register />} />
                     <Route path="/search" element={<SearchPage />} />
                     <Route path="/profile" element={<ProfilePage />} />
-                    <Route path="/user/:userNickname" element={<ProfilePage />} />
+                    <Route path="/user/:userNickname" element={<ProfilePage openShareModal={openShareModal} />} />
                     <Route path="/settings" element={<Settings />} />
                     <Route path="/settings/emoji-packs" element={<EmojiPacksSettings />} />
                     <Route path="/settings/emoji-packs/edit/:packId" element={<EditEmojiPack />} />
@@ -134,6 +147,10 @@ const AppLayout = () => {
             
             {isBrowserOpen && <InAppBrowser initialUrl={browserUrl} onClose={closeBrowser} />}
             
+            {isShareModalOpen && postToShare && (
+                <ShareModal post={postToShare} onClose={closeShareModal} />
+            )}
+
             {notification.message && (
                 <div className={`toast-notification ${notification.type}`}>
                     {notification.message}
@@ -155,6 +172,7 @@ const App = () => {
             <UserProvider>
                 <PlayerProvider>
                     <AppContent />
+                    <Analytics />
                 </PlayerProvider>
             </UserProvider>
         </QueryClientProvider>

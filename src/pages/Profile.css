@@ -1,343 +1,431 @@
+/* ============================================================
+   KNITLY PROFILE PAGE — Premium Music Platform Design
+   Inspired by Spotify + SoundCloud, taken further.
+   ============================================================ */
+
 .page-profile-container {
   display: flex;
-  gap: 1.5rem;
-  padding: 1.5rem;
-  background-color: var(--color-bg-deep);
+  flex-direction: column;
+  width: 100%;
+  gap: 0;
   min-height: calc(100vh - 70px);
 }
-.page-profile-sidebar {
-  width: 320px;
-  flex-shrink: 0;
-}
-.page-profile-info-card {
-  background-color: var(--color-bg-medium);
-  border-radius: 0.75rem;
-  padding: 1.5rem;
-  text-align: center;
-  margin-top: -60px;
-  position: relative;
-  border: 1px solid var(--color-border);
-}
-.page-profile-background {
-  height: 150px;
-  background-size: cover;
-  background-position: center;
-  border-radius: 0.75rem;
-  background-color: var(--color-bg-light);
-}
-.page-profile-avatar {
-  width: 120px;
-  height: 120px;
-  border-radius: 50%;
-  border: 4px solid var(--color-bg-medium);
-  margin: 0 auto;
-  transform: translateY(-50%);
-  object-fit: cover;
-}
-.page-profile-display-name {
-  margin-top: -60px;
-  font-size: 1.5rem;
-  font-weight: 700;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-}
-.page-profile-verified-badge {
-  width: 24px;
-  height: 24px;
-}
-.page-profile-nickname {
-  color: var(--color-text-secondary);
-  margin-top: 0.25rem;
-}
-.page-profile-description {
-  color: var(--color-text-primary);
-  margin-top: 1rem;
-  font-size: 0.9rem;
-  line-height: 1.5;
-}
-.page-profile-stats {
-  display: flex;
-  justify-content: space-around;
-  margin-top: 1.5rem;
-  padding-top: 1.5rem;
-  border-top: 1px solid var(--color-border);
-}
-.page-profile-stat-item {
+
+/* ---- FULL-WIDTH BANNER ---- */
+.page-profile-header {
   display: flex;
   flex-direction: column;
-}
-.page-profile-stat-item strong {
-  font-size: 1.25rem;
-  font-weight: 600;
-}
-.page-profile-stat-item span {
-  font-size: 0.8rem;
-  color: var(--color-text-secondary);
-}
-.page-profile-logout-button, .page-profile-action-button {
-  width: 100%;
-  margin-top: 1rem;
-  padding: 0.75rem;
-  border-radius: 0.5rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background-color 0.2s;
-}
-.page-profile-logout-button {
-  background-color: var(--color-bg-light);
-  color: var(--color-text-primary);
-  border: 1px solid var(--color-border);
-}
-.page-profile-logout-button:hover {
-  background-color: var(--color-border);
-}
-.page-profile-action-button {
-    background-color: var(--color-accent);
-    color: white;
-    border: none;
-}
-.page-profile-action-button:hover {
-    background-color: var(--color-accent-hover);
+  position: relative;
+  /* no overflow: hidden so avatar can pop out */
 }
 
-.page-profile-main-content {
-  flex-grow: 1;
-  background-color: var(--color-bg-medium);
-  border-radius: 0.75rem;
-  padding: 1rem;
-  border: 1px solid var(--color-border);
+.page-profile-background {
+  width: 100%;
+  height: 320px;
+  background-size: cover;
+  background-position: center top;
+  background-color: #1e1e2e;
+  position: relative;
+  flex-shrink: 0;
 }
+
+/* Dark gradient fade at the bottom — signature Spotify feel */
+.page-profile-background::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom,
+      rgba(10, 10, 15, 0) 30%,
+      rgba(10, 10, 15, 0.7) 75%,
+      var(--color-bg-deep, #0a0a0f) 100%);
+  pointer-events: none;
+}
+
+/* ---- AVATAR + ACTION ROW ---- */
+.page-profile-header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  padding: 0 2.5rem;
+  position: relative;
+  z-index: 3;
+  margin-top: -80px;
+  /* Avatar overlaps banner */
+}
+
+.page-profile-avatar-wrapper {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.page-profile-avatar {
+  width: 160px;
+  height: 160px;
+  border-radius: 50%;
+  border: 5px solid var(--color-bg-deep, #0a0a0f);
+  object-fit: cover;
+  background-color: #1a1a2e;
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.08),
+    0 12px 40px rgba(0, 0, 0, 0.6);
+  transition: box-shadow 0.3s ease;
+}
+
+.page-profile-avatar:hover {
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.2),
+    0 16px 50px rgba(0, 0, 0, 0.8);
+}
+
+.page-profile-actions-group {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 0.65rem;
+  margin-bottom: 12px;
+}
+
+/* ---- BUTTONS ---- */
+.page-profile-action-button {
+  padding: 0.65rem 1.75rem;
+  border-radius: 500px;
+  font-weight: 700;
+  cursor: pointer;
+  font-size: 0.9rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  background: var(--color-accent, #1db954);
+  color: #000;
+  border: none;
+  box-shadow: 0 4px 16px rgba(29, 185, 84, 0.3);
+}
+
+.page-profile-action-button:hover:not(:disabled) {
+  transform: scale(1.04);
+  box-shadow: 0 6px 22px rgba(29, 185, 84, 0.45);
+  filter: brightness(1.08);
+}
+
+.page-profile-action-button:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.page-profile-secondary-button,
+.page-profile-logout-button {
+  padding: 0.6rem 1.4rem;
+  border-radius: 500px;
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 0.9rem;
+  letter-spacing: 0.02em;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  background: transparent;
+  color: var(--color-text-primary);
+  border: 2px solid rgba(255, 255, 255, 0.25);
+}
+
+.page-profile-secondary-button:hover,
+.page-profile-logout-button:hover {
+  border-color: rgba(255, 255, 255, 0.7);
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.page-profile-secondary-button.with-icon {
+  padding: 0.6rem 1rem;
+  gap: 0.4rem;
+  display: flex;
+  align-items: center;
+}
+
+/* ---- ACTIONS DROPDOWN ---- */
+.profile-actions-menu-container {
+  position: relative;
+}
+
+.profile-actions-dropdown {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  min-width: 210px;
+  background: rgba(20, 20, 28, 0.96);
+  backdrop-filter: blur(40px) saturate(180%);
+  -webkit-backdrop-filter: blur(40px) saturate(180%);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 0.4rem;
+  z-index: 30;
+  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.04);
+  opacity: 0;
+  transform: scale(0.95) translateY(-8px);
+  transform-origin: top right;
+  visibility: hidden;
+  transition: opacity 0.18s ease, transform 0.18s ease, visibility 0.18s;
+}
+
+.profile-actions-dropdown.visible {
+  opacity: 1;
+  transform: scale(1) translateY(0);
+  visibility: visible;
+}
+
+.dropdown-action-button {
+  width: 100%;
+  background: none;
+  border: none;
+  padding: 0.75rem 1rem;
+  color: var(--color-text-primary);
+  text-align: left;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 500;
+  font-size: 0.95rem;
+  transition: background-color 0.15s;
+}
+
+.dropdown-action-button:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.dropdown-action-button.danger {
+  color: #ff4d4d;
+}
+
+.dropdown-action-button.danger:hover {
+  background-color: rgba(255, 77, 77, 0.12);
+}
+
+/* ---- USER INFO ---- */
+.page-profile-info {
+  padding: 1.25rem 2.5rem 0.5rem 2.5rem;
+}
+
+.page-profile-display-name {
+  font-size: 2.2rem;
+  font-weight: 900;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+  margin: 0;
+  /* subtle text glow for a "star" feeling */
+  text-shadow: 0 2px 24px rgba(255, 255, 255, 0.12);
+}
+
+.page-profile-verified-badge {
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
+}
+
+.page-profile-nickname {
+  color: var(--color-text-secondary);
+  font-size: 1rem;
+  margin-top: 0.2rem;
+  letter-spacing: 0.01em;
+}
+
+.page-profile-description {
+  color: rgba(255, 255, 255, 0.7);
+  margin-top: 1rem;
+  font-size: 1rem;
+  line-height: 1.65;
+  max-width: 640px;
+}
+
+.page-profile-stats {
+  display: flex;
+  gap: 2.5rem;
+  margin-top: 1.25rem;
+}
+
+.page-profile-stat-item {
+  display: flex;
+  align-items: baseline;
+  gap: 0.45rem;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+
+.page-profile-stat-item:hover {
+  opacity: 0.8;
+}
+
+.page-profile-stat-item strong {
+  font-size: 1.2rem;
+  font-weight: 800;
+  color: #fff;
+}
+
+.page-profile-stat-item span {
+  font-size: 0.9rem;
+  color: var(--color-text-secondary);
+  text-transform: lowercase;
+}
+
+/* ---- TABS NAVIGATION ---- */
 .page-profile-tabs {
   display: flex;
-  border-bottom: 1px solid var(--color-border);
-  margin-bottom: 1.5rem;
+  gap: 0;
+  padding: 0 2rem;
+  margin-top: 1.5rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  overflow-x: auto;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+  position: sticky;
+  top: 70px;
+  /* stick under the main header */
+  z-index: 10;
+  background-color: var(--color-bg-deep, #0a0a0f);
 }
+
+.page-profile-tabs::-webkit-scrollbar {
+  display: none;
+}
+
 .page-profile-tab-button {
   background: none;
   border: none;
-  color: var(--color-text-secondary);
-  padding: 1rem 1.5rem;
-  font-size: 1rem;
+  color: rgba(255, 255, 255, 0.5);
+  padding: 1rem 1.25rem;
+  font-size: 0.95rem;
   font-weight: 600;
   cursor: pointer;
   position: relative;
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  transition: color 0.2s;
+  transition: color 0.2s ease;
+  white-space: nowrap;
+  letter-spacing: 0.01em;
 }
+
 .page-profile-tab-button:hover {
-  color: var(--color-text-primary);
+  color: rgba(255, 255, 255, 0.85);
 }
+
 .page-profile-tab-button.active {
-  color: var(--color-accent);
+  color: #fff;
 }
-.page-profile-tab-button.active::after {
+
+/* Animated gradient underline */
+.page-profile-tab-button::after {
   content: '';
   position: absolute;
   bottom: -1px;
   left: 0;
   right: 0;
-  height: 2px;
-  background-color: var(--color-accent);
+  height: 3px;
+  border-radius: 3px 3px 0 0;
+  background: linear-gradient(90deg, var(--color-accent, #1db954), #14a8ff);
+  transform: scaleX(0);
+  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
-.page-profile-tab-content {
-  padding: 0 1rem;
+
+.page-profile-tab-button.active::after {
+  transform: scaleX(1);
 }
+
+/* ---- MAIN CONTENT ---- */
+.page-profile-main-content {
+  flex-grow: 1;
+  width: 100%;
+  padding: 2rem 2.5rem;
+}
+
+.page-profile-tab-content {}
+
 .page-profile-tab-placeholder {
   color: var(--color-text-secondary);
   text-align: center;
-  padding: 3rem;
+  padding: 5rem 2rem;
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 1.25rem;
+  border: 1px dashed rgba(255, 255, 255, 0.08);
 }
 
-/* СТИЛІ ДЛЯ МАКЕТУ МУЗИКИ */
+/* ---- MUSIC LAYOUT ---- */
 .profile-music-layout {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 2rem;
-    margin-bottom: 2rem;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+  margin-bottom: 2rem;
 }
-@media (min-width: 1024px) {
-    .profile-music-layout {
-        grid-template-columns: 1fr 1fr;
-    }
+
+@media (min-width: 1100px) {
+  .profile-music-layout {
+    grid-template-columns: 1fr 1fr;
+  }
 }
+
 .profile-section {
-    width: 100%;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 1.25rem;
+  padding: 1.5rem 1.75rem;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  margin-bottom: 1.5rem;
+  transition: border-color 0.2s;
 }
+
+.profile-section:hover {
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
 .profile-section-title {
-    font-size: 1.5rem;
-    font-weight: 700;
-    margin-bottom: 1rem;
-    padding-left: 1rem;
+  font-size: 1.3rem;
+  font-weight: 800;
+  margin-bottom: 1.25rem;
+  letter-spacing: -0.01em;
+  color: #fff;
 }
 
-/* СТИЛІ ДЛЯ МОДАЛЬНОГО ВІКНА СТВОРЕННЯ ПЛЕЙЛИСТА */
-.modal-form {
-    display: flex;
+/* ---- MOBILE ---- */
+@media (max-width: 900px) {
+  .page-profile-background {
+    height: 180px;
+  }
+
+  .page-profile-header-content {
+    padding: 0 1.25rem;
+    margin-top: -55px;
     flex-direction: column;
-    gap: 1.5rem;
-    margin-top: 1.5rem;
-}
-.playlist-privacy-toggle {
-    display: flex;
-    align-items: center;
+    align-items: flex-start;
     gap: 0.75rem;
-    justify-content: flex-start;
-}
-.playlist-privacy-toggle label {
-    display: flex;
-    align-items: center;
-    cursor: pointer;
-}
-.playlist-privacy-toggle input[type="checkbox"] {
-    width: 1.25rem;
-    height: 1.25rem;
-    margin-right: 0.5rem;
-}
+  }
 
-/* Додайте або замініть стилі для кнопок на це */
-.page-profile-actions-group {
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
-    margin-top: 1.5rem;
-}
-.page-profile-logout-button, 
-.page-profile-action-button, 
-.page-profile-secondary-button {
+  .page-profile-avatar {
+    width: 110px;
+    height: 110px;
+    border-width: 4px;
+  }
+
+  .page-profile-actions-group {
+    flex-wrap: wrap;
+    margin-bottom: 0;
     width: 100%;
-    padding: 0.75rem;
-    border-radius: 0.5rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background-color 0.2s;
-    font-size: 1rem;
-}
-.page-profile-action-button {
-    background-color: var(--color-accent);
-    color: white;
-    border: none;
-}
-.page-profile-action-button:hover {
-    background-color: var(--color-accent-hover);
-}
-.page-profile-secondary-button {
-    background-color: var(--color-bg-light);
-    color: var(--color-text-primary);
-    border: 1px solid var(--color-border);
-}
-.page-profile-secondary-button:hover {
-    background-color: var(--color-border);
-}
+  }
 
-.page-profile-logout-button {
-  background-color: transparent;
-  color: var(--color-text-secondary);
-  border: 1px solid var(--color-border);
-}
-.page-profile-logout-button:hover {
-    background-color: var(--color-bg-light);
-    color: var(--color-text-primary);
-}
+  .page-profile-info {
+    padding: 1.25rem 1.25rem 0.5rem 1.25rem;
+  }
 
-/* --- СТИЛІ ДЛЯ НОВОГО СПАДАЮЧОГО МЕНЮ ДІЙ (ВІДКРИВАННЯ ВНИЗ) --- */
-.profile-actions-menu-container {
-    position: relative;
-    width: 100%;
-}
+  .page-profile-display-name {
+    font-size: 1.7rem;
+  }
 
-.page-profile-secondary-button.with-icon {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 0.5rem;
-}
+  .page-profile-tabs {
+    padding: 0 1rem;
+    top: 60px;
+  }
 
-.profile-actions-dropdown {
-    position: absolute;
-    /* ЗМІНА 1: Позиціонуємо від верхнього краю кнопки, а не від нижнього */
-    top: calc(100% + 5px); /* 100% висоти кнопки + 5px відступу */
-    left: 0;
-    right: 0;
-    background-color: var(--color-bg-light);
-    border-radius: 0.5rem;
-    border: 1px solid var(--color-border);
-    padding: 0.5rem;
-    z-index: 10;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-    
-    /* ЗМІНА 2: Анімація тепер відбувається вниз */
-    opacity: 0;
-    transform: translateY(-10px); /* Початковий стан - трохи вище */
-    visibility: hidden;
-    transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s;
-}
+  .page-profile-main-content {
+    padding: 1.25rem 1rem;
+  }
 
-.profile-actions-dropdown.visible {
-    opacity: 1;
-    transform: translateY(0); /* Кінцевий стан - на своєму місці */
-    visibility: visible;
-}
-
-.dropdown-action-button {
-    width: 100%;
-    background: none;
-    border: none;
-    padding: 0.75rem 1rem;
-    color: var(--color-text-primary);
-    text-align: left;
-    border-radius: 0.375rem;
-    cursor: pointer;
-    font-weight: 500;
-    font-size: 0.9rem;
-    transition: background-color 0.2s;
-}
-
-.dropdown-action-button:hover {
-    background-color: var(--color-border);
-}
-
-.dropdown-action-button.danger {
-    color: var(--color-error);
-}
-
-.dropdown-action-button.danger:hover {
-    background-color: rgba(239, 68, 68, 0.1);
-    color: #fca5a5;
-}
-
-/* Адаптивність для Profile */
-@media (max-width: 1024px) {
-    .page-profile-container {
-        flex-direction: column;
-        padding: 1rem;
-        gap: 1rem;
-    }
-    .page-profile-sidebar {
-        width: 100%;
-    }
-    .page-profile-main-content {
-        padding: 0.5rem;
-    }
-    .profile-music-layout {
-        grid-template-columns: 1fr; /* Одна колонка на планшетах */
-    }
-}
-@media (max-width: 768px) {
-    .page-profile-tabs {
-        flex-wrap: nowrap;      /* Забороняємо переносити вкладки на новий рядок */
-        overflow-x: auto;       /* Додаємо горизонтальну прокрутку, якщо вони не вміщаються */
-        justify-content: flex-start; /* Вирівнюємо по лівому краю */
-        -ms-overflow-style: none;     /* Приховуємо скролбар в IE та Edge */
-        scrollbar-width: none;        /* Приховуємо скролбар в Firefox */
-    }
-    .page-profile-tabs::-webkit-scrollbar {
-        display: none; /* Приховуємо скролбар в Chrome, Safari, та Opera */
-    }
-    .page-profile-tab-button {
-        padding: 0.75rem 1rem;
-    }
+  .profile-section {
+    padding: 1rem 1.25rem;
+  }
 }

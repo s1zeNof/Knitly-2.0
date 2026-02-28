@@ -5,8 +5,10 @@ import { useState, useEffect } from 'react';
 const lottieCache = new Map();
 
 export const useLottieData = (url) => {
-    const [animationData, setAnimationData] = useState(lottieCache.get(url) || null);
-    const [loading, setLoading] = useState(!animationData);
+    // Якщо в кеші вже є запис (навіть якщо це null/помилка), ми не завантажуємо
+    const hasCache = lottieCache.has(url);
+    const [animationData, setAnimationData] = useState(() => hasCache ? lottieCache.get(url) : null);
+    const [loading, setLoading] = useState(!hasCache);
     const [error, setError] = useState(null);
 
     useEffect(() => {
@@ -32,8 +34,10 @@ export const useLottieData = (url) => {
                 }
             })
             .catch(err => {
+                // КЕШУЄМО ПОМИЛКУ (null), щоб не робити нескінченні повторні запити при кожному маунті!
+                lottieCache.set(url, null);
                 if (isMounted) {
-                    console.error(`Failed to fetch Lottie animation from ${url}`, err);
+                    console.error(`Failed to fetch Lottie animation: ${url}`);
                     setError(err);
                 }
             })

@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useUserContext } from '../contexts/UserContext';
 import { usePlayerContext } from '../contexts/PlayerContext';
-import { db, storage } from '../services/firebase';
-import { ref as storageRef, uploadBytesResumable, getDownloadURL } from "firebase/storage";
+import { db } from '../services/firebase';
+import { uploadFileWithProgress } from '../services/supabase';
 import { collection, query, where, onSnapshot, orderBy, doc, addDoc, serverTimestamp, updateDoc, getDocs, writeBatch, arrayUnion, arrayRemove, deleteDoc, getDoc, increment, runTransaction } from 'firebase/firestore';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { getIconComponent } from '../components/common/FolderIcons';
@@ -23,8 +23,11 @@ import BookmarkIcon from '../components/common/BookmarkIcon';
 import ForwardModal from '../components/common/ForwardModal';
 import ShareMusicModal from '../components/common/ShareMusicModal';
 import EmojiPickerPlus from '../components/chat/EmojiPickerPlus';
-import ImageEditorModal from '../components/common/ImageEditorModal';
 import { isPackAnimated } from '../utils/emojiPackCache';
+
+// Lazy load: не завантажуємо react-easy-crop до першого відкриття редактора
+// (поза блоком static imports — після всіх import-рядків)
+const ImageEditorModal = React.lazy(() => import('../components/common/ImageEditorModal'));
 
 // Іконки
 const AllChatsIcon = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>;
@@ -378,30 +381,72 @@ const MessagesPage = ({ openBrowser }) => {
         if (fileInputRef.current) fileInputRef.current.value = "";
     };
     const handleDirectFileUpload = async (file, fileType) => {
-        if (!currentUser || !selectedConversationId || selectedConversationId === 'saved_messages') { showNotification("Неможливо завантажити файл: чат не вибрано.", "error"); return; }
+        if (!currentUser || !selectedConversationId || selectedConversationId === 'saved_messages') {
+            showNotification("Неможливо завантажити файл: чат не вибрано.", "error");
+            return;
+        }
         const fileExtension = file.name.split('.').pop();
         const baseName = file.name.substring(0, file.name.lastIndexOf('.'));
         const uniquePrefix = `${fileType}_${Date.now()}`;
         const fileName = `${uniquePrefix}_${baseName}.${fileExtension}`.replace(/[^a-zA-Z0-9._-]/g, '_');
-        const filePath = `chat_attachments/${selectedConversationId}/${currentUser.uid}/${fileName}`;
-        const fileRef = storageRef(storage, filePath);
-        const uploadTask = uploadBytesResumable(fileRef, file);
-        setShowUploadOverlay(true); setUploadProgress(0);
-        uploadTask.on('state_changed', (snapshot) => setUploadProgress((snapshot.bytesTransferred / snapshot.totalBytes) * 100), (error) => { console.error(`Помилка завантаження ${fileType}:`, error); showNotification(`Не вдалося завантажити ${fileType === 'video' ? 'відео' : 'GIF'}.`, "error"); setShowUploadOverlay(false); setUploadProgress(0); }, async () => { try { const downloadURL = await getDownloadURL(uploadTask.snapshot.ref); sendMessage(downloadURL, fileType, { originalName: file.name, mimeType: file.type }); setShowUploadOverlay(false); setUploadProgress(0); } catch (error) { console.error(`Помилка отримання URL ${fileType}:`, error); showNotification(`Не вдалося отримати URL ${fileType === 'video' ? 'відео' : 'GIF'}.`, "error"); setShowUploadOverlay(false); setUploadProgress(0); } });
+        const filePath = `${selectedConversationId}/${currentUser.uid}/${fileName}`;
+
+        setShowUploadOverlay(true);
+        setUploadProgress(0);
+        try {
+            // Завантажуємо файл у Supabase (bucket: chat)
+            const downloadURL = await uploadFileWithProgress(
+                file,
+                'chat',
+                filePath,
+                (progress) => setUploadProgress(progress)
+            );
+            sendMessage(downloadURL, fileType, { originalName: file.name, mimeType: file.type });
+        } catch (error) {
+            console.error(`Помилка завантаження ${fileType}:`, error);
+            showNotification(`Не вдалося завантажити ${fileType === 'video' ? 'відео' : 'GIF'}.`, "error");
+        } finally {
+            setShowUploadOverlay(false);
+            setUploadProgress(0);
+        }
     };
     const base64ToBlob = (base64, mimeType) => { const byteCharacters = atob(base64.split(',')[1]); const byteNumbers = new Array(byteCharacters.length); for (let i = 0; i < byteCharacters.length; i++) { byteNumbers[i] = byteCharacters.charCodeAt(i); } const byteArray = new Uint8Array(byteNumbers); return new Blob([byteArray], { type: mimeType }); };
     const handleImageEditorSave = async (editedImageObject, quality) => {
-        if (!currentUser || !selectedConversationId || selectedConversationId === 'saved_messages') { showNotification("Неможливо відправити зображення: чат не вибрано.", "error"); return; }
-        const { imageBase64, name: originalName, mimeType, width, height } = editedImageObject;
+        if (!currentUser || !selectedConversationId || selectedConversationId === 'saved_messages') {
+            showNotification("Неможливо відправити зображення: чат не вибрано.", "error");
+            return;
+        }
+        const { imageBase64, name: originalName, mimeType } = editedImageObject;
         if (!imageBase64) { showNotification("Помилка: не вдалося отримати дані зображення.", "error"); return; }
         const blob = base64ToBlob(imageBase64, mimeType);
         const uniquePrefix = `img_${Date.now()}`;
         const fileName = `${uniquePrefix}_${originalName || 'image.png'}`.replace(/[^a-zA-Z0-9._-]/g, '_');
-        const filePath = `chat_attachments/${selectedConversationId}/${currentUser.uid}/${fileName}`;
-        const imageFileRef = storageRef(storage, filePath);
-        const uploadTask = uploadBytesResumable(imageFileRef, blob);
-        setShowUploadOverlay(true); setUploadProgress(0);
-        uploadTask.on('state_changed', (snapshot) => setUploadProgress((snapshot.bytesTransferred / snapshot.totalBytes) * 100), (error) => { console.error("Помилка завантаження фото:", error); showNotification("Не вдалося завантажити фото.", "error"); setShowUploadOverlay(false); setUploadProgress(0); }, async () => { try { const downloadURL = await getDownloadURL(uploadTask.snapshot.ref); sendMessage(downloadURL, 'image', { originalName: editedImageObject.name || 'image.png', quality: quality, width: editedImageObject.width, height: editedImageObject.height, mimeType: editedImageObject.mimeType }); setShowUploadOverlay(false); setUploadProgress(0); } catch (error) { console.error("Помилка отримання URL завантаження:", error); showNotification("Не вдалося отримати URL фото.", "error"); setShowUploadOverlay(false); setUploadProgress(0); } });
+        const filePath = `${selectedConversationId}/${currentUser.uid}/${fileName}`;
+
+        setShowUploadOverlay(true);
+        setUploadProgress(0);
+        try {
+            // Завантажуємо зображення у Supabase (bucket: chat)
+            const downloadURL = await uploadFileWithProgress(
+                blob,
+                'chat',
+                filePath,
+                (progress) => setUploadProgress(progress)
+            );
+            sendMessage(downloadURL, 'image', {
+                originalName: editedImageObject.name || 'image.png',
+                quality,
+                width: editedImageObject.width,
+                height: editedImageObject.height,
+                mimeType: editedImageObject.mimeType
+            });
+        } catch (error) {
+            console.error("Помилка завантаження фото:", error);
+            showNotification("Не вдалося завантажити фото.", "error");
+        } finally {
+            setShowUploadOverlay(false);
+            setUploadProgress(0);
+        }
     };
     const handleShareContent = async (item, type) => { await sendMessage(item, type); setShareMusicModalOpen(false); };
     const handleFormSubmit = (e) => { e.preventDefault(); if (editingMessage && editingMessage.type !== 'text') return; sendMessage(newMessage, 'text'); };
@@ -541,7 +586,11 @@ const MessagesPage = ({ openBrowser }) => {
             <ForwardModal isOpen={!!forwardingMessages} onClose={() => setForwardingMessages(null)} onForward={handleConfirmForward} conversations={conversations} currentUser={currentUser} />
             <ShareMusicModal isOpen={isShareMusicModalOpen} onClose={() => setShareMusicModalOpen(false)} onShare={handleShareContent} />
             {isFullPickerOpen && (<EmojiPickerPlus onClose={() => setIsFullPickerOpen(false)} onEmojiSelect={handleEmojiSelect} />)}
-            {isImageEditorOpen && (<ImageEditorModal isOpen={isImageEditorOpen} imageToEdit={imageForEditor} onClose={() => { setIsImageEditorOpen(false); setImageForEditor(null); }} onSave={handleImageEditorSave} />)}
+            {isImageEditorOpen && (
+                <React.Suspense fallback={null}>
+                    <ImageEditorModal isOpen={isImageEditorOpen} imageToEdit={imageForEditor} onClose={() => { setIsImageEditorOpen(false); setImageForEditor(null); }} onSave={handleImageEditorSave} />
+                </React.Suspense>
+            )}
             {showUploadOverlay && (<div className="upload-progress-overlay"><div className="upload-progress-bar" style={{ width: `${uploadProgress}%` }}></div></div>)}
             {viewingImage && (<ImageViewerModal isOpen={!!viewingImage} imageUrl={viewingImage.url} imageAlt={viewingImage.alt} onClose={handleCloseImageViewer}/>)}
         </div>

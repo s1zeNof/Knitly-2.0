@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { doc, updateDoc } from 'firebase/firestore';
-import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { uploadFile } from '../services/supabase';
 import { useUserContext } from '../contexts/UserContext';
 import { usePlayerContext } from '../contexts/PlayerContext';
 import { auth, db } from '../services/firebase';
@@ -20,7 +20,7 @@ const ChatIcon = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor
 const EmojiIcon = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"></circle><path d="M8 14s1.5 2 4 2 4-2 4-2"></path><line x1="9" y1="9" x2="9.01" y2="9"></line><line x1="15" y1="9" x2="15.01" y2="9"></line></svg>;
 const WalletIcon = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 12V7a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h7"></path><path d="M16 12h4a2 2 0 1 1 0 4h-4v-4z"></path><path d="M18 10V8"></path><path d="M18 16v2"></path></svg>;
 // 👇 НОВА ІКОНКА 👇
-const HistoryIcon = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M1 4v6h6"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>;
+const HistoryIcon = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M1 4v6h6" /><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10" /></svg>;
 
 const Settings = () => {
     const { user, refreshUser } = useUserContext();
@@ -42,8 +42,12 @@ const Settings = () => {
     const emojiPickerRef = useRef(null);
     const [chatFolders, setChatFolders] = useState([]);
     const [isFolderModalOpen, setIsFolderModalOpen] = useState(false);
-    const [editingFolder, setEditingFolder] = useState(null); 
+    const [editingFolder, setEditingFolder] = useState(null);
     const [deleteAnimation, setDeleteAnimation] = useState('animation-vortex-out');
+    const [messagePrivacy, setMessagePrivacy] = useState('everyone');
+    const [groupInvitePrivacy, setGroupInvitePrivacy] = useState('everyone');
+    const [allowMessageRequests, setAllowMessageRequests] = useState(true);
+    const [allowGroupRequests, setAllowGroupRequests] = useState(true);
     const previewRefs = useRef({});
 
     const [isHeaderShrunk, setIsHeaderShrunk] = useState(false);
@@ -69,7 +73,7 @@ const Settings = () => {
     useEffect(() => {
         const countryOptions = Country.getAllCountries().map(c => ({ value: c.isoCode, label: c.name }));
         setCountries(countryOptions);
-        
+
         if (user) {
             setDisplayName(user.displayName || '');
             setNickname(user.nickname || '');
@@ -78,6 +82,10 @@ const Settings = () => {
             setBackgroundImageUrl(user.backgroundImage || '');
             setIsNamePublic(user.isNamePublic !== false);
             setDeleteAnimation(user.settings?.chat?.deleteAnimation || 'animation-vortex-out');
+            setMessagePrivacy(user.settings?.privacy?.messagePrivacy || 'everyone');
+            setGroupInvitePrivacy(user.settings?.privacy?.groupInvitePrivacy || 'everyone');
+            setAllowMessageRequests(user.settings?.privacy?.allowMessageRequests !== false);
+            setAllowGroupRequests(user.settings?.privacy?.allowGroupRequests !== false);
 
             const userCountry = countryOptions.find(c => c.value === user.country);
             if (userCountry) {
@@ -89,7 +97,7 @@ const Settings = () => {
             }
         }
     }, [user]);
-    
+
     useEffect(() => {
         if (user && user.chatFolders) {
             const sortedFolders = [...user.chatFolders].sort((a, b) => a.order - b.order);
@@ -125,16 +133,16 @@ const Settings = () => {
             setNicknameError('');
         }
     };
-    
+
     const handleImageUpload = async (e, imageType) => {
         const file = e.target.files[0];
         if (!file || !user) return;
-        const path = imageType === 'profile' ? `profileImages/${user.uid}` : `backgroundImages/${user.uid}`;
-        const storage = getStorage();
-        const storageReference = storageRef(storage, path);
+        // Шлях у Supabase bucket 'images': avatars/{uid} або backgrounds/{uid}
+        const path = imageType === 'profile'
+            ? `avatars/${user.uid}`
+            : `backgrounds/${user.uid}`;
         try {
-            await uploadBytes(storageReference, file);
-            const newImageUrl = await getDownloadURL(storageReference);
+            const newImageUrl = await uploadFile(file, 'images', path);
             if (imageType === 'profile') setProfileImageUrl(newImageUrl);
             else setBackgroundImageUrl(newImageUrl);
             showNotification('Зображення оновлено!', 'info');
@@ -165,6 +173,10 @@ const Settings = () => {
                 backgroundImage: backgroundImageUrl,
                 isNamePublic,
                 'settings.chat.deleteAnimation': deleteAnimation,
+                'settings.privacy.messagePrivacy': messagePrivacy,
+                'settings.privacy.groupInvitePrivacy': groupInvitePrivacy,
+                'settings.privacy.allowMessageRequests': allowMessageRequests,
+                'settings.privacy.allowGroupRequests': allowGroupRequests,
             };
             await updateDoc(userRef, updatedData);
             await refreshUser();
@@ -220,11 +232,11 @@ const Settings = () => {
         const element = previewRefs.current[animationId];
         if (element) {
             element.classList.remove(animationId);
-            void element.offsetWidth; 
+            void element.offsetWidth;
             element.classList.add(animationId);
         }
     };
-    
+
     const renderProfileTab = () => (
         <div className="settings-tab-content">
             <div className="form-section">
@@ -264,7 +276,7 @@ const Settings = () => {
                         <span className="char-counter">{description.length} / 250</span>
                         <button type="button" className="emoji-button" onClick={() => setShowEmojiPicker(!showEmojiPicker)}>😀</button>
                     </div>
-                    {showEmojiPicker && 
+                    {showEmojiPicker &&
                         <div ref={emojiPickerRef} className="emoji-picker-wrapper">
                             <EmojiPicker onEmojiClick={onEmojiClick} theme="dark" />
                         </div>
@@ -286,15 +298,104 @@ const Settings = () => {
 
     const renderPrivacyTab = () => (
         <div className="settings-tab-content">
+            <h3>Приватність</h3>
+
+            {/* Name visibility */}
             <div className="privacy-toggle">
                 <div>
                     <p>Показувати моє ім'я та прізвище</p>
-                    <span>Дозволити іншим користувачам бачити ваше справжнє ім'я поруч з нікнеймом.</span>
+                    <span>Дозволити іншим бачити ваше справжнє ім'я поруч з нікнеймом.</span>
                 </div>
                 <label className="switch">
                     <input type="checkbox" checked={isNamePublic} onChange={() => setIsNamePublic(!isNamePublic)} />
                     <span className="slider round"></span>
                 </label>
+            </div>
+
+            {/* Message privacy */}
+            <div className="privacy-section">
+                <div className="privacy-section-header">
+                    <p className="privacy-section-title">Хто може надсилати мені повідомлення</p>
+                    <span className="privacy-section-desc">Решта користувачів не зможуть написати вам у приват.</span>
+                </div>
+                <div className="privacy-select-group">
+                    <label className={`privacy-option ${messagePrivacy === 'everyone' ? 'selected' : ''}`} onClick={() => setMessagePrivacy('everyone')}>
+                        <span className="privacy-radio" />
+                        <div>
+                            <strong>Усі</strong>
+                            <span>Будь-хто може написати вам</span>
+                        </div>
+                    </label>
+                    <label className={`privacy-option ${messagePrivacy === 'following' ? 'selected' : ''}`} onClick={() => setMessagePrivacy('following')}>
+                        <span className="privacy-radio" />
+                        <div>
+                            <strong>Ті, на кого я підписаний</strong>
+                            <span>Лише ті, кого ви фоловите, зможуть написати</span>
+                        </div>
+                    </label>
+                    <label className={`privacy-option ${messagePrivacy === 'nobody' ? 'selected' : ''}`} onClick={() => setMessagePrivacy('nobody')}>
+                        <span className="privacy-radio" />
+                        <div>
+                            <strong>Ніхто</strong>
+                            <span>Ніхто не може написати вам першим</span>
+                        </div>
+                    </label>
+                </div>
+                {messagePrivacy === 'nobody' && (
+                    <div className="privacy-sub-option">
+                        <label className="switch">
+                            <input type="checkbox" checked={allowMessageRequests} onChange={() => setAllowMessageRequests(!allowMessageRequests)} />
+                            <span className="slider round"></span>
+                        </label>
+                        <div>
+                            <p>Дозволяти залишати запити на повідомлення</p>
+                            <span>Як в Instagram — людина може надіслати запит, і ви вирішуєте, прийняти чи ні.</span>
+                        </div>
+                    </div>
+                )}
+            </div>
+
+            {/* Group invite privacy */}
+            <div className="privacy-section">
+                <div className="privacy-section-header">
+                    <p className="privacy-section-title">Хто може запрошувати мене в групи</p>
+                    <span className="privacy-section-desc">Контролюйте, хто може додавати вас до групових чатів.</span>
+                </div>
+                <div className="privacy-select-group">
+                    <label className={`privacy-option ${groupInvitePrivacy === 'everyone' ? 'selected' : ''}`} onClick={() => setGroupInvitePrivacy('everyone')}>
+                        <span className="privacy-radio" />
+                        <div>
+                            <strong>Усі</strong>
+                            <span>Будь-хто може додати вас до групи</span>
+                        </div>
+                    </label>
+                    <label className={`privacy-option ${groupInvitePrivacy === 'following' ? 'selected' : ''}`} onClick={() => setGroupInvitePrivacy('following')}>
+                        <span className="privacy-radio" />
+                        <div>
+                            <strong>Ті, на кого я підписаний</strong>
+                            <span>Лише ті, кого ви фоловите, можуть додати вас</span>
+                        </div>
+                    </label>
+                    <label className={`privacy-option ${groupInvitePrivacy === 'nobody' ? 'selected' : ''}`} onClick={() => setGroupInvitePrivacy('nobody')}>
+                        <span className="privacy-radio" />
+                        <div>
+                            <strong>Ніхто</strong>
+                            <span>Ніхто не може додати вас до груп</span>
+                        </div>
+                    </label>
+                </div>
+                {groupInvitePrivacy === 'nobody' && (
+                    <div className="privacy-sub-option">
+                        <label className="switch">
+                            <input type="checkbox" checked={allowGroupRequests} onChange={() => setAllowGroupRequests(!allowGroupRequests)} />
+                            <span className="slider round"></span>
+                        </label>
+                        <div>
+                            <p>Дозволяти надсилати запити на вступ до групи</p>
+                            <span>Як в Instagram — ви самі вирішуєте, прийняти запит чи відхилити.</span>
+                        </div>
+                    </div>
+                )}
             </div>
         </div>
     );
@@ -323,7 +424,7 @@ const Settings = () => {
             </div>
         </div>
     );
-    
+
     const renderChatTab = () => {
         const animations = [
             { id: 'animation-vortex-out', name: 'Вихор' },
@@ -342,7 +443,7 @@ const Settings = () => {
                         {animations.map(anim => (
                             <div key={anim.id} className="animation-option" onClick={() => handleAnimationSelect(anim.id)}>
                                 <div className="animation-preview-wrapper">
-                                    <div 
+                                    <div
                                         ref={el => (previewRefs.current[anim.id] = el)}
                                         className={`animation-preview ${anim.id} ${deleteAnimation === anim.id ? 'active' : ''}`}
                                     >
@@ -373,7 +474,7 @@ const Settings = () => {
                 <h1>Налаштування</h1>
             </header>
             <div ref={headerTriggerRef} className="header-scroll-trigger"></div>
-            
+
             <div className="settings-layout">
                 <aside className="settings-sidebar">
                     <button className={activeTab === 'profile' ? 'active' : ''} onClick={() => setActiveTab('profile')}><UserIcon /> Профіль</button>
@@ -393,7 +494,7 @@ const Settings = () => {
                     {activeTab === 'emoji' && <EmojiPacksSettings />}
                     {activeTab === 'privacy' && renderPrivacyTab()}
                     {activeTab === 'folders' && renderFoldersTab()}
-                    
+
                     {activeTab !== 'folders' && activeTab !== 'emoji' && activeTab !== 'wallet' && activeTab !== 'giftHistory' && (
                         <div className="settings-actions">
                             <button className="button-primary" onClick={handleSaveChanges} disabled={isSaving || !!nicknameError}>

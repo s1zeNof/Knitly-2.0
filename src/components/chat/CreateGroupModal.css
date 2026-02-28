@@ -17,6 +17,7 @@
 .group-name-input {
     margin-bottom: 1rem !important;
 }
+
 .search-users-input {
     margin-bottom: 1.5rem !important;
 }
@@ -24,7 +25,8 @@
 .followers-list {
     flex-grow: 1;
     overflow-y: auto;
-    margin: 0 -1.5rem; /* Компенсація падінгів .modal-body */
+    margin: 0 -1.5rem;
+    /* Компенсація падінгів .modal-body */
     padding: 0 1.5rem;
 }
 
@@ -37,6 +39,7 @@
     cursor: pointer;
     transition: background-color 0.2s;
 }
+
 .follower-item:hover {
     background-color: var(--color-bg-light);
 }
@@ -63,6 +66,7 @@
     margin: 0;
     font-weight: 500;
 }
+
 .follower-nickname {
     margin: 0;
     font-size: 0.9rem;
@@ -73,4 +77,70 @@
     color: var(--color-text-secondary);
     text-align: center;
     padding: 2rem;
+}
+
+/* Search hint */
+.search-hint {
+    font-size: 0.85rem;
+    color: var(--color-text-secondary);
+    text-align: center;
+    margin: 0.25rem 0 0.75rem;
+}
+
+/* Blocked user row */
+.follower-item.blocked {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.follower-name {
+    margin: 0;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+/* Selected member chips */
+.selected-members-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+}
+
+.member-chip {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid var(--color-border);
+    border-radius: 2rem;
+    padding: 0.3rem 0.7rem;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: background 0.15s;
+}
+
+.member-chip:hover {
+    background: rgba(255, 80, 80, 0.15);
+    border-color: #ff4444;
+}
+
+.member-chip img {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.chip-remove {
+    color: var(--color-text-secondary);
+    font-size: 1rem;
+    margin-left: 0.1rem;
+}
+
+/* search-users-input spacing */
+.search-users-input {
+    margin-bottom: 0.5rem !important;
 }
