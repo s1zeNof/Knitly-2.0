@@ -49,13 +49,10 @@ const Home = ({ openBrowser, openShareModal }) => {
     // Відкладаємо рендер CreatePostForm (Lexical editor) щоб він не блокував GSAP анімацію Feed
     const [showCreateForm, setShowCreateForm] = useState(false);
 
-    // Логуємо монтування та демонтування Home
+    // Відкладаємо ініціалізацію Lexical editor на 900мс — після завершення GSAP анімації
     useEffect(() => {
-        diag('Home: МОНТУВАННЯ компонента');
-        // Відкладаємо ініціалізацію Lexical editor на 900мс — після завершення GSAP анімації
         const timer = setTimeout(() => setShowCreateForm(true), 900);
         return () => {
-            diag('Home: ДЕМОНТУВАННЯ компонента');
             clearTimeout(timer);
             setShowCreateForm(false);
         };
@@ -63,7 +60,6 @@ const Home = ({ openBrowser, openShareModal }) => {
 
     useEffect(() => {
         const fetchData = async () => {
-            diag('Home: fetchData START — 5 Firestore запитів паралельно');
             setLoading(true);
             try {
                 const queries = {
@@ -97,10 +93,8 @@ const Home = ({ openBrowser, openShareModal }) => {
                 setTrendingCategories(topTags);
             } catch (error) {
                 console.error("Error fetching home page data:", error);
-                diagWarn('Home: fetchData ERROR', error.message);
             }
             finally {
-                diag('Home: fetchData DONE — рендер сторінки');
                 setLoading(false);
             }
         };
@@ -117,7 +111,6 @@ const Home = ({ openBrowser, openShareModal }) => {
     const feedIds = useMemo(() => {
         if (!currentUser) return null;
         const ids = [currentUser.uid, ...followingRef];
-        diag('Home: feedIds перераховано', `${ids.length} юзерів`);
         return ids;
     }, [currentUser?.uid, followingRef]);
 
