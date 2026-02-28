@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useUserContext } from '../../contexts/UserContext';
-import { db, storage } from '../../services/firebase';
+import { db } from '../../services/firebase';
 import { collection, query, where, getDocs, setDoc, doc, serverTimestamp, orderBy } from 'firebase/firestore';
-import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
+import { uploadFile } from '../../services/supabase';
 import { Link } from 'react-router-dom';
 import './PlaylistTab.css';
 
@@ -11,7 +11,7 @@ const PlusIcon = () => <svg width="24" height="24" viewBox="0 0 24 24" fill="non
 const UploadIcon = () => <svg className="upload-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>;
 
 const PlaylistTab = ({ userId }) => {
-    const { user: currentUser, showNotification } = useUserContext(); // Припускаємо, що showNotification є в UserContext
+    const { user: currentUser } = useUserContext();
     const [playlists, setPlaylists] = useState([]);
     const [loading, setLoading] = useState(true);
 
@@ -39,6 +39,7 @@ const PlaylistTab = ({ userId }) => {
 
     useEffect(() => {
         fetchPlaylists();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [userId]);
     
     const resetModalState = () => {
@@ -73,10 +74,10 @@ const PlaylistTab = ({ userId }) => {
             let coverArtUrl = null;
 
             if (newPlaylistCover) {
-                const coverRef = ref(storage, `playlists/${currentUser.uid}/${playlistId}/cover`);
-                const uploadTask = uploadBytesResumable(coverRef, newPlaylistCover);
-                await uploadTask;
-                coverArtUrl = await getDownloadURL(uploadTask.snapshot.ref);
+                // Завантажуємо обкладинку плейлиста в Supabase (bucket: images)
+                const ext = newPlaylistCover.name.split('.').pop().replace(/[^a-zA-Z0-9]/g, '') || 'jpg';
+                const coverPath = `playlists/${currentUser.uid}/${playlistId}/cover.${ext}`;
+                coverArtUrl = await uploadFile(newPlaylistCover, 'images', coverPath);
             }
 
             await setDoc(newPlaylistRef, {

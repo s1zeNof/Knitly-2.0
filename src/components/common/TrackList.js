@@ -3,9 +3,8 @@ import { Link } from 'react-router-dom';
 import { usePlayerContext } from '../../contexts/PlayerContext';
 import { useUserContext } from '../../contexts/UserContext';
 import { useUserTracks } from '../../hooks/useUserTracks';
-import { db, storage } from '../../services/firebase';
-import { doc, deleteDoc, updateDoc, arrayUnion, arrayRemove, increment, getDoc, collection, query, where, getDocs, runTransaction, addDoc, serverTimestamp } from 'firebase/firestore'; 
-import { ref, deleteObject } from 'firebase/storage';
+import { db } from '../../services/firebase';
+import { doc, deleteDoc, updateDoc, arrayUnion, arrayRemove, increment, collection, query, where, getDocs, runTransaction, addDoc, serverTimestamp } from 'firebase/firestore';
 import './TrackList.css';
 import AnimatedCounter from './AnimatedCounter';
 
@@ -95,7 +94,7 @@ const TrackList = ({ userId, initialTracks = null, isLoading: isLoadingInitial =
         try {
             await runTransaction(db, async (transaction) => {
                 const trackDoc = await transaction.get(trackRef);
-                if (!trackDoc.exists()) throw "Трек не знайдено!";
+                if (!trackDoc.exists()) throw new Error("Трек не знайдено!");
                 const currentLikes = trackDoc.data().likesCount || 0;
                 if (isLiked) {
                     if (currentLikes > 0) transaction.update(trackRef, { likesCount: increment(-1) });
@@ -163,16 +162,10 @@ const TrackList = ({ userId, initialTracks = null, isLoading: isLoadingInitial =
     const handleDeleteTrack = async (trackToDelete) => {
         if (!trackToDelete) return;
         try {
+            // Видаляємо запис треку з Firestore
+            // Примітка: фізичні файли в Supabase Storage НЕ видаляємо автоматично —
+            // вони будуть перезаписані при наступному завантаженні або очищені вручну.
             await deleteDoc(doc(db, "tracks", trackToDelete.id));
-
-            if (trackToDelete.trackUrl) {
-                const audioRef = ref(storage, trackToDelete.trackUrl);
-                await deleteObject(audioRef).catch(e => console.warn("Audio file not found or deletion failed:", e));
-            }
-            if (trackToDelete.coverArtUrl) {
-                const coverRef = ref(storage, trackToDelete.coverArtUrl);
-                await deleteObject(coverRef).catch(e => console.warn("Cover art not found or deletion failed:", e));
-            }
             
             setDisplayTracks(prevTracks => prevTracks.filter(t => t.id !== trackToDelete.id));
             

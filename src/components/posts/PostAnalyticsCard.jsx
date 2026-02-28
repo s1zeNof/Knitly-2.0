@@ -1,5 +1,5 @@
 import React from 'react';
-import PostRenderer from '../lexical/PostRenderer';
+import LexicalPostContent from '../lexical/LexicalPostContent';
 import default_picture from '../../img/Default-Images/default-picture.svg';
 import './PostAnalyticsCard.css';
 
@@ -36,7 +36,7 @@ const PostAnalyticsCard = ({ post }) => {
       <div className="post-analytics-content">
         {hasText ? (
           <div className="post-snippet">
-            <PostRenderer content={post.editorState} />
+            <LexicalPostContent content={post.editorState} />
           </div>
         ) : (
           <p className="post-snippet-placeholder">Допис без тексту</p>

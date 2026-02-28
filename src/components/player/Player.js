@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { usePlayerContext } from '../../contexts/PlayerContext';
+import { usePlayerContext, usePlayerTime } from '../../contexts/PlayerContext';
 import NowPlayingPanel from './NowPlayingPanel';
 import './Player.css';
 
@@ -13,10 +13,8 @@ const VolumeHighIcon = () => <svg height="20" width="20" viewBox="0 0 24 24" fil
 const VolumeMutedIcon = () => <svg height="20" width="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><line x1="23" y1="9" x2="17" y2="15"></line><line x1="17" y1="9" x2="23" y2="15"></line></svg>;
 
 const Player = () => { // Забираємо пропс className, він більше не потрібен
-    const { 
-        currentTrack, isPlaying, togglePlayPause, duration, currentTime, seek, 
-        volume, setVolume, playNext, playPrev 
-    } = usePlayerContext();
+    const { currentTrack, isPlaying, togglePlayPause, seek, volume, setVolume, playNext, playPrev } = usePlayerContext();
+    const { currentTime, duration } = usePlayerTime();
     const [isPanelOpen, setIsPanelOpen] = useState(false);
     const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
 

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useUserContext } from '../../contexts/UserContext';
 import { db } from '../../services/firebase';
-import { collection, query, where, getDocs, doc, setDoc, serverTimestamp, getDoc } from 'firebase/firestore';
+import { collection, query, where, getDocs, doc, setDoc, serverTimestamp } from 'firebase/firestore';
 import toast from 'react-hot-toast';
 import './CreateGroupModal.css';
 import default_picture from '../../img/Default-Images/default-picture.svg';

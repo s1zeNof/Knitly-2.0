@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { NavLink, useNavigate } from 'react-router-dom';
+import { NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { useUserContext } from '../../contexts/UserContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import './BottomNavBar.css';
@@ -16,9 +16,15 @@ const StudioIcon = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentCol
 const BottomNavBar = ({ isPlayerVisible }) => {
     const { user } = useUserContext();
     const navigate = useNavigate();
+    const location = useLocation();
     const [isMounted, setIsMounted] = useState(true);
     const [isHiding, setIsHiding] = useState(false);
     const [isCreationMenuOpen, setCreationMenuOpen] = useState(false);
+
+    // Закриваємо creation menu при будь-якій навігації — інакше overlay блокує весь екран
+    useEffect(() => {
+        setCreationMenuOpen(false);
+    }, [location.pathname]);
 
     useEffect(() => {
         const handleClassChange = () => {
@@ -50,7 +56,6 @@ const BottomNavBar = ({ isPlayerVisible }) => {
         return null;
     }
     
-    const userIsCreator = user.roles?.includes('creator') || user.roles?.includes('admin');
     const navBarClassName = `bottom-nav-bar ${isPlayerVisible ? 'player-visible' : ''} ${isHiding ? 'hiding' : ''}`;
 
     return (

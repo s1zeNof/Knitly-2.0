@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useDropzone } from 'react-dropzone';
-import { db, storage } from '../services/firebase';
-import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
+import { db } from '../services/firebase';
+import { uploadFileWithProgress } from '../services/supabase';
 import { collection, addDoc, serverTimestamp, doc, updateDoc, arrayUnion, increment } from 'firebase/firestore';
 import { useUserContext } from '../contexts/UserContext';
 import './UploadMusic.css';
@@ -107,67 +107,68 @@ const UploadMusic = () => {
 
         setIsUploading(true);
         setStatusMessage('Завантаження аудіо...');
-        const trackId = `${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
-        const audioRef = ref(storage, `tracks/${user.uid}/${trackId}/${trackFile.name}`);
-        const audioUploadTask = uploadBytesResumable(audioRef, trackFile);
 
-        audioUploadTask.on('state_changed', (snapshot) => {
-            const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-            setUploadProgress(progress);
-        }, (error) => {
-            console.error("Помилка завантаження аудіо:", error);
-            setStatusMessage('Помилка завантаження аудіо.');
-            setIsUploading(false);
-        }, async () => {
-            const audioURL = await getDownloadURL(audioUploadTask.snapshot.ref);
+        // Генеруємо унікальний trackId та безпечне ім'я файлу
+        const trackId = `${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+        const safeName = (name) => name.replace(/[^a-zA-Z0-9._-]/g, '_');
+
+        try {
+            // --- Завантаження аудіо в Supabase (bucket: tracks) ---
+            const audioPath = `${user.uid}/${trackId}/${safeName(trackFile.name)}`;
+            const audioURL = await uploadFileWithProgress(
+                trackFile,
+                'tracks',
+                audioPath,
+                (progress) => setUploadProgress(progress)
+            );
+
+            // --- Завантаження обкладинки в Supabase (bucket: images) ---
             let coverURL = null;
             if (coverArt) {
                 setStatusMessage('Завантаження обкладинки...');
-                const coverRef = ref(storage, `covers/${user.uid}/${trackId}/${coverArt.name}`);
-                const coverUploadTask = uploadBytesResumable(coverRef, coverArt);
-                await new Promise((resolve, reject) => {
-                    coverUploadTask.on('state_changed', null, (error) => reject(error), async () => {
-                        coverURL = await getDownloadURL(coverUploadTask.snapshot.ref);
-                        resolve();
-                    });
-                });
+                const coverPath = `covers/${user.uid}/${trackId}/${safeName(coverArt.name)}`;
+                coverURL = await uploadFileWithProgress(
+                    coverArt,
+                    'images',
+                    coverPath,
+                    (progress) => setUploadProgress(progress)
+                );
             }
+
+            // --- Збереження метаданих у Firestore ---
+            setStatusMessage('Збереження інформації про трек...');
             const tagsForDisplay = tags;
             const tagsForSearch = tags.map(tag => tag.toLowerCase());
-            setStatusMessage('Збереження інформації про трек...');
-            try {
-                const userRef = doc(db, 'users', user.uid);
-                await addDoc(collection(db, 'tracks'), {
-                    title: trackTitle,
-                    description,
-                    trackUrl: audioURL,
-                    coverArtUrl: coverURL,
-                    authorId: user.uid,
-                    authorName: user.displayName,
-                    authorNickname: user.nickname,
-                    createdAt: serverTimestamp(),
-                    playCount: 0,
-                    likesCount: 0,
-                    tags: tagsForDisplay,
-                    tags_search: tagsForSearch,
-                    title_lowercase: trackTitle.toLowerCase()
-                });
-                await updateDoc(userRef, {
-                    tracksCount: increment(1)
-                });
-                if (!user.roles?.includes('creator')) {
-                    await updateDoc(userRef, {
-                        roles: arrayUnion('creator')
-                    });
-                }
-                setStatusMessage('Трек успішно опубліковано!');
-                setTimeout(() => navigate(`/profile`), 2000);
-            } catch (error) {
-                console.error("Помилка створення запису в Firestore:", error);
-                setStatusMessage('Помилка збереження треку.');
-                setIsUploading(false);
+            const userRef = doc(db, 'users', user.uid);
+
+            await addDoc(collection(db, 'tracks'), {
+                title: trackTitle,
+                description,
+                trackUrl: audioURL,
+                coverArtUrl: coverURL,
+                authorId: user.uid,
+                authorName: user.displayName,
+                authorNickname: user.nickname,
+                createdAt: serverTimestamp(),
+                playCount: 0,
+                likesCount: 0,
+                tags: tagsForDisplay,
+                tags_search: tagsForSearch,
+                title_lowercase: trackTitle.toLowerCase()
+            });
+            await updateDoc(userRef, { tracksCount: increment(1) });
+            if (!user.roles?.includes('creator')) {
+                await updateDoc(userRef, { roles: arrayUnion('creator') });
             }
-        });
+
+            setStatusMessage('Трек успішно опубліковано!');
+            setTimeout(() => navigate('/profile'), 2000);
+
+        } catch (error) {
+            console.error("Помилка завантаження:", error);
+            setStatusMessage(`Помилка: ${error.message}`);
+            setIsUploading(false);
+        }
     };
 
     return (

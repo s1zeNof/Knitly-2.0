@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useQuery } from 'react-query';
 import { db } from '../../services/firebase';
-import { collection, query, where, orderBy, limit, getDocs } from 'firebase/firestore';
+import { collection, query, where, limit, getDocs } from 'firebase/firestore';
 import { useDebounce } from 'use-debounce';
 import { Link, useNavigate } from 'react-router-dom';
 import default_picture from '../../img/Default-Images/default-picture.svg';

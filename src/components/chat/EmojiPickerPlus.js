@@ -4,9 +4,8 @@ import { useUserContext } from '../../contexts/UserContext';
 import { db } from '../../services/firebase';
 import { collection, query, where, getDocs } from 'firebase/firestore';
 import EmojiPicker from 'emoji-picker-react';
-import Lottie from 'lottie-react';
+import LottieRenderer from '../common/LottieRenderer';
 import { cacheAnimatedPackId } from '../../utils/emojiPackCache';
-import toast from 'react-hot-toast';
 import './EmojiPickerPlus.css';
 
 // Функції fetchEmojiPacks, LottieEmoji, isLottieUrl залишаються без змін
@@ -26,7 +25,7 @@ const fetchEmojiPacks = async (userId) => {
 };
 
 const LottieEmoji = React.memo(({ url }) => {
-    return <Lottie path={url} autoplay={true} loop={true} className="picker-lottie-preview" />;
+    return <LottieRenderer url={url} className="picker-lottie-preview" />;
 });
 
 const isLottieUrl = (url) => {
@@ -83,17 +82,17 @@ const EmojiPickerPlus = ({ onEmojiSelect, onClose }) => {
                     </nav>
                 </header>
                 <main className="picker-content">
-                    {activeTab === 'unicode' && ( 
-                        <EmojiPicker 
-                            onEmojiClick={handleUnicodeSelect} 
-                            autoFocusSearch={false} 
-                            theme="dark" 
-                            width="100%" 
-                            height="100%" 
-                            searchDisabled 
-                            previewConfig={{ showPreview: false }} 
-                            categories={[{ category: 'suggested', name: 'Недавні' }, { category: 'smileys_people', name: 'Смайли' }, { category: 'animals_nature', name: 'Тварини' }, { category: 'food_drink', name: 'Їжа' }, { category: 'travel_places', name: 'Подорожі' }, { category: 'activities', name: 'Активності' }, { category: 'objects', name: 'Об\'єкти' }, { category: 'symbols', name: 'Символи' }, { category: 'flags', name: 'Прапори' }]} 
-                        /> 
+                    {activeTab === 'unicode' && (
+                        <EmojiPicker
+                            onEmojiClick={handleUnicodeSelect}
+                            autoFocusSearch={false}
+                            theme="dark"
+                            width="100%"
+                            height="100%"
+                            searchDisabled
+                            previewConfig={{ showPreview: false }}
+                            categories={[{ category: 'suggested', name: 'Недавні' }, { category: 'smileys_people', name: 'Смайли' }, { category: 'animals_nature', name: 'Тварини' }, { category: 'food_drink', name: 'Їжа' }, { category: 'travel_places', name: 'Подорожі' }, { category: 'activities', name: 'Активності' }, { category: 'objects', name: 'Об\'єкти' }, { category: 'symbols', name: 'Символи' }, { category: 'flags', name: 'Прапори' }]}
+                        />
                     )}
                     {packs?.map(pack => {
                         if (activeTab !== pack.id) return null;

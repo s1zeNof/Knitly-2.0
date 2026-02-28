@@ -3,6 +3,7 @@ import { db } from '../services/firebase';
 import { doc, updateDoc, increment } from 'firebase/firestore';
 
 const PlayerContext = createContext();
+const PlayerTimeContext = createContext();
 
 export const PlayerProvider = ({ children }) => {
     const [currentTrack, setCurrentTrack] = useState(null);
@@ -15,7 +16,10 @@ export const PlayerProvider = ({ children }) => {
     const [notification, setNotification] = useState({ message: '', type: 'info' });
 
     const audioRef = useRef(new Audio());
-    audioRef.current.crossOrigin = 'anonymous';
+    // crossOrigin має встановлюватись один раз, не на кожен рендер
+    useEffect(() => {
+        audioRef.current.crossOrigin = 'anonymous';
+    }, []);
 
     const playNext = useCallback(() => {
         if (queue.length > 0) {
@@ -147,35 +151,43 @@ export const PlayerProvider = ({ children }) => {
         showNotification(`Трек "${trackToRemove.title}" видалено з черги`);
     }, [queue, showNotification]);
 
+    // Стабільний контекст — не змінюється кожні 250мс при відтворенні
     const value = useMemo(() => ({
-        currentTrack, 
-        isPlaying, 
-        duration, 
-        currentTime, 
-        volume, 
-        queue, 
-        history, 
+        currentTrack,
+        isPlaying,
+        volume,
+        queue,
+        history,
         notification,
         audioElement: audioRef.current,
-        handlePlayPause, 
-        togglePlayPause, 
-        seek, 
-        setVolume, 
+        handlePlayPause,
+        togglePlayPause,
+        seek,
+        setVolume,
         addToQueue,
-        removeFromQueue, 
-        playNext, 
-        playPrev, 
+        removeFromQueue,
+        playNext,
+        playPrev,
         showNotification
     }), [
-        currentTrack, isPlaying, duration, currentTime, volume, queue, history, notification, 
+        currentTrack, isPlaying, volume, queue, history, notification,
         handlePlayPause, togglePlayPause, seek, setVolume, addToQueue, removeFromQueue, playNext, playPrev, showNotification
     ]);
 
+    // Volatile контекст — змінюється кожні 250мс при відтворенні треку
+    const timeValue = useMemo(() => ({
+        currentTime,
+        duration,
+    }), [currentTime, duration]);
+
     return (
         <PlayerContext.Provider value={value}>
-            {children}
+            <PlayerTimeContext.Provider value={timeValue}>
+                {children}
+            </PlayerTimeContext.Provider>
         </PlayerContext.Provider>
     );
 };
 
 export const usePlayerContext = () => useContext(PlayerContext);
+export const usePlayerTime = () => useContext(PlayerTimeContext);

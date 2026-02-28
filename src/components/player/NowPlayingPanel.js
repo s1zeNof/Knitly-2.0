@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { usePlayerContext } from '../../contexts/PlayerContext';
+import { usePlayerContext, usePlayerTime } from '../../contexts/PlayerContext';
 import { useUserContext } from '../../contexts/UserContext'; // <<< 1. ІМПОРТУЄМО КОНТЕКСТ КОРИСТУВАЧА
 import { db } from '../../services/firebase'; // <<< 2. ІМПОРТУЄМО БАЗУ ДАНИХ
-import { doc, runTransaction, increment, arrayUnion, arrayRemove } from 'firebase/firestore'; // <<< 3. ІМПОРТУЄМО ФУНКЦІЇ FIRESTORE
+import { doc, runTransaction, arrayUnion, arrayRemove } from 'firebase/firestore'; // <<< 3. ІМПОРТУЄМО ФУНКЦІЇ FIRESTORE
 import DynamicWaveform from './DynamicWaveform';
 import './NowPlayingPanel.css';
 
@@ -20,10 +20,8 @@ const OptionsIcon = () => <svg width="24" height="24" viewBox="0 0 24 24"><path 
 
 const NowPlayingPanel = ({ isOpen, onClose }) => {
     const { user: currentUser, refreshUser } = useUserContext(); // <<< ОТРИМУЄМО КОРИСТУВАЧА
-    const {
-        currentTrack, isPlaying, togglePlayPause, duration, currentTime,
-        playNext, playPrev, queue, history, showNotification
-    } = usePlayerContext();
+    const { currentTrack, isPlaying, togglePlayPause, playNext, playPrev, queue, history, showNotification } = usePlayerContext();
+    const { currentTime, duration } = usePlayerTime();
     const [isAnimatingOut, setIsAnimatingOut] = useState(false);
     const [processingLike, setProcessingLike] = useState(false); // <<< СТАН ДЛЯ БЛОКУВАННЯ КНОПКИ
 
@@ -44,7 +42,7 @@ const NowPlayingPanel = ({ isOpen, onClose }) => {
         try {
             await runTransaction(db, async (transaction) => {
                 const trackDoc = await transaction.get(trackRef);
-                if (!trackDoc.exists()) throw "Трек не знайдено!";
+                if (!trackDoc.exists()) throw new Error("Трек не знайдено!");
                 
                 const newLikesCount = (trackDoc.data().likesCount || 0) + (isCurrentlyLiked ? -1 : 1);
                 transaction.update(trackRef, { likesCount: newLikesCount });

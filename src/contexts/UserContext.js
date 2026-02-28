@@ -3,6 +3,7 @@ import { auth, db } from '../services/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
 import { doc, getDoc, setDoc, serverTimestamp, collection, query, where, onSnapshot, getDocs } from 'firebase/firestore';
 import { cacheAnimatedPackId } from '../utils/emojiPackCache';
+import { diag } from '../utils/diagnostics';
 
 const UserContext = createContext();
 
@@ -34,8 +35,8 @@ export const UserProvider = ({ children }) => {
             const userDoc = await getDoc(userRef);
             if (userDoc.exists()) {
                 const userData = userDoc.data();
-                setUser({ 
-                    uid: auth.currentUser.uid, 
+                setUser({
+                    uid: auth.currentUser.uid,
                     ...userData,
                     chatFolders: userData.chatFolders || [],
                     subscribedPackIds: userData.subscribedPackIds || []
@@ -48,16 +49,25 @@ export const UserProvider = ({ children }) => {
     };
 
     useEffect(() => {
+        let userDocUnsubscribe = null;
+
         const authUnsubscribe = onAuthStateChanged(auth, (authUser) => {
+            // Cleanup previous listener if exists
+            if (userDocUnsubscribe) {
+                userDocUnsubscribe();
+                userDocUnsubscribe = null;
+            }
+
             if (authUser) {
                 setAuthLoading(true);
                 const userRef = doc(db, 'users', authUser.uid);
 
-                const userDocUnsubscribe = onSnapshot(userRef, async (userDoc) => {
+                userDocUnsubscribe = onSnapshot(userRef, async (userDoc) => {
+                    diag('UserContext: onSnapshot fired — user doc changed');
                     if (userDoc.exists()) {
                         const userData = userDoc.data();
-                        setUser({ 
-                            uid: authUser.uid, 
+                        setUser({
+                            uid: authUser.uid,
                             ...userData,
                             chatFolders: userData.chatFolders || [],
                             subscribedPackIds: userData.subscribedPackIds || []
@@ -67,17 +77,17 @@ export const UserProvider = ({ children }) => {
                         const nickname = authUser.email ? authUser.email.split('@')[0].replace(/[^a-z0-9_.]/g, '') : `user${Date.now()}`;
                         const newUserName = authUser.displayName || 'Новий Артист';
                         const newUser = {
-                            uid: authUser.uid, 
+                            uid: authUser.uid,
                             displayName: newUserName,
                             displayName_lowercase: newUserName.toLowerCase(),
-                            email: authUser.email, 
+                            email: authUser.email,
                             photoURL: authUser.photoURL || null,
-                            nickname: nickname, 
-                            followers: [], 
-                            following: [], 
+                            nickname: nickname,
+                            followers: [],
+                            following: [],
                             likedTracks: [],
-                            createdAt: serverTimestamp(), 
-                            chatFolders: [], 
+                            createdAt: serverTimestamp(),
+                            chatFolders: [],
                             subscribedPackIds: []
                         };
                         await setDoc(userRef, newUser);
@@ -86,15 +96,16 @@ export const UserProvider = ({ children }) => {
                     setAuthLoading(false);
                 });
 
-                return () => userDocUnsubscribe();
-
             } else {
                 setUser(null);
                 setAuthLoading(false);
             }
         });
 
-        return () => authUnsubscribe();
+        return () => {
+            if (userDocUnsubscribe) userDocUnsubscribe();
+            authUnsubscribe();
+        };
     }, []);
 
     useEffect(() => {
@@ -102,9 +113,9 @@ export const UserProvider = ({ children }) => {
             setTotalUnreadMessages(0);
             return;
         }
-        
+
         const q = query(collection(db, 'chats'), where('participants', 'array-contains', user.uid));
-        
+
         const unsubscribe = onSnapshot(q, (querySnapshot) => {
             let totalUnread = 0;
             querySnapshot.forEach(doc => {
@@ -134,10 +145,10 @@ export const UserProvider = ({ children }) => {
         return () => unsubscribe();
     }, [user?.uid]);
 
-    const value = {
+    const value = React.useMemo(() => ({
         user, setUser, authLoading, refreshUser,
         totalUnreadMessages, unreadNotificationsCount
-    };
+    }), [user, authLoading, totalUnreadMessages, unreadNotificationsCount]);
 
     return (
         <UserContext.Provider value={value}>

@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from 'react-query';
-import { db, storage } from '../../services/firebase';
+import { db } from '../../services/firebase';
 import { collection, getDocs, addDoc, serverTimestamp, deleteDoc, doc } from 'firebase/firestore';
-import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
+import { uploadFile } from '../../services/supabase';
 import { useUserContext } from '../../contexts/UserContext';
 import toast from 'react-hot-toast';
 import './GiftManagement.css';
@@ -28,9 +28,10 @@ const GiftManagement = () => {
         setIsUploading(true);
         toast.loading('Завантаження файлу...');
 
-        const fileRef = ref(storage, `gifts_media/${Date.now()}_${file.name}`);
-        await uploadBytes(fileRef, file);
-        const mediaUrl = await getDownloadURL(fileRef);
+        // Завантажуємо файл подарунка у Supabase (bucket: images)
+        const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+        const mediaPath = `gifts/${Date.now()}_${safeName}`;
+        const mediaUrl = await uploadFile(file, 'images', mediaPath);
         
         toast.loading('Збереження подарунка...');
         const docData = {
@@ -63,11 +64,7 @@ const GiftManagement = () => {
 
     const deleteGiftMutation = useMutation(async (giftToDelete) => {
         toast.loading('Видалення подарунка...');
-        // Delete from Storage
-        const fileRef = ref(storage, giftToDelete.mediaUrl);
-        await deleteObject(fileRef).catch(err => console.warn("Could not delete file from storage", err));
-        
-        // Delete from Firestore
+        // Видаляємо лише з Firestore; файл у Supabase Storage залишається (очищення вручну)
         await deleteDoc(doc(db, 'gifts', giftToDelete.id));
     }, {
         onSuccess: () => {

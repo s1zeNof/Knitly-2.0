@@ -13,7 +13,6 @@ const CreatorStudio = () => {
     const [activeTab, setActiveTab] = useState('music');
     const [isHeaderShrunk, setIsHeaderShrunk] = useState(false);
     const scrollContainerRef = useRef(null);
-    const headerTriggerRef = useRef(null);
 
     useEffect(() => {
         const scrollContainer = scrollContainerRef.current;

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { useMutation, useQueryClient } from 'react-query';
-import { doc, deleteDoc, updateDoc, runTransaction, increment, getDoc } from 'firebase/firestore';
+import { doc, updateDoc, runTransaction, increment } from 'firebase/firestore';
 import { db } from '../../services/firebase';
 import { useUserContext } from '../../contexts/UserContext';
 import default_picture from '../../img/Default-Images/default-picture.svg';
@@ -103,7 +103,7 @@ const Comment = ({ comment, postId, postAuthorId, isPinned }) => {
             const commentRef = doc(db, 'posts', postId, 'comments', comment.id);
             await runTransaction(db, async (transaction) => {
                 const commentDoc = await transaction.get(commentRef);
-                if (!commentDoc.exists()) throw "Коментар не знайдено!";
+                if (!commentDoc.exists()) throw new Error("Коментар не знайдено!");
                 const reactions = commentDoc.data().reactions || {};
                 const currentReaction = reactions[reactionId] || { uids: [] };
                 const userIndex = currentReaction.uids.indexOf(currentUser.uid);
