@@ -3,12 +3,12 @@ import { useUserContext } from '../contexts/UserContext';
 import { usePlayerContext } from '../contexts/PlayerContext';
 import { db } from '../services/firebase';
 import { uploadFileWithProgress } from '../services/supabase';
-import { collection, query, where, onSnapshot, orderBy, doc, addDoc, serverTimestamp, updateDoc, getDocs, writeBatch, arrayUnion, arrayRemove, deleteDoc, getDoc, increment, runTransaction } from 'firebase/firestore';
+import { collection, query, where, onSnapshot, orderBy, doc, addDoc, serverTimestamp, updateDoc, writeBatch, arrayUnion, arrayRemove, deleteDoc, getDoc, increment, runTransaction } from 'firebase/firestore';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { getIconComponent } from '../components/common/FolderIcons';
 import './MessagesPage.css';
 import default_picture from '../img/Default-Images/default-picture.svg';
-import ImageViewerModal from '../components/common/ImageViewerModal'; 
+import ImageViewerModal from '../components/common/ImageViewerModal';
 import CreateGroupModal from '../components/chat/CreateGroupModal';
 import GroupInfoPanel from '../components/chat/GroupInfoPanel';
 import ConfirmationModal from '../components/common/ConfirmationModal';
@@ -87,7 +87,7 @@ const MessagesPage = ({ openBrowser }) => {
     const [swipeState, setSwipeState] = useState({ startX: 0, deltaX: 0, isSwiping: false });
     const chatWindowRef = useRef(null);
     const isPlayerVisible = !!currentTrack;
-    
+
     useEffect(() => {
         const isMobile = window.innerWidth <= 768;
         if (isMobile && selectedConversationId) {
@@ -125,8 +125,8 @@ const MessagesPage = ({ openBrowser }) => {
             setLoading(false);
         }, (error) => { console.error("Помилка завантаження чатів:", error); setLoading(false); });
         return () => unsubscribe();
-    }, [currentUser, authLoading, location.pathname, navigate, selectedConversationId]);
-    
+    }, [currentUser, authLoading, location.pathname, navigate, selectedConversationId]); // eslint-disable-line react-hooks/exhaustive-deps
+
     useEffect(() => {
         if (!selectedConversationId || !currentUser?.uid) {
             setMessages([]); return;
@@ -142,13 +142,13 @@ const MessagesPage = ({ openBrowser }) => {
         }, (error) => { console.error("Помилка завантаження повідомлень:", error); setLoadingMessages(false); });
         return () => unsubscribe();
     }, [selectedConversationId, currentUser?.uid]);
-    
+
     useEffect(() => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     }, [messages]);
-    
+
     const handleSwipeStart = (e) => {
-        if (e.touches[0].clientX < 50) { 
+        if (e.touches[0].clientX < 50) {
             setSwipeState({ startX: e.touches[0].clientX, deltaX: 0, isSwiping: true });
             if (chatWindowRef.current) chatWindowRef.current.classList.add('is-swiping');
         }
@@ -178,7 +178,7 @@ const MessagesPage = ({ openBrowser }) => {
         });
         return counts;
     }, [conversations, currentUser, allFolders]);
-    
+
     const savedMessagesChat = useMemo(() => ({ id: 'saved_messages', groupName: 'Збережене', lastMessage: { text: 'Ваші нотатки та файли' }, isVirtual: true }), []);
 
     const handleSelectConversation = async (convoId) => {
@@ -193,22 +193,22 @@ const MessagesPage = ({ openBrowser }) => {
     const handleMessageReaction = async (message, reactionId, customUrl = null) => {
         if (!selectedConversationId || selectedConversationId === 'saved_messages' || !currentUser) return;
         const messageRef = doc(db, 'chats', selectedConversationId, 'messages', message.id);
-        
+
         const [packId] = reactionId.split('_');
         const isAnimated = isPackAnimated(packId);
 
         try {
             await runTransaction(db, async (transaction) => {
                 const messageDoc = await transaction.get(messageRef);
-                if (!messageDoc.exists()) throw "Повідомлення не знайдено!";
-                
+                if (!messageDoc.exists()) throw new Error("Повідомлення не знайдено!");
+
                 const data = messageDoc.data();
                 const reactions = (typeof data.reactions === 'object' && data.reactions !== null && !Array.isArray(data.reactions)) ? data.reactions : {};
                 let reactionData = reactions[reactionId] || { uids: [] };
-                
+
                 const currentUserUid = currentUser.uid;
                 const userIndex = reactionData.uids.indexOf(currentUserUid);
-                
+
                 if (userIndex > -1) {
                     reactionData.uids.splice(userIndex, 1);
                 } else {
@@ -221,7 +221,7 @@ const MessagesPage = ({ openBrowser }) => {
                         reactionData.isAnimated = true;
                     }
                 }
-                
+
                 if (reactionData.uids.length > 0) {
                     reactions[reactionId] = reactionData;
                 } else {
@@ -235,7 +235,7 @@ const MessagesPage = ({ openBrowser }) => {
             showNotification("Не вдалося поставити реакцію.", "error");
         }
     };
-    
+
     const handleEmojiSelect = (emoji, isCustom = false) => {
         if (contextMenu.message) {
             let reactionId, customUrl = null;
@@ -495,20 +495,20 @@ const MessagesPage = ({ openBrowser }) => {
                                 const convoPhoto = isSavedChat ? null : (convo.isGroup ? convo.groupPhotoURL || default_picture : currentCompanion?.photoURL);
                                 const unreadCount = isSavedChat ? 0 : (convo.unreadCounts?.[currentUser.uid] || 0);
                                 return (
-                                <div key={convo.id} className={`conversation-item ${selectedConversationId === convo.id ? 'active' : ''}`} onClick={() => handleSelectConversation(convo.id)}>
-                                    <div className="conversation-item-main">
-                                        {isSavedChat ? <div className="saved-messages-avatar"><BookmarkIcon /></div> : <img src={convoPhoto || default_picture} alt={convoName} />}
-                                        <div className="conversation-details">
-                                            <p className="conversation-name">{convoName || 'Користувач'}</p>
-                                            <p className="conversation-last-message">{renderLastMessage(convo.lastMessage)}</p>
+                                    <div key={convo.id} className={`conversation-item ${selectedConversationId === convo.id ? 'active' : ''}`} onClick={() => handleSelectConversation(convo.id)}>
+                                        <div className="conversation-item-main">
+                                            {isSavedChat ? <div className="saved-messages-avatar"><BookmarkIcon /></div> : <img src={convoPhoto || default_picture} alt={convoName} />}
+                                            <div className="conversation-details">
+                                                <p className="conversation-name">{convoName || 'Користувач'}</p>
+                                                <p className="conversation-last-message">{renderLastMessage(convo.lastMessage)}</p>
+                                            </div>
                                         </div>
-                                    </div>
-                                    {unreadCount > 0 && <span className="unread-badge">{unreadCount > 99 ? '99+' : unreadCount}</span>}
-                                </div>);
+                                        {unreadCount > 0 && <span className="unread-badge">{unreadCount > 99 ? '99+' : unreadCount}</span>}
+                                    </div>);
                             })) : (<p className="no-conversations">Чати не знайдено</p>)}
                         </div>
                     </aside>
-                    <main 
+                    <main
                         ref={chatWindowRef}
                         className={`chat-window ${!selectedConversationId ? 'hidden-mobile' : ''}`}
                         onTouchStart={handleSwipeStart}
@@ -516,69 +516,69 @@ const MessagesPage = ({ openBrowser }) => {
                         onTouchEnd={handleSwipeEnd}
                         style={chatWindowStyle}
                     >
-                        {selectionMode ? ( <SelectionHeader selectedCount={selectedMessages.length} onCancel={exitSelectionMode} onDelete={() => setMultiDeleteModal(true)} onForward={handleForwardSelected} />
+                        {selectionMode ? (<SelectionHeader selectedCount={selectedMessages.length} onCancel={exitSelectionMode} onDelete={() => setMultiDeleteModal(true)} onForward={handleForwardSelected} />
                         ) : selectedConversation ? (
-                            <div className="chat-header" onClick={openInfoPanel} style={{cursor: 'pointer'}}>
-                                <button className="back-button-mobile" onClick={(e) => {e.stopPropagation(); setSelectedConversationId(null)}}><BackArrowIcon /></button>
-                                {selectedConversation.id === 'saved_messages' ? 
-                                    <div className="saved-messages-avatar header"><BookmarkIcon /></div> : 
+                            <div className="chat-header" onClick={openInfoPanel} style={{ cursor: 'pointer' }}>
+                                <button className="back-button-mobile" onClick={(e) => { e.stopPropagation(); setSelectedConversationId(null) }}><BackArrowIcon /></button>
+                                {selectedConversation.id === 'saved_messages' ?
+                                    <div className="saved-messages-avatar header"><BookmarkIcon /></div> :
                                     <img src={selectedConversation.isGroup ? selectedConversation.groupPhotoURL || default_picture : companion?.photoURL || default_picture} alt="avatar" />
                                 }
                                 <h3>{selectedConversation.id === 'saved_messages' ? 'Збережене' : (selectedConversation.isGroup ? selectedConversation.groupName : companion?.displayName)}</h3>
                             </div>
                         ) : null}
                         {selectedConversation && (
-                        <>
-                            {selectedConversation.id !== 'saved_messages' && <PinnedMessagesBar pinnedMessages={selectedConversation.pinnedMessages} onMessageSelect={scrollToMessage} />}
-                            <div className="messages-area">
-                                {loadingMessages ? (<p className="chat-placeholder">Завантаження...</p>) : (messages.map(msg => {
-                                    const isSent = msg.senderId === currentUser.uid;
-                                    const senderInfo = selectedConversation.id === 'saved_messages' ? { displayName: msg.originalSender?.name, photoURL: msg.originalSender?.photoURL } : (isSent ? currentUser : (selectedConversation.isGroup ? selectedConversation.participantInfo.find(p => p.uid === msg.senderId) : companion));
-                                    return (<MessageBubble 
-                                        key={msg.id}
-                                        message={msg}
-                                        isGroup={selectedConversation.isGroup}
-                                        isSent={selectedConversationId !== 'saved_messages' && isSent}
-                                        senderInfo={senderInfo}
-                                        selectionMode={selectionMode}
-                                        isSelected={selectedMessages.includes(msg.id)}
-                                        isDeleting={deletingMessages.includes(msg.id)}
-                                        deleteAnimationClass={currentUser.settings?.chat?.deleteAnimation || 'animation-vortex-out'}
-                                        onContextMenu={handleContextMenu}
-                                        onLongPress={handleLongPress}
-                                        onTap={handleToggleSelect}
-                                        isSavedContext={selectedConversationId === 'saved_messages'}
-                                        onReaction={handleMessageReaction}
-                                        isContextMenuOpen={contextMenu.show}
-                                        onCloseContextMenu={handleCloseContextMenu}
-                                        onOpenImage={handleOpenImageViewer}
-                                        openBrowser={openBrowser}
-                                    />);
-                                }))}
-                                {selectedConversationId === 'saved_messages' && messages.length === 0 && !loadingMessages && (<div className="chat-placeholder"> <BookmarkIcon className="placeholder-icon" /> <h3>Збережені повідомлення</h3> <p>Пересилайте сюди повідомлення, щоб зберегти їх. Цей чат бачите тільки ви.</p> </div>)}
-                                <div ref={messagesEndRef} />
-                            </div>
-                            {selectedConversation.id !== 'saved_messages' && (
-                                <div className="message-input-container">
-                                    {replyingTo && <ReplyPreview message={replyingTo} onCancel={() => setReplyingTo(null)} />}
-                                    <div className="message-input-area">
-                                        <button className="attachment-button" onClick={() => setIsAttachmentMenuOpen(true)}><PaperclipIcon /></button>
-                                        <form onSubmit={handleFormSubmit} className="message-input-form">
-                                            <input type="text" placeholder="Напишіть повідомлення..." value={newMessage} onChange={(e) => setNewMessage(e.target.value)} />
-                                            <button type="submit" disabled={!newMessage.trim() && !editingMessage}><SendIcon /></button>
-                                        </form>
-                                    </div>
+                            <>
+                                {selectedConversation.id !== 'saved_messages' && <PinnedMessagesBar pinnedMessages={selectedConversation.pinnedMessages} onMessageSelect={scrollToMessage} />}
+                                <div className="messages-area">
+                                    {loadingMessages ? (<p className="chat-placeholder">Завантаження...</p>) : (messages.map(msg => {
+                                        const isSent = msg.senderId === currentUser.uid;
+                                        const senderInfo = selectedConversation.id === 'saved_messages' ? { displayName: msg.originalSender?.name, photoURL: msg.originalSender?.photoURL } : (isSent ? currentUser : (selectedConversation.isGroup ? selectedConversation.participantInfo.find(p => p.uid === msg.senderId) : companion));
+                                        return (<MessageBubble
+                                            key={msg.id}
+                                            message={msg}
+                                            isGroup={selectedConversation.isGroup}
+                                            isSent={selectedConversationId !== 'saved_messages' && isSent}
+                                            senderInfo={senderInfo}
+                                            selectionMode={selectionMode}
+                                            isSelected={selectedMessages.includes(msg.id)}
+                                            isDeleting={deletingMessages.includes(msg.id)}
+                                            deleteAnimationClass={currentUser.settings?.chat?.deleteAnimation || 'animation-vortex-out'}
+                                            onContextMenu={handleContextMenu}
+                                            onLongPress={handleLongPress}
+                                            onTap={handleToggleSelect}
+                                            isSavedContext={selectedConversationId === 'saved_messages'}
+                                            onReaction={handleMessageReaction}
+                                            isContextMenuOpen={contextMenu.show}
+                                            onCloseContextMenu={handleCloseContextMenu}
+                                            onOpenImage={handleOpenImageViewer}
+                                            openBrowser={openBrowser}
+                                        />);
+                                    }))}
+                                    {selectedConversationId === 'saved_messages' && messages.length === 0 && !loadingMessages && (<div className="chat-placeholder"> <BookmarkIcon className="placeholder-icon" /> <h3>Збережені повідомлення</h3> <p>Пересилайте сюди повідомлення, щоб зберегти їх. Цей чат бачите тільки ви.</p> </div>)}
+                                    <div ref={messagesEndRef} />
                                 </div>
-                            )}
-                        </>)}
+                                {selectedConversation.id !== 'saved_messages' && (
+                                    <div className="message-input-container">
+                                        {replyingTo && <ReplyPreview message={replyingTo} onCancel={() => setReplyingTo(null)} />}
+                                        <div className="message-input-area">
+                                            <button className="attachment-button" onClick={() => setIsAttachmentMenuOpen(true)}><PaperclipIcon /></button>
+                                            <form onSubmit={handleFormSubmit} className="message-input-form">
+                                                <input type="text" placeholder="Напишіть повідомлення..." value={newMessage} onChange={(e) => setNewMessage(e.target.value)} />
+                                                <button type="submit" disabled={!newMessage.trim() && !editingMessage}><SendIcon /></button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                )}
+                            </>)}
                         {!selectedConversation && (<div className="chat-placeholder"><h3>Оберіть чат, щоб розпочати спілкування</h3><p>Або створіть нову групу.</p></div>)}
                     </main>
                 </div>
             </div>
             <input type="file" ref={fileInputRef} style={{ display: 'none' }} onChange={handleFileSelected} accept="image/*,video/*" />
-            {isCreateGroupModalOpen && <CreateGroupModal onClose={() => setCreateGroupModalOpen(false)} onGroupCreated={handleGroupCreated}/>}
+            {isCreateGroupModalOpen && <CreateGroupModal onClose={() => setCreateGroupModalOpen(false)} onGroupCreated={handleGroupCreated} />}
             <MessageContextMenu {...contextMenu} onClose={() => setContextMenu({ show: false, x: 0, y: 0, message: null })} onAction={handleContextMenuAction} onEmojiSelect={handleEmojiSelect} onOpenFullPicker={handleOpenFullPicker} isOwnMessage={contextMenu.message?.senderId === currentUser?.uid} isUserAdmin={isCurrentUserAdmin} />
-            {infoPanelOpenFor && (<GroupInfoPanel conversation={infoPanelOpenFor} currentUser={currentUser} onClose={() => setInfoPanelOpenFor(null)}/>)}
+            {infoPanelOpenFor && (<GroupInfoPanel conversation={infoPanelOpenFor} currentUser={currentUser} onClose={() => setInfoPanelOpenFor(null)} />)}
             <ConfirmationModal isOpen={deleteModal.isOpen} onClose={() => setDeleteModal({ isOpen: false, message: null })} onConfirm={handleConfirmDelete} title="Видалити повідомлення?" message="Ви впевнені, що хочете видалити це повідомлення?" confirmText="Видалити" showCheckbox={!selectedConversation?.isGroup && selectedConversationId !== 'saved_messages'} checkboxLabel={`Видалити для ${companionName}`} />
             <ConfirmationModal isOpen={multiDeleteModal} onClose={() => setMultiDeleteModal(false)} onConfirm={handleDeleteSelected} title={`Видалити ${selectedMessages.length} повідомлень?`} message="Ця дія є незворотною." confirmText="Видалити" />
             <AttachmentMenu isOpen={isAttachmentMenuOpen} onClose={() => setIsAttachmentMenuOpen(false)} onSelectAttachment={handleSelectAttachment} />
@@ -592,7 +592,7 @@ const MessagesPage = ({ openBrowser }) => {
                 </React.Suspense>
             )}
             {showUploadOverlay && (<div className="upload-progress-overlay"><div className="upload-progress-bar" style={{ width: `${uploadProgress}%` }}></div></div>)}
-            {viewingImage && (<ImageViewerModal isOpen={!!viewingImage} imageUrl={viewingImage.url} imageAlt={viewingImage.alt} onClose={handleCloseImageViewer}/>)}
+            {viewingImage && (<ImageViewerModal isOpen={!!viewingImage} imageUrl={viewingImage.url} imageAlt={viewingImage.alt} onClose={handleCloseImageViewer} />)}
         </div>
     );
 };

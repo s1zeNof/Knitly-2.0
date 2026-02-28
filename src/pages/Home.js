@@ -112,7 +112,7 @@ const Home = ({ openBrowser, openShareModal }) => {
         if (!currentUser) return null;
         const ids = [currentUser.uid, ...followingRef];
         return ids;
-    }, [currentUser?.uid, followingRef]);
+    }, [currentUser?.uid, followingRef]); // eslint-disable-line react-hooks/exhaustive-deps
 
     return (
         <>
