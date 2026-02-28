@@ -428,6 +428,7 @@ body.home-page-background::before {
     .main-content {
         margin-left: 0;
         width: 100%;
+        max-width: 100%;
         padding: 1rem;
         padding-bottom: 80px;
     }

@@ -3,7 +3,12 @@ import { createClient } from '@supabase/supabase-js';
 const supabaseUrl = process.env.REACT_APP_SUPABASE_URL;
 const supabaseAnonKey = process.env.REACT_APP_SUPABASE_ANON_KEY;
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+// Guard: supabase client is kept for compatibility but all uploads now use Cloudinary.
+// If env vars are missing (e.g. Vercel without Supabase vars), we skip createClient
+// to avoid crashing the app at startup.
+export const supabase = supabaseUrl && supabaseAnonKey
+    ? createClient(supabaseUrl, supabaseAnonKey)
+    : null;
 
 const CLOUDINARY_URL = "https://api.cloudinary.com/v1_1/da5tg6rif/auto/upload";
 const UPLOAD_PRESET = "knitly_unsigned";
