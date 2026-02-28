@@ -17,10 +17,8 @@ import PollAttachment from './PollAttachment';
 import PostEditor from './PostEditor';
 import './Post.css';
 
-// Іконки
-const HeartIcon = () => <svg viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor" fill="none"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>;
-const CommentIcon = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>;
-const AddReactionIcon = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"></circle><path d="M8 14s1.5 2 4 2 4-2 4-2"></path><line x1="9" y1="9" x2="9.01" y2="9"></line><line x1="15" y1="9" x2="15.01" y2="9"></line></svg>;
+import { Heart, MessageCircle, Smile, Send, Repeat } from 'lucide-react';
+
 const OptionsIcon = () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="1"></circle><circle cx="19" cy="12" r="1"></circle><circle cx="5" cy="12" r="1"></circle></svg>;
 
 const formatPostTime = (timestamp) => {
@@ -36,8 +34,7 @@ const formatPostTime = (timestamp) => {
     return postDate.toLocaleDateString('uk-UA', { day: 'numeric', month: 'long' });
 };
 
-// Приймаємо openBrowser
-const PostCard = ({ post, openBrowser }) => {
+const PostCard = ({ post, openBrowser, openShareModal }) => {
     const { user: currentUser } = useUserContext();
     const { handlePlayPause } = usePlayerContext();
     const queryClient = useQueryClient();
@@ -73,7 +70,7 @@ const PostCard = ({ post, openBrowser }) => {
             await runTransaction(db, async (transaction) => {
                 const postDoc = await transaction.get(postRef);
                 if (!postDoc.exists()) throw "Допис не знайдено!";
-                const reactions = postDoc.data().reactions || {};
+                const reactions = { ...postDoc.data().reactions } || {};
                 const currentReaction = reactions[reactionId] || { uids: [] };
                 const userIndex = currentReaction.uids.indexOf(currentUser.uid);
                 if (userIndex > -1) {
@@ -92,20 +89,27 @@ const PostCard = ({ post, openBrowser }) => {
             });
         },
         onSuccess: (data, variables) => {
-            queryClient.invalidateQueries(['feedPosts', null]);
+            queryClient.invalidateQueries(['feedPosts']);
             const { reactionId } = variables;
-            const isLiking = !post.reactions?.[reactionId]?.uids.includes(currentUser.uid);
+            const isLiking = post.reactions?.[reactionId]?.uids.includes(currentUser.uid) ? false : true;
+            
             if (reactionId === 'unicode_❤️' && isLiking && primaryAuthor.uid !== currentUser.uid) {
                 const notificationRef = collection(db, 'users', primaryAuthor.uid, 'notifications');
                 addDoc(notificationRef, {
                     type: 'post_like',
                     fromUser: { uid: currentUser.uid, nickname: currentUser.nickname, photoURL: currentUser.photoURL },
-                    entityId: post.id, entityLink: `/user/${primaryAuthor.nickname}`,
-                    timestamp: serverTimestamp(), read: false
+                    toUserId: primaryAuthor.uid, // 🔥 ОСЬ ГОЛОВНЕ ВИПРАВЛЛЕННЯ 🔥
+                    entityId: post.id,
+                    entityLink: `/post/${post.id}`,
+                    timestamp: serverTimestamp(),
+                    read: false
                 });
             }
         },
-        onError: (error) => console.error("Reaction error:", error),
+        onError: (error) => {
+          console.error("Помилка реакції:", error);
+          toast.error(`Помилка: ${error.message}`);
+        },
     });
 
     const updatePostMutation = useMutation(
@@ -115,7 +119,7 @@ const PostCard = ({ post, openBrowser }) => {
         }),
         {
             onSuccess: () => {
-                queryClient.invalidateQueries(['feedPosts', null]);
+                queryClient.invalidateQueries(['feedPosts']);
                 setIsEditing(false);
                 toast.success("Допис оновлено!");
             },
@@ -128,7 +132,10 @@ const PostCard = ({ post, openBrowser }) => {
             if (post.attachment?.storagePath) await deleteObject(ref(storage, post.attachment.storagePath));
             await deleteDoc(doc(db, 'posts', post.id));
         },
-        { onSuccess: () => queryClient.invalidateQueries(['feedPosts', null]) }
+        { onSuccess: () => {
+            queryClient.invalidateQueries(['feedPosts']);
+            toast.success("Допис видалено");
+        } }
     );
 
     const handleLikeClick = () => { if (!reactionMutation.isLoading) reactionMutation.mutate({ reactionId: 'unicode_❤️' })};
@@ -144,6 +151,17 @@ const PostCard = ({ post, openBrowser }) => {
         }
         reactionMutation.mutate({ reactionId, customUrl, isAnimated });
         setShowFullPicker(false);
+    };
+    
+    const handleShare = (e) => {
+        e.stopPropagation();
+        if (openShareModal) {
+            openShareModal(post);
+        }
+    };
+
+    const handleRepost = () => {
+        toast('Repost скоро™', { icon: '🔁' });
     };
 
     const handleDeletePost = () => { if (window.confirm('Ви впевнені, що хочете видалити цей допис?')) deletePostMutation.mutate(); };
@@ -204,7 +222,6 @@ const PostCard = ({ post, openBrowser }) => {
             <div className="post-card">
                 <div className="post-thread-container">
                     <div className="post-main-content">
-                        
                         <Link to={`/user/${primaryAuthor.nickname}`} className="post-avatar-link">
                             <div className={`post-avatar-wrapper ${!isAvatarLoaded ? 'skeleton' : ''}`}>
                                 <img
@@ -218,7 +235,6 @@ const PostCard = ({ post, openBrowser }) => {
                                 />
                             </div>
                         </Link>
-
                         <div className="post-content">
                             <div className="post-header">
                                 <div className="post-header-main">
@@ -241,7 +257,6 @@ const PostCard = ({ post, openBrowser }) => {
                                     </div>
                                 )}
                             </div>
-
                             {isEditing ? (
                                 <PostEditor
                                     initialStateJSON={post.editorState}
@@ -257,7 +272,6 @@ const PostCard = ({ post, openBrowser }) => {
                                     {renderAttachment(post.attachment)}
                                 </>
                             )}
-
                             {!isEditing && (
                                 <>
                                     {post.reactions && Object.keys(post.reactions).length > 0 && (
@@ -275,11 +289,27 @@ const PostCard = ({ post, openBrowser }) => {
                                             })}
                                         </div>
                                     )}
-
                                     <div className="post-actions">
-                                        <button className="post-action-button" onClick={() => setCommentsVisible(!commentsVisible)}><CommentIcon /><span>{post.commentsCount || 0}</span></button>
-                                        <button className={`post-action-button like ${isLiked ? 'liked' : ''}`} onClick={handleLikeClick} disabled={reactionMutation.isLoading}><HeartIcon /><span>{post.likesCount || 0}</span></button>
-                                        <button className="post-action-button" onClick={() => setShowFullPicker(true)}><AddReactionIcon /></button>
+                                        <button className={`post-action-button like ${isLiked ? 'liked' : ''}`} onClick={handleLikeClick} disabled={reactionMutation.isLoading} title="Подобається">
+                                            <Heart size={18} />
+                                            <span>{post.likesCount || 0}</span>
+                                        </button>
+                                        <button className="post-action-button" onClick={() => setCommentsVisible(!commentsVisible)} title="Коментарі">
+                                            <MessageCircle size={18} />
+                                            <span>{post.commentsCount || 0}</span>
+                                        </button>
+                                        <button className="post-action-button" onClick={() => setShowFullPicker(true)} title="Реакції">
+                                            <Smile size={18} />
+                                        </button>
+                                        <button className="post-action-button" onClick={handleShare} title="Поширити">
+                                            <Send size={18} />
+                                        </button>
+                                        <div className="post-actions-right">
+                                            <button className="post-action-button" onClick={handleRepost} title="Репост">
+                                                <Repeat size={18} />
+                                                <span>{post.repostsCount || 0}</span>
+                                            </button>
+                                        </div>
                                     </div>
                                 </>
                             )}

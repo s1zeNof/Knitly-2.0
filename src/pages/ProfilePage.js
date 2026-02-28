@@ -12,22 +12,21 @@ import CreatePostForm from '../components/posts/CreatePostForm';
 import ReceivedGiftsTab from '../components/gifts/ReceivedGiftsTab';
 import { signOut } from 'firebase/auth';
 import { auth } from '../services/firebase';
-import SendGiftModal from '../components/gifts/SendGiftModal'; // Імпортуємо модальне вікно
-import toast from 'react-hot-toast'; // Для сповіщень
+import SendGiftModal from '../components/gifts/SendGiftModal';
+import toast from 'react-hot-toast';
 
 import default_picture from '../img/Default-Images/default-picture.svg';
 import verifiedIcon from '../img/Profile-Settings/verified_icon-lg-bl.svg';
 import './Profile.css';
 
-// Іконки
-const MusicIcon = () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>;
-const FeedIcon = () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 6h16M4 12h16M4 18h16"/></svg>;
-const PlaylistIcon = () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M8 6h13"/><path d="M8 12h13"/><path d="M8 18h13"/><path d="M3 6h.01"/><path d="M3 12h.01"/><path d="M3 18h.01"/></svg>;
+const MusicIcon = () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 18V5l12-2v13" /><circle cx="6" cy="18" r="3" /><circle cx="18" cy="16" r="3" /></svg>;
+const FeedIcon = () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 6h16M4 12h16M4 18h16" /></svg>;
+const PlaylistIcon = () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M8 6h13" /><path d="M8 12h13" /><path d="M8 18h13" /><path d="M3 6h.01" /><path d="M3 12h.01" /><path d="M3 18h.01" /></svg>;
 const AlbumsIcon = () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="7" y1="3" x2="7" y2="21"></line></svg>;
 const GiftIcon = () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="20 12 20 22 4 22 4 12"></polyline><rect x="2" y="7" width="20" height="5"></rect><line x1="12" y1="22" x2="12" y2="7"></line><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"></path><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"></path></svg>;
 const ActionsIcon = () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><circle cx="12" cy="12" r="1"></circle><circle cx="19" cy="12" r="1"></circle><circle cx="5" cy="12" r="1"></circle></svg>;
 
-const ProfilePage = () => {
+const ProfilePage = ({ openBrowser, openShareModal }) => {
     const { userNickname } = useParams();
     const navigate = useNavigate();
     const { user: currentUser, authLoading, refreshUser } = useUserContext();
@@ -39,8 +38,6 @@ const ProfilePage = () => {
     const [isProcessingFollow, setIsProcessingFollow] = useState(false);
     const [isActionMenuOpen, setActionMenuOpen] = useState(false);
     const actionMenuRef = useRef(null);
-
-    // Новий стан для модального вікна подарунків
     const [isGiftModalOpen, setIsGiftModalOpen] = useState(false);
 
     const isOwnProfile = !userNickname || (profileUser && currentUser && profileUser.uid === currentUser.uid);
@@ -84,13 +81,13 @@ const ProfilePage = () => {
                     userToFetchId = currentUser.uid;
                     userToFetchData = currentUser;
                 } else {
-                     setLoading(false);
-                     if(!authLoading) navigate('/login');
-                     return;
+                    setLoading(false);
+                    if (!authLoading) navigate('/login');
+                    return;
                 }
-                
+
                 setProfileUser({ ...userToFetchData, uid: userToFetchId });
-                
+
                 if (currentUser && userToFetchId !== currentUser.uid) {
                     setIsFollowing(currentUser.following?.includes(userToFetchId));
                 }
@@ -106,8 +103,6 @@ const ProfilePage = () => {
             fetchUserData();
         }
     }, [userNickname, currentUser, authLoading, navigate]);
-
-    // ... (решта функцій, handleFollowToggle, handleStartConversation, handleLogout залишаються без змін) ...
 
     const handleFollowToggle = async () => {
         if (!currentUser || !profileUser || isProcessingFollow || isOwnProfile) return;
@@ -130,15 +125,15 @@ const ProfilePage = () => {
                 });
             }
             await refreshUser();
-            setProfileUser(prev => ({...prev, followers: isFollowing ? prev.followers.filter(id => id !== currentUser.uid) : [...(prev.followers || []), currentUser.uid]}));
+            setProfileUser(prev => ({ ...prev, followers: isFollowing ? prev.followers.filter(id => id !== currentUser.uid) : [...(prev.followers || []), currentUser.uid] }));
             setIsFollowing(!isFollowing);
-        } catch (error) { 
+        } catch (error) {
             console.error('Помилка підписки/відписки:', error);
-        } finally { 
-            setIsProcessingFollow(false); 
+        } finally {
+            setIsProcessingFollow(false);
         }
     };
-    
+
     const handleStartConversation = async () => {
         if (!currentUser || !profileUser || isOwnProfile) return;
         const chatId = [currentUser.uid, profileUser.uid].sort().join('_');
@@ -146,7 +141,7 @@ const ProfilePage = () => {
         try {
             const chatSnap = await getDoc(chatRef);
             if (!chatSnap.exists()) {
-                 const dataToCreate = {
+                const dataToCreate = {
                     isGroup: false,
                     participants: [currentUser.uid, profileUser.uid],
                     participantInfo: [
@@ -155,19 +150,18 @@ const ProfilePage = () => {
                     ],
                     lastMessage: null,
                     lastUpdatedAt: serverTimestamp(),
-                    unreadCounts: { [currentUser.uid]: 0, [profileUser.uid]: 0 }, 
+                    unreadCounts: { [currentUser.uid]: 0, [profileUser.uid]: 0 },
                 };
                 await setDoc(chatRef, dataToCreate);
             }
             navigate('/messages', { state: { conversationId: chatId } });
-        } catch (error) { 
-            console.error("Помилка створення чату:", error); 
+        } catch (error) {
+            console.error("Помилка створення чату:", error);
         }
     };
 
     const handleLogout = () => signOut(auth).then(() => navigate('/'));
 
-    // Нова функція для обробки відправки подарунка
     const handleSendGift = async (gift, recipientUser) => {
         if (!currentUser) {
             toast.error("Будь ласка, увійдіть, щоб дарувати подарунки.");
@@ -189,10 +183,8 @@ const ProfilePage = () => {
                 const senderBalance = senderDoc.data().notesBalance || 0;
                 if (senderBalance < gift.price) throw new Error("Недостатньо Нот на балансі.");
 
-                // Оновлюємо баланс відправника
                 transaction.update(senderRef, { notesBalance: senderBalance - gift.price });
 
-                // Додаємо подарунок в інвентар отримувача
                 const recipientGiftRef = doc(collection(recipientRef, 'receivedGifts'));
                 transaction.set(recipientGiftRef, {
                     giftId: gift.id,
@@ -207,7 +199,7 @@ const ProfilePage = () => {
 
             toast.success(`Подарунок "${gift.name}" успішно відправлено до ${recipientUser.displayName}!`);
             await refreshUser();
-            
+
         } catch (error) {
             console.error("Помилка відправки подарунка:", error);
             toast.error(error.message || "Не вдалося відправити подарунок.");
@@ -215,16 +207,15 @@ const ProfilePage = () => {
     };
 
     const renderTabContent = () => {
-        // ... (код цієї функції залишається без змін) ...
         if (!profileUser) return null;
-        
+
         switch (activeTab) {
             case 'music':
                 const hasTracks = (profileUser.tracksCount || 0) > 0;
                 return (
                     <>
                         {hasTracks && (
-                             <div className="profile-music-layout">
+                            <div className="profile-music-layout">
                                 <div className="profile-section">
                                     <h3 className="profile-section-title">Топ треки</h3>
                                     <TrackList initialTracks={topTracks} isLoading={loadingTop} />
@@ -236,25 +227,29 @@ const ProfilePage = () => {
                             </div>
                         )}
                         <div className="profile-section">
-                           <h3 className="profile-section-title">Вподобана музика</h3>
-                           <LikedTracks user={profileUser} />
+                            <h3 className="profile-section-title">Вподобана музика</h3>
+                            <LikedTracks user={profileUser} />
                         </div>
                     </>
                 );
-            case 'playlists': 
+            case 'playlists':
                 return <PlaylistTab userId={profileUser.uid} />;
             case 'albums':
-                 return <div className="page-profile-tab-placeholder">Альбоми цього користувача будуть відображатися тут.</div>;
+                return <div className="page-profile-tab-placeholder">Альбоми цього користувача будуть відображатися тут.</div>;
             case 'gifts':
                 return <ReceivedGiftsTab userId={profileUser.uid} />;
-            case 'feed': 
+            case 'feed':
                 return (
                     <div>
                         {isOwnProfile && <CreatePostForm />}
-                        <Feed userId={profileUser.uid} />
+                        <Feed
+                            profileUserId={profileUser.uid}
+                            openBrowser={openBrowser}
+                            openShareModal={openShareModal}
+                        />
                     </div>
                 );
-            default: 
+            default:
                 return null;
         }
     };
@@ -265,21 +260,12 @@ const ProfilePage = () => {
     return (
         <>
             <div className="page-profile-container">
-                <aside className="page-profile-sidebar">
+                <div className="page-profile-header">
                     <div className="page-profile-background" style={{ backgroundImage: `url(${profileUser.backgroundImage || ''})` }}></div>
-                    <div className="page-profile-info-card">
-                        <img src={profileUser.photoURL || default_picture} alt="Avatar" className="page-profile-avatar" />
-                        <h2 className="page-profile-display-name">
-                            {profileUser.displayName || 'No Name'}
-                            {profileUser.isVerified && <img src={verifiedIcon} className="page-profile-verified-badge" alt="Verified" />}
-                        </h2>
-                        <p className="page-profile-nickname">@{profileUser.nickname}</p>
-                        <p className="page-profile-description">{profileUser.description || 'No description'}</p>
-                        <div className="page-profile-stats">
-                            <div className="page-profile-stat-item"><strong>{profileUser.followers?.length || 0}</strong><span>Підписники</span></div>
-                            <div className="page-profile-stat-item"><strong>{profileUser.following?.length || 0}</strong><span>Підписки</span></div>
+                    <div className="page-profile-header-content">
+                        <div className="page-profile-avatar-wrapper">
+                            <img src={profileUser.photoURL || default_picture} alt="Avatar" className="page-profile-avatar" onError={(e) => { e.target.onerror = null; e.target.src = default_picture; }} />
                         </div>
-
                         <div className="page-profile-actions-group">
                             {isOwnProfile ? (
                                 <button className="page-profile-logout-button" onClick={handleLogout}>Вийти</button>
@@ -294,7 +280,7 @@ const ProfilePage = () => {
                                     <div className="profile-actions-menu-container" ref={actionMenuRef}>
                                         <button className="page-profile-secondary-button with-icon" onClick={() => setActionMenuOpen(!isActionMenuOpen)}>
                                             <span>Дії</span>
-                                            <ActionsIcon/>
+                                            <ActionsIcon />
                                         </button>
                                         <div className={`profile-actions-dropdown ${isActionMenuOpen ? 'visible' : ''}`}>
                                             <button className="dropdown-action-button" onClick={() => { setIsGiftModalOpen(true); setActionMenuOpen(false); }}>
@@ -309,21 +295,36 @@ const ProfilePage = () => {
                             )}
                         </div>
                     </div>
-                </aside>
-                <main className="page-profile-main-content">
-                    <div className="page-profile-tabs">
-                        <button className={`page-profile-tab-button ${activeTab === 'music' ? 'active' : ''}`} onClick={() => setActiveTab('music')}><MusicIcon/> Музика</button>
-                        <button className={`page-profile-tab-button ${activeTab === 'albums' ? 'active' : ''}`} onClick={() => setActiveTab('albums')}><AlbumsIcon/> Альбоми</button>
-                        <button className={`page-profile-tab-button ${activeTab === 'playlists' ? 'active' : ''}`} onClick={() => setActiveTab('playlists')}><PlaylistIcon/> Плейлисти</button>
-                        <button className={`page-profile-tab-button ${activeTab === 'feed' ? 'active' : ''}`} onClick={() => setActiveTab('feed')}><FeedIcon/> Стрічка</button>
-                        <button className={`page-profile-tab-button ${activeTab === 'gifts' ? 'active' : ''}`} onClick={() => setActiveTab('gifts')}><GiftIcon/> Подарунки</button>
+
+                    <div className="page-profile-info">
+                        <h2 className="page-profile-display-name">
+                            {profileUser.displayName || 'No Name'}
+                            {profileUser.isVerified && <img src={verifiedIcon} className="page-profile-verified-badge" alt="Verified" />}
+                        </h2>
+                        <p className="page-profile-nickname">@{profileUser.nickname}</p>
+                        <p className="page-profile-description">{profileUser.description || 'No description'}</p>
+                        <div className="page-profile-stats">
+                            <div className="page-profile-stat-item"><strong>{profileUser.followers?.length || 0}</strong><span>Підписники</span></div>
+                            <div className="page-profile-stat-item"><strong>{profileUser.following?.length || 0}</strong><span>Підписки</span></div>
+                        </div>
                     </div>
+
+                    <div className="page-profile-tabs">
+                        <button className={`page-profile-tab-button ${activeTab === 'music' ? 'active' : ''}`} onClick={() => setActiveTab('music')}><MusicIcon /> Музика</button>
+                        <button className={`page-profile-tab-button ${activeTab === 'albums' ? 'active' : ''}`} onClick={() => setActiveTab('albums')}><AlbumsIcon /> Альбоми</button>
+                        <button className={`page-profile-tab-button ${activeTab === 'playlists' ? 'active' : ''}`} onClick={() => setActiveTab('playlists')}><PlaylistIcon /> Плейлисти</button>
+                        <button className={`page-profile-tab-button ${activeTab === 'feed' ? 'active' : ''}`} onClick={() => setActiveTab('feed')}><FeedIcon /> Стрічка</button>
+                        <button className={`page-profile-tab-button ${activeTab === 'gifts' ? 'active' : ''}`} onClick={() => setActiveTab('gifts')}><GiftIcon /> Подарунки</button>
+                    </div>
+                </div>
+
+                <main className="page-profile-main-content">
                     <div className="page-profile-tab-content">
                         {renderTabContent()}
                     </div>
                 </main>
             </div>
-            
+
             {isGiftModalOpen && (
                 <SendGiftModal
                     recipient={profileUser}

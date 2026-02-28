@@ -1,0 +1,26 @@
+.shared-post-attachment {
+    margin-top: 8px;
+    border-left: 3px solid var(--accent-color);
+    padding-left: 10px;
+    border-radius: 4px;
+    background-color: rgba(0, 0, 0, 0.1);
+}
+
+.shared-post-attachment .post-card {
+    box-shadow: none;
+    border: 1px solid var(--border-color);
+    margin-bottom: 0;
+}
+
+.shared-post-attachment .post-actions {
+    display: none;
+}
+
+.shared-post-loading, .shared-post-deleted {
+    padding: 20px;
+    background-color: var(--background-color-tertiary);
+    border-radius: 8px;
+    margin-top: 8px;
+    font-style: italic;
+    color: var(--text-color-secondary);
+}

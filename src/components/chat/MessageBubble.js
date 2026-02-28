@@ -1,106 +1,240 @@
-import React, { useRef, useEffect } from 'react';
-import { useUserContext } from '../../contexts/UserContext';
+import React, { useRef, useState } from 'react';
 import { usePlayerContext } from '../../contexts/PlayerContext';
-import Lottie from 'lottie-react';
+import LottieRenderer from '../common/LottieRenderer';
 import default_picture from '../../img/Default-Images/default-picture.svg';
 import './MessageBubble.css';
+import SharedPostAttachment from './SharedPostAttachment';
 
-const PlayIcon = () => <svg height="24" width="24" viewBox="0 0 24 24"><path fill="currentColor" d="M8 5v14l11-7z" /></svg>;
-const CheckmarkIcon = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M20 6L9 17l-5-5" /></svg>;
+/* ─── tiny inline icons ─── */
+const PlayIcon = () => <svg height="20" width="20" viewBox="0 0 24 24"><path fill="currentColor" d="M8 5v14l11-7z" /></svg>;
 const ForwardIcon = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 12l-7.5-7.5v4.5H4v6h8.5v4.5L20 12z" /></svg>;
+const EditedLabel = () => <span style={{ fontSize: '0.7rem', opacity: 0.7, marginRight: '2px' }}>ред.</span>;
 
-// --- ПОЧАТОК ЗМІН: Повністю переписаний компонент Linkify ---
+/* ─── linkify helper ─── */
 const Linkify = ({ text, openBrowser }) => {
-    if (!text || typeof text !== 'string') {
-        return text;
-    }
-
-    const urlRegex = /((https?:\/\/(www\.)?)|(www\.))[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_+.~#?&//=]*)/gi;
-    
-    const parts = [];
-    let lastIndex = 0;
-    let match;
-
-    while ((match = urlRegex.exec(text)) !== null) {
-        // Додаємо текст перед посиланням
-        if (match.index > lastIndex) {
-            parts.push(text.substring(lastIndex, match.index));
-        }
-
-        // Додаємо саме посилання
-        const url = match[0];
-        const fullUrl = url.startsWith('http') ? url : `https://` + url;
-        parts.push(
-            <a
-                key={match.index}
-                href={fullUrl}
-                onClick={(e) => { e.preventDefault(); openBrowser(fullUrl); }}
-                target="_blank"
-                rel="noopener noreferrer"
-            >
-                {url}
-            </a>
-        );
-
-        lastIndex = match.index + url.length;
-    }
-
-    // Додаємо решту тексту після останнього посилання
-    if (lastIndex < text.length) {
-        parts.push(text.substring(lastIndex));
-    }
-
-    return <>{parts}</>;
+    if (!text || typeof text !== 'string') return <>{text}</>;
+    const urlRegex = /((https?:\/\/(www\.)?)|www\.)[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_+.~#?&/=]*)/g;
+    const parts = text.split(urlRegex);
+    return (
+        <>
+            {parts.map((part, i) => {
+                if (part && (part.startsWith('http') || part.startsWith('www'))) {
+                    const href = part.startsWith('www.') ? `http://${part}` : part;
+                    return <a key={i} href={href} onClick={e => { e.preventDefault(); openBrowser?.(href); }} target="_blank" rel="noopener noreferrer">{part}</a>;
+                }
+                return part;
+            })}
+        </>
+    );
 };
-// --- КІНЕЦЬ ЗМІН ---
 
-const LottieReaction = React.memo(({ url }) => {
-    return <Lottie path={url} autoplay={true} loop={true} className="reaction-lottie" />;
-});
+/* ─── shimmer avatar placeholder ─── */
+const AvatarWithShimmer = ({ src, alt }) => {
+    const [loaded, setLoaded] = useState(false);
+    const [errored, setErrored] = useState(false);
+    return (
+        <div className="message-avatar-wrapper">
+            {!loaded && <div className="message-avatar-shimmer" />}
+            <img
+                src={(!errored && src) ? src : default_picture}
+                alt={alt || ''}
+                className={`message-avatar ${loaded ? 'loaded' : 'avatar-hidden'}`}
+                onLoad={() => setLoaded(true)}
+                onError={() => { setErrored(true); setLoaded(true); }}
+            />
+        </div>
+    );
+};
 
-const MessageBubble = ({ message, isGroup, isSent, senderInfo, onContextMenu, onLongPress, onTap, isSelected, selectionMode, isDeleting, deleteAnimationClass, isSavedContext = false, onReaction, isContextMenuOpen, onCloseContextMenu, onOpenImage, openBrowser }) => {
-    const { user: currentUser } = useUserContext();
-    const { handlePlayPause } = usePlayerContext();
+/* ─── lottie reaction wrapper ─── */
+const LottieReaction = ({ url }) => (
+    <div className="reaction-lottie-wrapper">
+        <LottieRenderer url={url} />
+    </div>
+);
 
-    const touchTimeoutRef = useRef(null), longPressTimeoutRef = useRef(null), isLongPressRef = useRef(false), isDragRef = useRef(false), touchStartPosRef = useRef({ x: 0, y: 0 });
-    useEffect(() => () => { if (touchTimeoutRef.current) clearTimeout(touchTimeoutRef.current); if (longPressTimeoutRef.current) clearTimeout(longPressTimeoutRef.current); }, []);
-    const isMediaMessage = (msg) => ['track', 'album', 'image', 'video', 'image_gif'].includes(msg.type);
-    const handleTouchStart = (e) => { if (isContextMenuOpen) return; isLongPressRef.current = false; isDragRef.current = false; touchStartPosRef.current = { x: e.touches[0].clientX, y: e.touches[0].clientY }; longPressTimeoutRef.current = setTimeout(() => { isLongPressRef.current = true; if (isMediaMessage(message)) onContextMenu(e, message); else { onLongPress(message); onContextMenu(e, message); } }, 500); };
-    const handleTouchMove = (e) => { if (isContextMenuOpen) return; const touch = e.touches[0]; const distanceMoved = Math.sqrt(Math.pow(touch.clientX - touchStartPosRef.current.x, 2) + Math.pow(touch.clientY - touchStartPosRef.current.y, 2)); if (distanceMoved > 10) { isDragRef.current = true; if (longPressTimeoutRef.current) clearTimeout(longPressTimeoutRef.current); if (touchTimeoutRef.current) clearTimeout(touchTimeoutRef.current); } };
-    const handleTouchEnd = (e) => { const wasLongPress = isLongPressRef.current; if (longPressTimeoutRef.current) clearTimeout(longPressTimeoutRef.current); if (wasLongPress) { e.preventDefault(); return; } if (isContextMenuOpen) { e.preventDefault(); onCloseContextMenu(); return; } if (isDragRef.current) return; if (touchTimeoutRef.current) { clearTimeout(touchTimeoutRef.current); touchTimeoutRef.current = null; if (onReaction) onReaction(message, 'unicode_❤️'); } else { touchTimeoutRef.current = setTimeout(() => { const tappedElement = e.target, imageContent = tappedElement.closest('.image-message-content'), playButton = tappedElement.closest('.play-track-button'); if (playButton) { touchTimeoutRef.current = null; return; } if (selectionMode) onTap(message); else if (imageContent) onOpenImage({ url: message.content.url, alt: message.content.originalName }); else onContextMenu(e, message); touchTimeoutRef.current = null; }, 300); } };
-    const handleRightClick = (e) => { e.preventDefault(); onContextMenu(e, message); };
-    const handleSingleClick = (e) => { const tappedElement = e.target, imageContent = tappedElement.closest('.image-message-content'), playButton = tappedElement.closest('.play-track-button'); if (playButton) { e.stopPropagation(); return; } if (selectionMode) onTap(message); else if (imageContent) onOpenImage({ url: message.content.url, alt: message.content.originalName }); };
-    const handleDoubleClick = (e) => { if (!selectionMode) onContextMenu(e, message); };
-    const showSenderInfo = isSavedContext || (!isSent && isGroup);
+/* ─────────────────── MAIN COMPONENT ─────────────────── */
+const MessageBubble = ({
+    message,
+    isSent,
+    isGroup,
+    senderInfo,
+    selectionMode,
+    isSelected,
+    isDeleting,
+    deleteAnimationClass,
+    onContextMenu,
+    onLongPress,
+    onTap,
+    isSavedContext,
+    onReaction,
+    onOpenImage,
+    openBrowser,
+}) => {
+    const { playTrack, currentTrack, isPlaying } = usePlayerContext();
+    const longPressTimer = useRef(null);
+
+    if (!message) return null;
+
+    /* ─── timestamp ─── */
+    const ts = message.timestamp?.toDate?.();
+    const timeStr = ts ? ts.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
+
+    /* ─── content ─── */
+    const content = message.content;
+
+    const handleLongPressStart = () => {
+        longPressTimer.current = setTimeout(() => onLongPress?.(message), 500);
+    };
+    const handleLongPressEnd = () => clearTimeout(longPressTimer.current);
+
+    const handleClick = (e) => {
+        if (selectionMode) { e.preventDefault(); onTap?.(message); }
+    };
+
+    const handleCtxMenu = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        onContextMenu?.(e, message);
+    };
+
+    /* ─── wrapper classes ─── */
+    const wrapperClass = [
+        'message-wrapper',
+        isSent ? 'sent' : 'received',
+        isSelected ? 'selected' : '',
+        isDeleting ? (deleteAnimationClass || 'animation-vortex-out') : '',
+    ].filter(Boolean).join(' ');
+
+    const showSenderName = isGroup && !isSent && !isSavedContext;
 
     return (
-        <div className={`message-wrapper ${isSent ? 'sent' : 'received'} ${isSelected ? 'selected' : ''} ${isDeleting ? deleteAnimationClass : ''}`} data-message-id={message.id} onClick={handleSingleClick} onDoubleClick={handleDoubleClick} onContextMenu={handleRightClick} onTouchStart={handleTouchStart} onTouchMove={handleTouchMove} onTouchEnd={handleTouchEnd}>
-            {selectionMode && <div className="selection-checkbox">{isSelected && <CheckmarkIcon />}</div>}
-            {(isSavedContext || !isSent) && <img src={senderInfo?.photoURL || default_picture} alt="avatar" className="message-avatar"/>}
+        <div
+            className={wrapperClass}
+            data-message-id={message.id}
+            onContextMenu={handleCtxMenu}
+            onClick={handleClick}
+            onTouchStart={handleLongPressStart}
+            onTouchEnd={handleLongPressEnd}
+        >
+            {/* Avatar for received messages */}
+            {!isSent && !isSavedContext && (
+                <AvatarWithShimmer src={senderInfo?.photoURL} alt={senderInfo?.displayName} />
+            )}
+
             <div className="message-content-wrapper">
-                {showSenderInfo && <p className="sender-name">{senderInfo?.displayName}</p>}
-                {message.replyTo && <div className="reply-preview-bubble"><p className="reply-sender">{message.replyTo.senderName}</p><p className="reply-text" dangerouslySetInnerHTML={{ __html: message.replyTo.text.replace(/\n/g, '<br />') }}></p></div>}
-                {message.forwardedFrom && !isSavedContext && <div className="forwarded-header"><ForwardIcon /> Переслано від {message.forwardedFrom.name}</div>}
-                <div className={`message-bubble ${isMediaMessage(message) ? `${message.type}-message` : ''}`}>
-                    {message.type === 'text' && <p><Linkify text={message.content} openBrowser={openBrowser} /></p>}
-                    {message.type === 'image' && message.content && <div className="image-message-content"><img src={message.content.url} alt={message.content.originalName || 'Зображення в чаті'} className="chat-image"/>{message.content.quality === 'HD' && <span className="hd-badge">HD</span>}</div>}
-                    {message.type === 'video' && message.content && <div className="video-message-content"><video src={message.content.url} controls className="chat-video" preload="metadata" /></div>}
-                    {message.type === 'image_gif' && message.content && <div className="image-message-content"><img src={message.content.url} alt={message.content.originalName || 'GIF анімація'} className="chat-image chat-gif"/></div>}
-                    {message.type === 'track' && <div className="track-message-card"><img src={message.content.coverArtUrl || default_picture} alt={message.content.title} /><div className="track-message-info"><p className="track-title">{message.content.title}</p><p className="track-author">{message.content.authorName}</p></div><button className="play-track-button" onClick={(e) => { e.stopPropagation(); handlePlayPause(message.content); }}><PlayIcon /></button></div>}
-                    {message.type === 'album' && <div className="album-message-card"><img src={message.content.coverArtUrl || default_picture} alt={message.content.title} /><div className="album-message-info"><p className="album-label">АЛЬБОМ</p><p className="album-title">{message.content.title}</p><p className="album-author">{message.content.artistName}</p></div></div>}
-                    <div className="message-metadata">{message.isEdited && message.type === 'text' && <span className="edited-label">(ред.)</span>}<span className="timestamp">{(message.timestamp || message.savedAt)?.toDate().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span></div>
+                {/* Sender name in group chats */}
+                {showSenderName && (
+                    <span className="sender-name">{senderInfo?.displayName || 'Користувач'}</span>
+                )}
+
+                <div className="message-bubble">
+                    {/* Forwarded header */}
+                    {message.forwardedFrom && (
+                        <div className="forwarded-header">
+                            <ForwardIcon />
+                            <span>Переслано від {message.forwardedFrom.name}</span>
+                        </div>
+                    )}
+
+                    {/* Reply preview */}
+                    {message.replyTo && (
+                        <div className="reply-preview-bubble">
+                            <p className="reply-sender">{message.replyTo.senderName}</p>
+                            <p className="reply-text">{message.replyTo.text?.substring(0, 60)}</p>
+                        </div>
+                    )}
+
+                    {/* TEXT */}
+                    {message.type === 'text' && typeof content === 'string' && (
+                        <p><Linkify text={content} openBrowser={openBrowser} /></p>
+                    )}
+
+                    {/* IMAGE */}
+                    {message.type === 'image' && content?.url && (
+                        <div
+                            className="image-message-content"
+                            onClick={() => onOpenImage?.({ url: content.url, alt: content.originalName })}
+                        >
+                            <img src={content.url} alt={content.originalName || 'Зображення'} className="chat-image" />
+                            {content.quality === 'hd' && <span className="hd-badge">HD</span>}
+                        </div>
+                    )}
+
+                    {/* GIF */}
+                    {message.type === 'image_gif' && content?.url && (
+                        <div className="image-message-content">
+                            <img src={content.url} alt="GIF" className="chat-gif chat-image" />
+                        </div>
+                    )}
+
+                    {/* VIDEO */}
+                    {message.type === 'video' && content?.url && (
+                        <div className="video-message-content">
+                            <video src={content.url} controls className="chat-video" />
+                        </div>
+                    )}
+
+                    {/* TRACK */}
+                    {message.type === 'track' && content && (
+                        <div className="music-attachment-message" onClick={() => playTrack(content)}>
+                            <img src={content.coverArtUrl || default_picture} alt="Обкладинка" />
+                            <div className="music-info">
+                                <p className="title">{content.title}</p>
+                                <p className="artist">{content.artistName}</p>
+                            </div>
+                            {currentTrack?.id === content.id && isPlaying && <PlayIcon />}
+                        </div>
+                    )}
+
+                    {/* ALBUM */}
+                    {message.type === 'album' && content && (
+                        <div className="album-message-card">
+                            <img src={content.coverArtUrl || default_picture} alt="Альбом" />
+                            <div className="album-message-info">
+                                <p className="album-label">Альбом</p>
+                                <p className="album-title">{content.title}</p>
+                                <p className="album-author">{content.artistName}</p>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* SHARED POST */}
+                    {message.type === 'shared_post' && (
+                        <>
+                            {typeof content === 'string' && content && (
+                                <p><Linkify text={content} openBrowser={openBrowser} /></p>
+                            )}
+                            <SharedPostAttachment postId={message.postId} />
+                        </>
+                    )}
+
+                    {/* Metadata row */}
+                    <div className="message-metadata">
+                        {message.isEdited && <EditedLabel />}
+                        <span>{timeStr}</span>
+                    </div>
                 </div>
+
+                {/* Reactions */}
                 {message.reactions && Object.keys(message.reactions).length > 0 && (
                     <div className="reactions-container">
                         {Object.entries(message.reactions).map(([reactionId, reactionData]) => {
-                            if (!reactionData || !reactionData.uids || reactionData.uids.length === 0) return null;
-                            const userHasReacted = currentUser ? reactionData.uids.includes(currentUser.uid) : false;
+                            if (!reactionData?.uids?.length) return null;
                             const isCustom = !reactionId.startsWith('unicode_');
-
                             return (
-                                <div key={reactionId} className={`reaction-badge ${userHasReacted ? 'user-reacted' : ''}`} onClick={(e) => { e.stopPropagation(); onReaction?.(message, reactionId, isCustom ? reactionData.url : null); }}>
+                                <div
+                                    key={reactionId}
+                                    className="reaction-badge"
+                                    onClick={e => {
+                                        e.stopPropagation();
+                                        onReaction?.(message, reactionId, isCustom ? reactionData.url : null);
+                                    }}
+                                >
                                     {isCustom ? (
-                                        reactionData.isAnimated ? <LottieReaction url={reactionData.url} /> : <img src={reactionData.url} alt={reactionId} className="reaction-emoji-custom" />
+                                        reactionData.isAnimated
+                                            ? <LottieReaction url={reactionData.url} />
+                                            : <img src={reactionData.url} alt={reactionId} className="reaction-emoji-custom" />
                                     ) : (
                                         <span className="reaction-emoji">{reactionId.substring(8)}</span>
                                     )}

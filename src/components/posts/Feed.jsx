@@ -35,7 +35,7 @@ const fetchPosts = async (userId, followingList) => {
   return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 };
 
-const Feed = ({ userId = null, followingList = null, openBrowser }) => {
+const Feed = ({ userId = null, followingList = null, openBrowser, openShareModal }) => {
   const queryKey = ['feedPosts', userId, JSON.stringify(followingList)];
 
   const { data: posts, isLoading, error } = useQuery(
@@ -54,7 +54,13 @@ const Feed = ({ userId = null, followingList = null, openBrowser }) => {
   return (
     <div className="feed-container">
       {posts && posts.length > 0 ? (
-        posts.map(post => <PostCard key={post.id} post={post} openBrowser={openBrowser} />)
+        posts.map(post => 
+            <PostCard 
+                key={post.id} 
+                post={post} 
+                openBrowser={openBrowser} 
+                openShareModal={openShareModal}
+            />)
       ) : (
         <p className="feed-placeholder">Тут поки що немає дописів.</p>
       )}
