@@ -11,7 +11,7 @@ import './Home.css';
 import default_picture from '../img/Default-Images/default-picture.svg';
 
 import Feed from '../components/posts/Feed';
-import { diag, diagWarn } from '../utils/diagnostics';
+
 
 const CreatePostForm = React.lazy(() => import('../components/posts/CreatePostForm'));
 
