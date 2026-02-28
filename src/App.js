@@ -27,6 +27,7 @@ import AdminRoute from './components/layout/AdminRoute';
 import AdminPage from './pages/AdminPage';
 import CreatorStudio from './pages/CreatorStudio';
 import NotificationsPage from './pages/NotificationsPage';
+import PostPage from './pages/PostPage';
 import SearchPage from './pages/SearchPage';
 import InAppBrowser from './components/common/InAppBrowser';
 import AppsMarketplace from './pages/AppsMarketplace';
@@ -37,7 +38,7 @@ import CloudinaryMigration from './pages/CloudinaryMigration';
 import './styles/index.css';
 import './components/posts/Post.css';
 import './styles/App.css';
-import { startLongTaskObserver, diag } from './utils/diagnostics';
+import { startLongTaskObserver } from './utils/diagnostics';
 
 const queryClient = new QueryClient({
     defaultOptions: {
@@ -148,6 +149,7 @@ const AppLayout = () => {
                     <Route path="/create-emoji-pack" element={<CreateEmojiPack />} />
                     <Route path="/track/:trackId" element={<TrackPage />} />
                     <Route path="/tags/:tagName" element={<TagPage isSidebarOpen={isSidebarOpen} />} />
+                    <Route path="/post/:postId" element={<PostPage />} />
                     <Route path="/notifications" element={<NotificationsPage />} />
                     <Route path="/studio" element={<CreatorStudio />} />
                     <Route path="/migrate-cloudinary" element={<CloudinaryMigration />} />

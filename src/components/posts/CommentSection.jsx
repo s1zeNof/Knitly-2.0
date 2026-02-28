@@ -20,7 +20,7 @@ const CommentSection = ({ postId, postAuthorId }) => {
     const { register, handleSubmit, reset, formState: { isSubmitting } } = useForm();
 
     const { data: comments, isLoading: isLoadingComments } = useQuery(['comments', postId], () => fetchComments(postId));
-    
+
     const { data: postData } = useQuery(['post', postId], async () => {
         const postRef = doc(db, 'posts', postId);
         const postSnap = await getDoc(postRef);
@@ -45,16 +45,16 @@ const CommentSection = ({ postId, postAuthorId }) => {
     const addCommentMutation = useMutation(
         async (newCommentData) => {
             if (!currentUser) throw new Error("Потрібно увійти в акаунт");
-            
+
             const postRef = doc(db, 'posts', postId);
             const commentsColRef = collection(db, 'posts', postId, 'comments');
-            
+
             await runTransaction(db, async (transaction) => {
                 const postDoc = await transaction.get(postRef);
                 if (!postDoc.exists()) throw new Error("Допис не знайдено!");
-                
+
                 const newCommentRef = doc(commentsColRef);
-                transaction.set(newCommentRef, {...newCommentData, id: newCommentRef.id});
+                transaction.set(newCommentRef, { ...newCommentData, id: newCommentRef.id });
                 transaction.update(postRef, { commentsCount: increment(1) });
             });
         },
@@ -71,7 +71,8 @@ const CommentSection = ({ postId, postAuthorId }) => {
                         type: 'post_comment',
                         fromUser: { uid: currentUser.uid, nickname: currentUser.nickname, photoURL: currentUser.photoURL },
                         entityId: postId,
-                        entityLink: `/user/${postAuthorId}`, 
+                        postId: postId,
+                        entityLink: `/post/${postId}`,
                         timestamp: serverTimestamp(),
                         read: false
                     });
@@ -103,11 +104,11 @@ const CommentSection = ({ postId, postAuthorId }) => {
         <div className="comment-section">
             <div className="comment-list">
                 {isLoading && <p>Завантаження коментарів...</p>}
-                
+
                 {pinnedComment && (
-                    <Comment 
-                        key={pinnedComment.id} 
-                        comment={pinnedComment} 
+                    <Comment
+                        key={pinnedComment.id}
+                        comment={pinnedComment}
                         postId={postId}
                         postAuthorId={postAuthorId}
                         isPinned={true}
@@ -116,15 +117,15 @@ const CommentSection = ({ postId, postAuthorId }) => {
 
                 {comments && comments
                     .filter(comment => comment.id !== pinnedCommentId)
-                    .map(comment => 
-                        <Comment 
-                            key={comment.id} 
-                            comment={comment} 
+                    .map(comment =>
+                        <Comment
+                            key={comment.id}
+                            comment={comment}
                             postId={postId}
                             postAuthorId={postAuthorId}
                             isPinned={false}
                         />
-                )}
+                    )}
             </div>
             {currentUser && (
                 <form className="comment-form" onSubmit={handleSubmit(onCommentSubmit)}>

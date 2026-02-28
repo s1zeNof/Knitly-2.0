@@ -1,0 +1,132 @@
+.post-page-main {
+    padding-top: 0 !important;
+}
+
+.post-page-wrapper {
+    max-width: 680px;
+    margin: 0 auto;
+    padding: 1.5rem 0.5rem 6rem;
+}
+
+.post-page-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: none;
+    border: none;
+    color: var(--color-text-secondary);
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 0.6rem 0.75rem;
+    border-radius: 10rem;
+    transition: background 0.15s, color 0.15s;
+    margin-bottom: 1rem;
+}
+
+.post-page-back:hover {
+    background: rgba(255, 255, 255, 0.06);
+    color: var(--color-text-primary);
+}
+
+.post-page-back svg {
+    width: 18px;
+    height: 18px;
+}
+
+.post-page-card {
+    border-radius: 1.5rem;
+    overflow: hidden;
+}
+
+/* Skeleton */
+.post-page-skeleton {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    padding: 1.5rem;
+    background: var(--color-bg-secondary);
+    border-radius: 1.5rem;
+}
+
+.post-skeleton-header {
+    height: 48px;
+    border-radius: 0.75rem;
+    background: var(--color-bg-light);
+    width: 55%;
+    animation: post-shimmer 1.5s ease-in-out infinite;
+}
+
+.post-skeleton-body {
+    height: 16px;
+    border-radius: 0.5rem;
+    background: var(--color-bg-light);
+    animation: post-shimmer 1.5s ease-in-out infinite;
+}
+
+.post-skeleton-body.short {
+    width: 35%;
+    animation-delay: 0.2s;
+}
+
+@keyframes post-shimmer {
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.3;
+    }
+}
+
+/* Not found */
+.post-page-not-found {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 4rem 2rem;
+    gap: 0.75rem;
+    color: var(--color-text-secondary);
+}
+
+.post-page-not-found span {
+    font-size: 3rem;
+}
+
+.post-page-not-found h2 {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--color-text-primary);
+    margin: 0;
+}
+
+.post-page-not-found p {
+    font-size: 0.9rem;
+    margin: 0;
+}
+
+.post-page-not-found button {
+    margin-top: 1rem;
+    background: var(--color-accent);
+    color: #fff;
+    border: none;
+    padding: 0.65rem 1.5rem;
+    border-radius: 2rem;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity 0.2s;
+}
+
+.post-page-not-found button:hover {
+    opacity: 0.85;
+}
+
+@media (max-width: 600px) {
+    .post-page-wrapper {
+        padding: 1rem 0 5rem;
+    }
+}
