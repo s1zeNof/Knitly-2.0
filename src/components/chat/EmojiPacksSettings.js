@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { useMutation, useQueryClient } from 'react-query';
+import { useMutation } from 'react-query';
 import { Link, useNavigate } from 'react-router-dom'; // <-- Імпорт для навігації
-import { db, storage } from '../../services/firebase';
-import { collection, query, where, getDocs, writeBatch, doc, deleteDoc } from 'firebase/firestore';
-import { ref, deleteObject, listAll } from 'firebase/storage';
+import { db } from '../../services/firebase';
+import { collection, query, where, getDocs } from 'firebase/firestore';
 import { useUserContext } from '../../contexts/UserContext';
 import ConfirmationModal from '../common/ConfirmationModal';
 import './EmojiPacksSettings.css';
@@ -19,7 +18,6 @@ const deleteEmojiPack = async (packId) => {
 
 const EmojiPacksSettings = () => {
     const { user } = useUserContext();
-    const queryClient = useQueryClient();
     const navigate = useNavigate(); // <-- Хук для програмної навігації
 
     const [myPacks, setMyPacks] = useState([]);
@@ -57,6 +55,7 @@ const EmojiPacksSettings = () => {
         }
     });
 
+    // eslint-disable-next-line no-unused-vars
     const openDeleteModal = (pack) => {
         setModalState({ isOpen: true, pack });
     };

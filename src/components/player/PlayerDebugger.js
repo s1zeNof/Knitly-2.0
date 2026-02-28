@@ -1,9 +1,10 @@
 import React from 'react';
-import { usePlayerContext } from '../../contexts/PlayerContext';
+import { usePlayerContext, usePlayerTime } from '../../contexts/PlayerContext';
 import './PlayerDebugger.css';
 
 const PlayerDebugger = () => {
-    const { currentTrack, isPlaying, duration, currentTime } = usePlayerContext();
+    const { currentTrack, isPlaying } = usePlayerContext();
+    const { duration, currentTime } = usePlayerTime();
 
     const formatTime = (time) => {
         const minutes = Math.floor(time / 60);

@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { db, storage } from '../services/firebase';
+import { db } from '../services/firebase';
 import { doc, setDoc, collection, serverTimestamp } from 'firebase/firestore';
-import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
+import { uploadFile } from '../services/supabase';
 import { useUserContext } from '../contexts/UserContext';
 import './CreateAlbum.css';
 
@@ -46,13 +46,11 @@ const CreateAlbum = () => {
             const newAlbumRef = doc(collection(db, 'albums'));
             const albumId = newAlbumRef.id;
 
+            // Завантажуємо обкладинку в Supabase (bucket: images)
             setStatusMessage("Завантаження обкладинки...");
-            const coverArtRef = ref(storage, `albums/${user.uid}/${albumId}/cover`);
-            const uploadTask = uploadBytesResumable(coverArtRef, coverArt);
-
-            await uploadTask;
-
-            const coverArtUrl = await getDownloadURL(uploadTask.snapshot.ref);
+            const ext = coverArt.name.split('.').pop().replace(/[^a-zA-Z0-9]/g, '');
+            const coverPath = `albums/${user.uid}/${albumId}/cover.${ext}`;
+            const coverArtUrl = await uploadFile(coverArt, 'images', coverPath);
 
             setStatusMessage("Збереження інформації...");
             await setDoc(newAlbumRef, {

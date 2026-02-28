@@ -6,16 +6,10 @@ import BookmarkIcon from './BookmarkIcon';
 const ForwardModal = ({ isOpen, onClose, onForward, conversations, currentUser }) => {
     const [searchTerm, setSearchTerm] = useState('');
 
-    const savedMessagesChat = {
-        id: 'saved_messages',
-        name: 'Збережене',
-        isVirtual: true,
-    };
-
     const allChats = useMemo(() => [
-        savedMessagesChat,
+        { id: 'saved_messages', name: 'Збережене', isVirtual: true },
         ...conversations
-    ], [conversations, savedMessagesChat]);
+    ], [conversations]);
 
     const getChatName = (chat) => {
         if (chat.isVirtual) return chat.name;
@@ -31,6 +25,7 @@ const ForwardModal = ({ isOpen, onClose, onForward, conversations, currentUser }
         return allChats.filter(chat =>
             getChatName(chat).toLowerCase().includes(searchTerm.toLowerCase())
         );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [searchTerm, allChats, currentUser]);
 
     const handleSelectChat = (chatId) => {

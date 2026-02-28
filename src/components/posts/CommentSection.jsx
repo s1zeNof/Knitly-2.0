@@ -51,7 +51,7 @@ const CommentSection = ({ postId, postAuthorId }) => {
             
             await runTransaction(db, async (transaction) => {
                 const postDoc = await transaction.get(postRef);
-                if (!postDoc.exists()) throw "Допис не знайдено!";
+                if (!postDoc.exists()) throw new Error("Допис не знайдено!");
                 
                 const newCommentRef = doc(commentsColRef);
                 transaction.set(newCommentRef, {...newCommentData, id: newCommentRef.id});

@@ -1,9 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { useMutation, useQueryClient } from 'react-query';
-import { db, storage } from '../../services/firebase';
+import { db } from '../../services/firebase';
 import { doc, runTransaction, updateDoc, deleteDoc, getDoc, collection, addDoc, serverTimestamp, increment } from 'firebase/firestore';
-import { ref, deleteObject } from 'firebase/storage';
 import { useUserContext } from '../../contexts/UserContext';
 import { usePlayerContext } from '../../contexts/PlayerContext';
 import toast from 'react-hot-toast';
@@ -12,7 +11,7 @@ import CommentSection from './CommentSection';
 import EmojiPickerPlus from '../chat/EmojiPickerPlus';
 import LottieRenderer from '../common/LottieRenderer';
 import { isPackAnimated } from '../../utils/emojiPackCache';
-import PostRenderer from '../lexical/PostRenderer';
+import LexicalPostContent from '../lexical/LexicalPostContent';
 import PollAttachment from './PollAttachment';
 import PostEditor from './PostEditor';
 import './Post.css';
@@ -69,7 +68,7 @@ const PostCard = ({ post, openBrowser, openShareModal }) => {
             const postRef = doc(db, "posts", post.id);
             await runTransaction(db, async (transaction) => {
                 const postDoc = await transaction.get(postRef);
-                if (!postDoc.exists()) throw "Допис не знайдено!";
+                if (!postDoc.exists()) throw new Error("Допис не знайдено!");
                 const reactions = { ...postDoc.data().reactions } || {};
                 const currentReaction = reactions[reactionId] || { uids: [] };
                 const userIndex = currentReaction.uids.indexOf(currentUser.uid);
@@ -92,7 +91,7 @@ const PostCard = ({ post, openBrowser, openShareModal }) => {
             queryClient.invalidateQueries(['feedPosts']);
             const { reactionId } = variables;
             const isLiking = post.reactions?.[reactionId]?.uids.includes(currentUser.uid) ? false : true;
-            
+
             if (reactionId === 'unicode_❤️' && isLiking && primaryAuthor.uid !== currentUser.uid) {
                 const notificationRef = collection(db, 'users', primaryAuthor.uid, 'notifications');
                 addDoc(notificationRef, {
@@ -107,8 +106,8 @@ const PostCard = ({ post, openBrowser, openShareModal }) => {
             }
         },
         onError: (error) => {
-          console.error("Помилка реакції:", error);
-          toast.error(`Помилка: ${error.message}`);
+            console.error("Помилка реакції:", error);
+            toast.error(`Помилка: ${error.message}`);
         },
     });
 
@@ -129,16 +128,18 @@ const PostCard = ({ post, openBrowser, openShareModal }) => {
 
     const deletePostMutation = useMutation(
         async () => {
-            if (post.attachment?.storagePath) await deleteObject(ref(storage, post.attachment.storagePath));
+            // Примітка: файл вкладення в Supabase Storage залишається — очищення вручну.
             await deleteDoc(doc(db, 'posts', post.id));
         },
-        { onSuccess: () => {
-            queryClient.invalidateQueries(['feedPosts']);
-            toast.success("Допис видалено");
-        } }
+        {
+            onSuccess: () => {
+                queryClient.invalidateQueries(['feedPosts']);
+                toast.success("Допис видалено");
+            }
+        }
     );
 
-    const handleLikeClick = () => { if (!reactionMutation.isLoading) reactionMutation.mutate({ reactionId: 'unicode_❤️' })};
+    const handleLikeClick = () => { if (!reactionMutation.isLoading) reactionMutation.mutate({ reactionId: 'unicode_❤️' }) };
 
     const handleReactionSelect = (emoji, isCustom = false) => {
         let reactionId, customUrl = null, isAnimated = false;
@@ -152,7 +153,7 @@ const PostCard = ({ post, openBrowser, openShareModal }) => {
         reactionMutation.mutate({ reactionId, customUrl, isAnimated });
         setShowFullPicker(false);
     };
-    
+
     const handleShare = (e) => {
         e.stopPropagation();
         if (openShareModal) {
@@ -203,7 +204,7 @@ const PostCard = ({ post, openBrowser, openShareModal }) => {
         return (
             <div className="post-attachment-card">
                 <Link to={`/${attachment.type}/${attachment.id}`} className="attachment-link-wrapper">
-                    <img src={attachment.coverArtUrl || default_picture} alt={attachment.title} className="attachment-cover"/>
+                    <img src={attachment.coverArtUrl || default_picture} alt={attachment.title} className="attachment-cover" />
                     <div className="attachment-info">
                         <span className="attachment-type">{attachment.type === 'track' ? 'ТРЕК' : 'АЛЬБОМ'}</span>
                         <p className="attachment-title">{attachment.title}</p>
@@ -225,12 +226,12 @@ const PostCard = ({ post, openBrowser, openShareModal }) => {
                         <Link to={`/user/${primaryAuthor.nickname}`} className="post-avatar-link">
                             <div className={`post-avatar-wrapper ${!isAvatarLoaded ? 'skeleton' : ''}`}>
                                 <img
-                                    key={post.id} 
+                                    key={post.id}
                                     src={primaryAuthor.photoURL || default_picture}
-                                    alt={primaryAuthor.nickname}
+                                    alt=""
                                     className="post-author-avatar"
                                     onLoad={() => setAvatarLoaded(true)}
-                                    onError={() => setAvatarLoaded(true)}
+                                    onError={(e) => { e.target.onerror = null; e.target.src = default_picture; setAvatarLoaded(true); }}
                                     style={{ opacity: isAvatarLoaded ? 1 : 0 }}
                                 />
                             </div>
@@ -268,7 +269,7 @@ const PostCard = ({ post, openBrowser, openShareModal }) => {
                                 />
                             ) : (
                                 <>
-                                    {post.editorState && post.editorState !== 'null' ? <PostRenderer content={post.editorState} openBrowser={openBrowser} /> : null}
+                                    {post.editorState && post.editorState !== 'null' ? <LexicalPostContent content={post.editorState} openBrowser={openBrowser} /> : null}
                                     {renderAttachment(post.attachment)}
                                 </>
                             )}
@@ -282,7 +283,7 @@ const PostCard = ({ post, openBrowser, openShareModal }) => {
                                                 const userHasReacted = currentUser && reactionData.uids.includes(currentUser.uid);
                                                 return (
                                                     <div key={reactionId} className={`reaction-badge ${userHasReacted ? 'user-reacted' : ''}`} onClick={() => reactionMutation.mutate({ reactionId, customUrl: reactionData.url, isAnimated: reactionData.isAnimated })}>
-                                                        {isCustom ? ( reactionData.isAnimated ? <LottieRenderer url={reactionData.url} className="reaction-emoji-custom" /> : <img src={reactionData.url} alt={reactionId} className="reaction-emoji-custom" /> ) : ( <span className="reaction-emoji">{reactionId.substring(8)}</span> )}
+                                                        {isCustom ? (reactionData.isAnimated ? <LottieRenderer url={reactionData.url} className="reaction-emoji-custom" /> : <img src={reactionData.url} alt={reactionId} className="reaction-emoji-custom" />) : (<span className="reaction-emoji">{reactionId.substring(8)}</span>)}
                                                         <span className="reaction-count">{reactionData.uids.length}</span>
                                                     </div>
                                                 );
@@ -318,9 +319,9 @@ const PostCard = ({ post, openBrowser, openShareModal }) => {
                     {commentsVisible && <CommentSection postId={post.id} postAuthorId={primaryAuthor.uid} />}
                 </div>
             </div>
-            {showFullPicker && (<EmojiPickerPlus onClose={() => setShowFullPicker(false)} onEmojiSelect={handleReactionSelect}/>)}
+            {showFullPicker && (<EmojiPickerPlus onClose={() => setShowFullPicker(false)} onEmojiSelect={handleReactionSelect} />)}
         </>
     );
 };
 
-export default PostCard;
+export default React.memo(PostCard);

@@ -1,9 +1,9 @@
 import React from 'react';
-import { usePlayerContext } from '../../contexts/PlayerContext';
+import { usePlayerTime } from '../../contexts/PlayerContext';
 import DynamicWaveform from './DynamicWaveform';
 
 const PlayerProgress = () => {
-    const { duration, currentTime } = usePlayerContext();
+    const { duration, currentTime } = usePlayerTime();
 
     const formatTime = (time) => {
         if (isNaN(time) || time === 0) return '0:00';

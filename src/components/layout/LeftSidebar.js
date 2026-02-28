@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link, NavLink, useLocation } from 'react-router-dom';
+import { Link, NavLink } from 'react-router-dom';
 import { useUserContext } from '../../contexts/UserContext';
 import { usePlayerContext } from '../../contexts/PlayerContext'; 
 import default_picture from '../../img/Default-Images/default-picture.svg';
@@ -28,7 +28,7 @@ const LeftSidebar = ({ isOpen }) => {
             <div>
                 {user ? (
                     <Link to="/profile" className="sidebar-user-info">
-                        <img src={user.photoURL || default_picture} alt="Avatar" className="profile-avatar" />
+                        <img src={user.photoURL || default_picture} alt="Avatar" className="profile-avatar" onError={(e) => { e.target.onerror = null; e.target.src = default_picture; }} />
                         <div className="profile-info">
                             <span className="profile-name">{user.displayName || 'Мій Профіль'}</span>
                             <span className="profile-nickname">@{user.nickname || 'nickname'}</span>

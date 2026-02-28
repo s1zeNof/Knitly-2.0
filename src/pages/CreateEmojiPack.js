@@ -2,9 +2,9 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import Lottie from 'lottie-react';
-import { db, storage } from '../services/firebase';
+import { db } from '../services/firebase';
 import { doc, collection, writeBatch, serverTimestamp, setDoc } from 'firebase/firestore';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { uploadFile } from '../services/supabase';
 import { useUserContext } from '../contexts/UserContext';
 import { usePlayerContext } from '../contexts/PlayerContext';
 import './CreateEmojiPack.css';
@@ -74,15 +74,16 @@ const CreateEmojiPack = () => {
         setIsCreating(true);
         try {
             const packId = doc(collection(db, 'dummy')).id;
-            const coverArtRef = ref(storage, `emoji_packs/${packId}/cover_${coverFile.name}`);
-            await uploadBytes(coverArtRef, coverFile);
-            const coverEmojiUrl = await getDownloadURL(coverArtRef);
 
+            // Завантажуємо обкладинку паку у Supabase (bucket: images)
+            const safeFileName = (name) => name.replace(/[^a-zA-Z0-9._-]/g, '_');
+            const coverPath = `emoji_packs/${packId}/cover_${safeFileName(coverFile.name)}`;
+            const coverEmojiUrl = await uploadFile(coverFile, 'images', coverPath);
+
+            // Завантажуємо емоджі файли у Supabase (bucket: images)
             const emojiUploadPromises = emojiFiles.map(file => {
-                // ВИПРАВЛЕННЯ: Використовуємо оригінальне ім'я файлу для збереження розширення
-                const emojiRef = ref(storage, `emoji_packs/${packId}/${file.name}`);
-                const metadata = { contentType: isAnimated ? 'application/json' : file.type };
-                return uploadBytes(emojiRef, file, metadata).then(() => getDownloadURL(emojiRef));
+                const emojiPath = `emoji_packs/${packId}/${safeFileName(file.name)}`;
+                return uploadFile(file, 'images', emojiPath);
             });
             const emojiUrls = await Promise.all(emojiUploadPromises);
 

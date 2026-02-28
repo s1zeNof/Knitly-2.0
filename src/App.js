@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Analytics } from '@vercel/analytics/react';
 import { BrowserRouter as Router, Route, Routes, useLocation } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from 'react-query';
@@ -24,7 +24,6 @@ import BottomNavBar from './components/layout/BottomNavBar';
 import EmojiPacksSettings from './components/chat/EmojiPacksSettings';
 import EditEmojiPack from './pages/EditEmojiPack';
 import AdminRoute from './components/layout/AdminRoute';
-import CreatorRoute from './components/layout/CreatorRoute';
 import AdminPage from './pages/AdminPage';
 import CreatorStudio from './pages/CreatorStudio';
 import NotificationsPage from './pages/NotificationsPage';
@@ -33,12 +32,23 @@ import InAppBrowser from './components/common/InAppBrowser';
 import AppsMarketplace from './pages/AppsMarketplace';
 import GiftsMarketplace from './pages/GiftsMarketplace';
 import ShareModal from './components/common/ShareModal';
+import CloudinaryMigration from './pages/CloudinaryMigration';
 
 import './styles/index.css';
 import './components/posts/Post.css';
 import './styles/App.css';
+import { startLongTaskObserver, diag } from './utils/diagnostics';
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+    defaultOptions: {
+        queries: {
+            staleTime: 30000, // 30 seconds - prevent refetching too frequently
+            cacheTime: 5 * 60 * 1000, // 5 minutes
+            refetchOnWindowFocus: false, // Don't refetch when window regains focus
+            retry: 1,
+        },
+    },
+});
 
 const AppLayout = () => {
     const { notification, currentTrack } = usePlayerContext();
@@ -55,25 +65,33 @@ const AppLayout = () => {
     const [isShareModalOpen, setIsShareModalOpen] = useState(false);
     const [postToShare, setPostToShare] = useState(null);
 
-    const openBrowser = (url) => {
+    // useCallback: стабільні посилання на функції → Feed не ре-рендериться кожні 250мс
+    // (PlayerContext.currentTime оновлюється кожні ~250мс під час відтворення музики,
+    //  що призводить до ре-рендеру AppLayout → нові функції → Feed.React.memo не спрацьовує)
+    const openBrowser = useCallback((url) => {
         setBrowserUrl(url);
         setIsBrowserOpen(true);
-    };
+    }, []);
 
-    const closeBrowser = () => {
+    const closeBrowser = useCallback(() => {
         setIsBrowserOpen(false);
         setBrowserUrl('');
-    };
-    
-    const openShareModal = (post) => {
+    }, []);
+
+    const openShareModal = useCallback((post) => {
         setPostToShare(post);
         setIsShareModalOpen(true);
-    };
+    }, []);
 
-    const closeShareModal = () => {
+    const closeShareModal = useCallback(() => {
         setIsShareModalOpen(false);
         setPostToShare(null);
-    };
+    }, []);
+
+    // Логуємо навігацію
+    useEffect(() => {
+        diag(`Навігація → ${location.pathname}`);
+    }, [location.pathname]);
 
     const isSidebarPage = location.pathname.startsWith('/tags/') || location.pathname === '/studio';
     const inChatView = location.pathname === '/messages' && document.body.classList.contains('in-chat-view');
@@ -113,7 +131,7 @@ const AppLayout = () => {
                 <Routes>
                     <Route path="/" element={<Home openBrowser={openBrowser} openShareModal={openShareModal} />} />
                     <Route path="/apps" element={<AppsMarketplace openBrowser={openBrowser} />} />
-                    <Route path="/gifts" element={<GiftsMarketplace />} /> 
+                    <Route path="/gifts" element={<GiftsMarketplace />} />
                     <Route path="/login" element={<Login />} />
                     <Route path="/register" element={<Register />} />
                     <Route path="/search" element={<SearchPage />} />
@@ -132,6 +150,7 @@ const AppLayout = () => {
                     <Route path="/tags/:tagName" element={<TagPage isSidebarOpen={isSidebarOpen} />} />
                     <Route path="/notifications" element={<NotificationsPage />} />
                     <Route path="/studio" element={<CreatorStudio />} />
+                    <Route path="/migrate-cloudinary" element={<CloudinaryMigration />} />
                     <Route
                         path="/admin"
                         element={
@@ -144,9 +163,9 @@ const AppLayout = () => {
             </main>
             <BottomNavBar isPlayerVisible={isPlayerVisible} />
             <Player />
-            
+
             {isBrowserOpen && <InAppBrowser initialUrl={browserUrl} onClose={closeBrowser} />}
-            
+
             {isShareModalOpen && postToShare && (
                 <ShareModal post={postToShare} onClose={closeShareModal} />
             )}
@@ -167,6 +186,11 @@ const AppContent = () => (
 );
 
 const App = () => {
+    // Запускаємо спостерігач за довгими задачами один раз
+    useEffect(() => {
+        startLongTaskObserver();
+    }, []);
+
     return (
         <QueryClientProvider client={queryClient}>
             <UserProvider>

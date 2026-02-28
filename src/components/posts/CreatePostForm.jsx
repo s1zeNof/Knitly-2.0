@@ -1,6 +1,6 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useMutation, useQueryClient, useQuery } from 'react-query';
-import { collection, addDoc, serverTimestamp, doc, updateDoc, increment, getDoc, query, where, getDocs, limit, arrayUnion } from 'firebase/firestore';
+import { collection, addDoc, serverTimestamp, doc, updateDoc, increment, query, where, getDocs, limit, arrayUnion } from 'firebase/firestore';
 import { db } from '../../services/firebase';
 import { useUserContext } from '../../contexts/UserContext';
 import { useDebounce } from 'use-debounce';
@@ -28,9 +28,10 @@ import EmojiPickerPlus from '../chat/EmojiPickerPlus';
 import { isPackAnimated } from '../../utils/emojiPackCache';
 import '../lexical/Editor.css';
 import './Post.css';
+import { diag } from '../../utils/diagnostics';
 
 
-const URL_MATCHER = /((https?:\/\/(www\.)?)|(www\.))[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)/;
+const URL_MATCHER = /((https?:\/\/(www\.)?)|(www\.))[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_+.~#?&//=]*)/;
 
 const MATCHERS = [
   (text) => {
@@ -80,6 +81,12 @@ const searchUsers = async (searchTerm, currentUser) => {
 const CreatePostForm = () => {
     const { user } = useUserContext();
     const queryClient = useQueryClient();
+
+    // Логуємо монтування Lexical редактора (може бути важким)
+    useEffect(() => {
+        diag('CreatePostForm: МОНТУВАННЯ (Lexical editor init)');
+        return () => diag('CreatePostForm: ДЕМОНТУВАННЯ');
+    }, []);
     const [editorInstance, setEditorInstance] = useState(null);
     const [attachment, setAttachment] = useState(null);
     const [isShareModalOpen, setIsShareModalOpen] = useState(false);

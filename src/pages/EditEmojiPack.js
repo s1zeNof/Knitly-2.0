@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { db, storage } from '../services/firebase';
+import { db } from '../services/firebase';
 import { doc, getDoc, collection, getDocs, writeBatch, updateDoc, deleteDoc } from 'firebase/firestore';
-import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
+import { uploadFile } from '../services/supabase';
 import { useUserContext } from '../contexts/UserContext';
 import { usePlayerContext } from '../contexts/PlayerContext';
 import Lottie from 'lottie-react';
@@ -158,26 +158,25 @@ const EditEmojiPack = () => {
         try {
             const batch = writeBatch(db);
             const packRef = doc(db, 'emoji_packs', packId);
+            const safeFileName = (name) => name.replace(/[^a-zA-Z0-9._-]/g, '_');
             let newCoverUrl = pack?.coverEmojiUrl;
             if (coverFile) {
-                const newCoverRef = ref(storage, `emoji_packs/${packId}/cover_${Date.now()}_${coverFile.name}`);
-                await uploadBytes(newCoverRef, coverFile);
-                newCoverUrl = await getDownloadURL(newCoverRef);
+                // Завантажуємо нову обкладинку паку у Supabase (bucket: images)
+                const coverPath = `emoji_packs/${packId}/cover_${Date.now()}_${safeFileName(coverFile.name)}`;
+                newCoverUrl = await uploadFile(coverFile, 'images', coverPath);
             }
-            if (packName !== pack?.name || newCoverUrl !== pack?.coverEmojiUrl) await updateDoc(packRef, { name: packName, coverEmojiUrl: newCoverUrl });
+            if (packName !== pack?.name || newCoverUrl !== pack?.coverEmojiUrl) {
+                await updateDoc(packRef, { name: packName, coverEmojiUrl: newCoverUrl });
+            }
             for (const emojiId of emojisToDelete) {
-                const emojiToDelete = existingEmojis.find(e => e.id === emojiId);
-                if (emojiToDelete) {
-                    const emojiFileRef = ref(storage, emojiToDelete.url);
-                    await deleteObject(emojiFileRef).catch(e => console.warn("File in storage not found, proceeding."));
-                    batch.delete(doc(db, 'emoji_packs', packId, 'emojis', emojiId));
-                }
+                // Видаляємо лише з Firestore; файли в storage (якщо були) залишаємо
+                batch.delete(doc(db, 'emoji_packs', packId, 'emojis', emojiId));
             }
             const newFilesToUpload = newEmojiPreviews.map(p => p.file);
             for (const file of newFilesToUpload) {
-                const emojiRef = ref(storage, `emoji_packs/${packId}/${file.name}`);
-                await uploadBytes(emojiRef, file);
-                const url = await getDownloadURL(emojiRef);
+                // Завантажуємо нові емоджі у Supabase (bucket: images)
+                const emojiPath = `emoji_packs/${packId}/${safeFileName(file.name)}`;
+                const url = await uploadFile(file, 'images', emojiPath);
                 const newEmojiDocRef = doc(collection(db, 'emoji_packs', packId, 'emojis'));
                 batch.set(newEmojiDocRef, { name: file.name.split('.')[0], url });
             }
@@ -196,17 +195,15 @@ const EditEmojiPack = () => {
         setShowDeleteModal(false);
         setIsSaving(true);
         try {
+            // Видаляємо всі документи емоджі та сам пак з Firestore
+            // Файли в Supabase Storage залишаються (очищення вручну через Dashboard)
             const emojisRef = collection(db, 'emoji_packs', packId, 'emojis');
             const emojisSnap = await getDocs(emojisRef);
             const batch = writeBatch(db);
             for (const emojiDoc of emojisSnap.docs) {
-                const emojiFileRef = ref(storage, emojiDoc.data().url);
-                try { await deleteObject(emojiFileRef); } catch (e) { console.warn("File not found, proceeding.") }
                 batch.delete(emojiDoc.ref);
             }
             await batch.commit();
-            const coverRef = ref(storage, pack?.coverEmojiUrl);
-            try { await deleteObject(coverRef); } catch (e) { console.warn("Cover not found, proceeding.") }
             await deleteDoc(doc(db, 'emoji_packs', packId));
             showNotification("Емоджі-пак було видалено.", "info");
             navigate("/settings/emoji-packs");

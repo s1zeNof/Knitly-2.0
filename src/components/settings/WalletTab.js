@@ -60,7 +60,7 @@ const WalletTab = () => {
             await runTransaction(db, async (transaction) => {
                 const userDoc = await transaction.get(userRef);
                 if (!userDoc.exists()) {
-                    throw "Користувача не знайдено!";
+                    throw new Error("Користувача не знайдено!");
                 }
                 transaction.update(userRef, { notesBalance: increment(selectedPackage.notes) });
             });

@@ -15,6 +15,7 @@ const AnimatedCounter = memo(({ count }) => {
         }, 400); // Час має збігатися з анімацією в CSS
 
         return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [count]);
 
     return (
