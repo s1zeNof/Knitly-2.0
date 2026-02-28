@@ -151,9 +151,23 @@
     border-radius: 2px;
 }
 
-.notif-tab-emoji {
-    font-size: 1rem;
-    line-height: 1;
+.notif-tab-icon {
+    display: inline-flex;
+    align-items: center;
+    width: 16px;
+    height: 16px;
+    opacity: 0.75;
+    flex-shrink: 0;
+}
+
+.notif-tab-icon svg {
+    width: 16px;
+    height: 16px;
+}
+
+.notif-tab.active .notif-tab-icon {
+    opacity: 1;
+    color: var(--color-accent);
 }
 
 .notif-tab-badge {

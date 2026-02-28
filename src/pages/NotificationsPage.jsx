@@ -8,11 +8,17 @@ import LeftSidebar from '../components/layout/LeftSidebar';
 import NotificationItem from '../components/notifications/NotificationItem';
 import './NotificationsPage.css';
 
+/* ── Tab SVG icons ── */
+const TabIconAll = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" /><path d="M13.73 21a2 2 0 0 1-3.46 0" /><line x1="12" y1="2" x2="12" y2="3" /></svg>;
+const TabIconActivity = () => <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" /></svg>;
+const TabIconFollow = () => <svg viewBox="0 0 24 24" fill="currentColor"><path d="M15 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm-9-2V8H4v2H2v2h2v2h2v-2h2v-2H6zm9 4c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" /></svg>;
+const TabIconMention = () => <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10h5v-2h-5c-4.34 0-8-3.66-8-8s3.66-8 8-8 8 3.66 8 8v1.43c0 .79-.71 1.57-1.5 1.57s-1.5-.78-1.5-1.57V12c0-2.76-2.24-5-5-5s-5 2.24-5 5 2.24 5 5 5c1.38 0 2.64-.56 3.54-1.47.65.89 1.77 1.47 2.96 1.47 1.97 0 3.5-1.6 3.5-3.57V12c0-5.52-4.48-10-10-10zm0 13c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3z" /></svg>;
+
 const TABS = [
-    { id: 'all', label: 'Всі', emoji: '🔔' },
-    { id: 'activity', label: 'Активність', emoji: '❤️' },
-    { id: 'followers', label: 'Підписники', emoji: '👥' },
-    { id: 'mentions', label: 'Згадки', emoji: '@' },
+    { id: 'all', label: 'Всі', Icon: TabIconAll },
+    { id: 'activity', label: 'Активність', Icon: TabIconActivity },
+    { id: 'followers', label: 'Підписники', Icon: TabIconFollow },
+    { id: 'mentions', label: 'Згадки', Icon: TabIconMention },
 ];
 
 const ACTIVITY_TYPES = ['post_like', 'post_comment', 'track_like', 'comment_like'];
@@ -197,7 +203,7 @@ const NotificationsPage = () => {
                                         className={`notif-tab ${activeTab === tab.id ? 'active' : ''}`}
                                         onClick={() => setActiveTab(tab.id)}
                                     >
-                                        <span className="notif-tab-emoji">{tab.emoji}</span>
+                                        <span className="notif-tab-icon"><tab.Icon /></span>
                                         {tab.label}
                                         {cnt > 0 && <span className="notif-tab-badge">{cnt}</span>}
                                     </button>
