@@ -89,10 +89,7 @@ const AppLayout = () => {
         setPostToShare(null);
     }, []);
 
-    // Логуємо навігацію
-    useEffect(() => {
-        diag(`Навігація → ${location.pathname}`);
-    }, [location.pathname]);
+
 
     const isSidebarPage = location.pathname.startsWith('/tags/') || location.pathname === '/studio';
     const inChatView = location.pathname === '/messages' && document.body.classList.contains('in-chat-view');
