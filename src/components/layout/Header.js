@@ -134,8 +134,6 @@ const Header = () => {
         }
 
         if (isOwnProfileRoute) {
-            const otherAccounts = savedAccounts.filter(a => a.uid !== user?.uid);
-
             return (
                 <div className="mobile-header profile-context-header">
                     {/* Nickname + account switcher */}
