@@ -43,6 +43,9 @@ const Settings = () => {
     const { showNotification } = usePlayerContext();
     const [activeTab, setActiveTab] = useState('profile');
     const [isSaving, setIsSaving] = useState(false);
+    const [firstName, setFirstName] = useState('');
+    const [lastName, setLastName] = useState('');
+    const [birthDate, setBirthDate] = useState('');
     const [displayName, setDisplayName] = useState('');
     const [nickname, setNickname] = useState('');
     const [description, setDescription] = useState('');
@@ -92,6 +95,9 @@ const Settings = () => {
         setCountries(countryOptions);
 
         if (user) {
+            setFirstName(user.firstName || '');
+            setLastName(user.lastName || '');
+            setBirthDate(user.birthDate || '');
             setDisplayName(user.displayName || '');
             setNickname(user.nickname || '');
             setDescription(user.description || '');
@@ -192,6 +198,9 @@ const Settings = () => {
 
             const userRef = doc(db, 'users', user.uid);
             const updatedData = {
+                firstName: firstName.trim(),
+                lastName: lastName.trim(),
+                birthDate: birthDate || '',
                 displayName,
                 displayName_lowercase: displayName.toLowerCase(),
                 nickname,
@@ -290,8 +299,24 @@ const Settings = () => {
             </div>
             <div className="form-row">
                 <div className="form-group">
-                    <label htmlFor="displayName">Ім'я та Прізвище</label>
-                    <input id="displayName" type="text" className="form-input" value={displayName} onChange={(e) => setDisplayName(e.target.value)} />
+                    <label htmlFor="settings-first-name">Ім&apos;я</label>
+                    <input id="settings-first-name" type="text" className="form-input" value={firstName} onChange={(e) => setFirstName(e.target.value)} placeholder="Ім'я" />
+                </div>
+                <div className="form-group">
+                    <label htmlFor="settings-last-name">Прізвище <small style={{ fontWeight: 400, opacity: 0.5 }}>необов&apos;язково</small></label>
+                    <input id="settings-last-name" type="text" className="form-input" value={lastName} onChange={(e) => setLastName(e.target.value)} placeholder="Прізвище" />
+                </div>
+            </div>
+            <div className="form-row">
+                <div className="form-group">
+                    <label htmlFor="settings-birth-date">Дата народження <small style={{ fontWeight: 400, opacity: 0.5 }}>необов&apos;язково</small></label>
+                    <input id="settings-birth-date" type="date" className="form-input" value={birthDate} onChange={(e) => setBirthDate(e.target.value)} max={new Date().toISOString().split('T')[0]} />
+                </div>
+            </div>
+            <div className="form-row">
+                <div className="form-group">
+                    <label htmlFor="displayName">Псевдонім / Назва</label>
+                    <input id="displayName" type="text" className="form-input" value={displayName} onChange={(e) => setDisplayName(e.target.value)} placeholder="Відображуване ім'я" />
                 </div>
                 <div className="form-group">
                     <label htmlFor="nickname">Нікнейм (URL профілю)</label>

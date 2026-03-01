@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
 import { auth } from '../services/firebase';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
+import knitlyLogo from '../img/Knitly-Logo.svg';
 import './Auth.css';
 
 const GoogleIcon = () => (
@@ -67,7 +68,7 @@ const Login = () => {
             {/* ── LEFT: Branding panel ── */}
             <div className="auth-brand-panel">
                 <div className="auth-brand-content">
-                    <div className="auth-brand-logo">Knitly</div>
+                    <img src={knitlyLogo} alt="Knitly" className="auth-brand-logo-img" />
                     <p className="auth-brand-tagline">
                         Творіть.<br />
                         Діліться.<br />
@@ -109,7 +110,9 @@ const Login = () => {
 
                 <div className="auth-form-inner">
                     {/* Mobile-only logo */}
-                    <div className="auth-mobile-logo">Knitly</div>
+                    <div className="auth-mobile-logo">
+                        <img src={knitlyLogo} alt="Knitly" />
+                    </div>
 
                     <h1 className="auth-title">
                         {canGoBack ? 'Додати обліковий запис' : 'Вхід у Knitly'}
