@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate, useLocation, Link } from 'react-router-dom';
-import { collection, query, where, getDocs, documentId, doc, updateDoc, arrayUnion, arrayRemove } from 'firebase/firestore';
+import { collection, query, where, getDocs, getDoc, doc, updateDoc, arrayUnion, arrayRemove } from 'firebase/firestore';
 import { db } from '../services/firebase';
 import { useUserContext } from '../contexts/UserContext';
 import default_picture from '../img/Default-Images/default-picture.svg';
@@ -29,19 +29,13 @@ const BATCH_SIZE = 30;
 
 async function fetchUsersByUids(uids) {
     if (!uids || uids.length === 0) return [];
-    // Filter out any undefined/null/empty values to avoid Firestore errors
+    // Sanitise: keep only non-empty strings (guards against null/undefined in array)
     const cleanUids = uids.filter(uid => typeof uid === 'string' && uid.length > 0);
     if (cleanUids.length === 0) return [];
-    const results = [];
-    for (let i = 0; i < cleanUids.length; i += BATCH_SIZE) {
-        const batch = cleanUids.slice(i, i + BATCH_SIZE);
-        if (batch.length === 0) continue;
-        const snap = await getDocs(
-            query(collection(db, 'users'), where(documentId(), 'in', batch))
-        );
-        snap.docs.forEach(d => results.push({ uid: d.id, ...d.data() }));
-    }
-    return results;
+    // Use individual getDoc calls — avoids the where(documentId(),'in',[...]) path
+    // that throws when the array happens to contain a null/undefined Firestore value.
+    const snaps = await Promise.all(cleanUids.map(uid => getDoc(doc(db, 'users', uid))));
+    return snaps.filter(d => d.exists()).map(d => ({ uid: d.id, ...d.data() }));
 }
 
 /* ---- UserCard ---- */
