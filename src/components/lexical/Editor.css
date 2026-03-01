@@ -16,7 +16,7 @@
     position: relative;
     tab-size: 1;
     outline: none;
-    padding-top: 0.5rem;
+
 }
 
 .editor-placeholder {
@@ -35,6 +35,7 @@
 .editor-paragraph {
     margin: 0 0 15px 0;
 }
+
 .editor-paragraph:last-child {
     margin-bottom: 0;
 }
@@ -49,6 +50,7 @@
 .editor-link:hover {
     text-decoration: underline;
 }
+
 /* --- КІНЕЦЬ НОВИХ СТИЛІВ --- */
 
 .editor-container.read-only .editor-input {
@@ -56,13 +58,16 @@
 }
 
 .custom-emoji-wrapper {
-  display: inline-block;
-  vertical-align: bottom;
-  margin: 0 2px;
+    display: inline-block;
+    vertical-align: bottom;
+    margin: 0 2px;
 }
+
 .custom-emoji-in-editor {
-  height: 1.5em; /* Розмір емоджі відносно тексту */
-  width: 1.5em;
-  object-fit: contain;
-  pointer-events: none; /* Щоб можна було клікати крізь нього */
+    height: 1.5em;
+    /* Розмір емоджі відносно тексту */
+    width: 1.5em;
+    object-fit: contain;
+    pointer-events: none;
+    /* Щоб можна було клікати крізь нього */
 }
