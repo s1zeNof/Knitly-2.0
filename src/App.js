@@ -160,8 +160,8 @@ const AppLayout = () => {
                     />
                     {/* Clean Twitter-style URLs — must be last (catch-all) */}
                     <Route path="/:userNickname/status/:postId" element={<PostPage openShareModal={openShareModal} />} />
-                    <Route path="/:userNickname/followers" element={<FollowersPage />} />
-                    <Route path="/:userNickname/following" element={<FollowersPage />} />
+                    <Route path="/:nickname/followers" element={<FollowersPage />} />
+                    <Route path="/:nickname/following" element={<FollowersPage />} />
                     <Route path="/:userNickname" element={<ProfilePage openShareModal={openShareModal} />} />
                 </Routes>
             </main>
