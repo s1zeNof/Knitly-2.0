@@ -74,7 +74,27 @@ export const UserProvider = ({ children }) => {
                         });
                         await fetchAndCacheUserEmojiPacks(authUser.uid);
                     } else {
-                        const nickname = authUser.email ? authUser.email.split('@')[0].replace(/[^a-z0-9_.]/g, '') : `user${Date.now()}`;
+                        // Generate nickname from displayName (Google) or email username, then add 4-digit suffix
+                        let baseSlug = '';
+                        if (authUser.displayName) {
+                            baseSlug = authUser.displayName
+                                .toLowerCase()
+                                .replace(/[^a-z0-9\s]/g, '')
+                                .trim()
+                                .replace(/\s+/g, '-')
+                                .substring(0, 28);
+                        } else if (authUser.email) {
+                            baseSlug = authUser.email
+                                .split('@')[0]
+                                .toLowerCase()
+                                .replace(/[^a-z0-9]/g, '-')
+                                .replace(/-+/g, '-')
+                                .replace(/^-|-$/g, '')
+                                .substring(0, 28);
+                        }
+                        if (!baseSlug) baseSlug = 'user';
+                        const randomNum = Math.floor(Math.random() * 9000) + 1000;
+                        const nickname = `${baseSlug}-${randomNum}`;
                         const newUserName = authUser.displayName || 'Новий Артист';
                         const newUser = {
                             uid: authUser.uid,

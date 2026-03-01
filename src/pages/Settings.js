@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { doc, updateDoc } from 'firebase/firestore';
+import { doc, updateDoc, collection, query, where, getDocs } from 'firebase/firestore';
 import { uploadFile } from '../services/supabase';
 import { useUserContext } from '../contexts/UserContext';
 import { usePlayerContext } from '../contexts/PlayerContext';
@@ -19,8 +19,24 @@ const FolderIcon = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentCol
 const ChatIcon = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>;
 const EmojiIcon = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"></circle><path d="M8 14s1.5 2 4 2 4-2 4-2"></path><line x1="9" y1="9" x2="9.01" y2="9"></line><line x1="15" y1="9" x2="15.01" y2="9"></line></svg>;
 const WalletIcon = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 12V7a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h7"></path><path d="M16 12h4a2 2 0 1 1 0 4h-4v-4z"></path><path d="M18 10V8"></path><path d="M18 16v2"></path></svg>;
-// 👇 НОВА ІКОНКА 👇
 const HistoryIcon = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M1 4v6h6" /><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10" /></svg>;
+
+// Clean SVG icons replacing emoji/text
+const SmileIcon = () => (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round">
+        <circle cx="12" cy="12" r="10" />
+        <path d="M8 13s1.5 2 4 2 4-2 4-2" />
+        <circle cx="9" cy="9" r="0.6" fill="currentColor" stroke="none" />
+        <circle cx="15" cy="9" r="0.6" fill="currentColor" stroke="none" />
+    </svg>
+);
+
+const EyeIcon = () => (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+        <circle cx="12" cy="12" r="3" />
+    </svg>
+);
 
 const Settings = () => {
     const { user, refreshUser } = useUserContext();
@@ -39,6 +55,7 @@ const Settings = () => {
     const [isNamePublic, setIsNamePublic] = useState(true);
     const [nicknameError, setNicknameError] = useState('');
     const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+    const [showPreview, setShowPreview] = useState(false);
     const emojiPickerRef = useRef(null);
     const [chatFolders, setChatFolders] = useState([]);
     const [isFolderModalOpen, setIsFolderModalOpen] = useState(false);
@@ -161,6 +178,18 @@ const Settings = () => {
         if (!user || nicknameError) return;
         setIsSaving(true);
         try {
+            // Check nickname uniqueness only if it was changed
+            if (nickname && nickname !== user.nickname) {
+                const nicknameQuery = query(collection(db, 'users'), where('nickname', '==', nickname));
+                const nicknameSnapshot = await getDocs(nicknameQuery);
+                const isDuplicate = nicknameSnapshot.docs.some(d => d.id !== user.uid);
+                if (isDuplicate) {
+                    showNotification('Цей нікнейм вже зайнятий. Оберіть інший.', 'error');
+                    setIsSaving(false);
+                    return;
+                }
+            }
+
             const userRef = doc(db, 'users', user.uid);
             const updatedData = {
                 displayName,
@@ -240,7 +269,12 @@ const Settings = () => {
     const renderProfileTab = () => (
         <div className="settings-tab-content">
             <div className="form-section">
-                <label>Фото та фон профілю</label>
+                <div className="form-section-header-row">
+                    <label>Фото та фон профілю</label>
+                    <button type="button" className="preview-trigger-btn" onClick={() => setShowPreview(true)}>
+                        <EyeIcon /> Прев&#x2019;ю
+                    </button>
+                </div>
                 <div className="image-uploaders-container">
                     <div className="image-uploader profile">
                         <img className="image-preview profile" src={profileImageUrl || 'https://placehold.co/128x128/181818/333?text=K'} alt="Profile" />
@@ -274,7 +308,9 @@ const Settings = () => {
                     <textarea id="description" className="form-textarea" value={description} onChange={(e) => setDescription(e.target.value)} rows="4" maxLength="250"></textarea>
                     <div className="textarea-footer">
                         <span className="char-counter">{description.length} / 250</span>
-                        <button type="button" className="emoji-button" onClick={() => setShowEmojiPicker(!showEmojiPicker)}>😀</button>
+                        <button type="button" className="emoji-button" onClick={() => setShowEmojiPicker(!showEmojiPicker)} title="Додати емодзі">
+                            <SmileIcon />
+                        </button>
                     </div>
                     {showEmojiPicker &&
                         <div ref={emojiPickerRef} className="emoji-picker-wrapper">
@@ -510,6 +546,37 @@ const Settings = () => {
                 onSave={handleSaveFolder}
                 folderToEdit={editingFolder}
             />
+
+            {showPreview && (
+                <div className="preview-modal-backdrop" onClick={() => setShowPreview(false)}>
+                    <div className="preview-modal" onClick={e => e.stopPropagation()}>
+                        <div className="preview-modal-topbar">
+                            <span>Прев&#x2019;ю профілю</span>
+                            <button className="preview-modal-close-btn" onClick={() => setShowPreview(false)}>✕</button>
+                        </div>
+                        <img
+                            className="preview-profile-banner"
+                            src={backgroundImageUrl || 'https://placehold.co/600x130/181818/333?text='}
+                            alt="Банер профілю"
+                        />
+                        <div className="preview-profile-body">
+                            <div className="preview-avatar-wrap">
+                                <img
+                                    className="preview-profile-avatar"
+                                    src={profileImageUrl || 'https://placehold.co/80x80/282828/555?text=K'}
+                                    alt="Аватар"
+                                />
+                            </div>
+                            <p className="preview-profile-name">{displayName || 'Ваше ім\'я'}</p>
+                            <p className="preview-profile-nickname">@{nickname || 'nickname'}</p>
+                            {description && <p className="preview-profile-desc">{description}</p>}
+                        </div>
+                        <div className="preview-modal-note">
+                            Це приблизний вигляд вашого профілю після збереження
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
