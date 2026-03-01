@@ -76,6 +76,11 @@
   pointer-events: none;
 }
 
+/* ---- DESKTOP/MOBILE ACTION GROUP TOGGLE ---- */
+/* Desktop: show beside avatar, hide below stats */
+.profile-actions-mobile-only { display: none; }
+.profile-actions-desktop-only { display: flex; }
+
 /* ---- AVATAR + ACTION ROW ---- */
 .page-profile-header-content {
   display: flex;
@@ -428,6 +433,16 @@
 
 /* ---- MOBILE ---- */
 @media (max-width: 900px) {
+  /* Swap action group positions: desktop → hide, mobile → show below stats */
+  .profile-actions-desktop-only { display: none; }
+  .profile-actions-mobile-only {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.65rem;
+    margin-top: 1.25rem;
+    width: 100%;
+  }
+
   .page-profile-background {
     height: 180px;
   }
