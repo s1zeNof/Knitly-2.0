@@ -362,6 +362,26 @@ header::before {
     align-items: center;
 }
 
+.profile-context-switcher {
+    position: relative;
+}
+
+.profile-context-trigger {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    background: none;
+    border: none;
+    padding: 0.25rem 0.1rem;
+    cursor: pointer;
+    border-radius: 8px;
+    transition: background 0.15s;
+}
+
+.profile-context-trigger:hover {
+    background: rgba(255, 255, 255, 0.06);
+}
+
 .profile-context-username {
     font-size: 1.2rem;
     font-weight: 600;
@@ -369,6 +389,144 @@ header::before {
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
+}
+
+.profile-context-chevron {
+    display: flex;
+    align-items: center;
+    color: var(--color-text-secondary);
+    transition: transform 0.2s ease;
+    flex-shrink: 0;
+}
+
+.profile-context-chevron.open {
+    transform: rotate(180deg);
+}
+
+/* Account switcher dropdown */
+.account-switcher-dropdown {
+    position: absolute;
+    top: calc(100% + 10px);
+    left: 0;
+    min-width: 240px;
+    background: rgba(18, 18, 24, 0.97);
+    backdrop-filter: blur(40px) saturate(160%);
+    -webkit-backdrop-filter: blur(40px) saturate(160%);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 14px;
+    padding: 0.4rem;
+    z-index: 9999;
+    box-shadow: 0 20px 48px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255, 255, 255, 0.04);
+    animation: switcher-in 0.18s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes switcher-in {
+    from { opacity: 0; transform: translateY(-6px) scale(0.97); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.account-switcher-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    width: 100%;
+    background: none;
+    border: none;
+    padding: 0.65rem 0.75rem;
+    border-radius: 10px;
+    cursor: pointer;
+    text-align: left;
+    transition: background 0.15s;
+}
+
+.account-switcher-item:hover {
+    background: rgba(255, 255, 255, 0.07);
+}
+
+.account-switcher-item.active {
+    background: rgba(168, 85, 247, 0.08);
+}
+
+.account-switcher-avatar {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0;
+    border: 2px solid rgba(255, 255, 255, 0.1);
+}
+
+.account-switcher-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+    min-width: 0;
+}
+
+.account-switcher-name {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--color-text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.account-switcher-nick {
+    font-size: 0.78rem;
+    color: var(--color-text-secondary);
+}
+
+.account-switcher-check {
+    color: var(--color-accent);
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+}
+
+.account-switcher-divider {
+    border: none;
+    border-top: 1px solid rgba(255, 255, 255, 0.07);
+    margin: 0.3rem 0.5rem;
+}
+
+.account-switcher-add {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    width: 100%;
+    background: none;
+    border: none;
+    padding: 0.65rem 0.75rem;
+    border-radius: 10px;
+    cursor: pointer;
+    color: var(--color-text-secondary);
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: background 0.15s, color 0.15s;
+}
+
+.account-switcher-add:hover {
+    background: rgba(255, 255, 255, 0.07);
+    color: var(--color-text-primary);
+}
+
+.account-switcher-add-icon {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    border: 2px dashed rgba(255, 255, 255, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: border-color 0.15s;
+}
+
+.account-switcher-add:hover .account-switcher-add-icon {
+    border-color: var(--color-accent);
+    color: var(--color-accent);
 }
 
 /* Mobile Auth Buttons */
