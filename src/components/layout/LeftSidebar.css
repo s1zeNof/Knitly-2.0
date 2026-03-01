@@ -173,6 +173,7 @@
 }
 
 /* ── Mode 2: Icons + hover-expand ── */
+/* Collapsed = identical to icons-only mode; hover = full 280px sidebar */
 body.sidebar-mode-hover .left-sidebar {
     width: 64px;
     padding-left: 11px;
@@ -186,39 +187,35 @@ body.sidebar-mode-hover .left-sidebar:hover {
     padding-right: 20px;
 }
 
-/* Explicitly hide nav labels — do NOT rely solely on sidebar overflow clipping */
+/* Hidden state — same display:none approach as icons-only (icons stay full size) */
 body.sidebar-mode-hover .nav-label {
-    max-width: 0;
-    overflow: hidden;
-    opacity: 0;
-    white-space: nowrap;
-    transition: max-width 0.25s ease, opacity 0.15s ease;
+    display: none;
 }
-body.sidebar-mode-hover .left-sidebar:hover .nav-label {
-    max-width: 200px;
-    opacity: 1;
+body.sidebar-mode-hover .profile-info {
+    display: none;
 }
 
-/* Hide profile-info WITHOUT changing display so name/nickname stay stacked vertically */
-body.sidebar-mode-hover .profile-info {
-    max-width: 0;
-    overflow: hidden;
-    opacity: 0;
-    white-space: nowrap;
-    transition: max-width 0.25s ease, opacity 0.15s ease;
+/* Reveal on hover */
+body.sidebar-mode-hover .left-sidebar:hover .nav-label {
+    display: block;
 }
 body.sidebar-mode-hover .left-sidebar:hover .profile-info {
-    max-width: 200px;
-    opacity: 1;
+    display: flex; /* restore flex-column so name/nickname stay stacked */
 }
-/* Keep each text line on one line for clean reveal animation */
 body.sidebar-mode-hover .profile-name,
 body.sidebar-mode-hover .profile-nickname {
     white-space: nowrap;
 }
+
+/* Badge: compact when collapsed, normal position when expanded */
 body.sidebar-mode-hover .sidebar-badge {
     right: 4px;
     top: 6px;
+}
+body.sidebar-mode-hover .left-sidebar:hover .sidebar-badge {
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
 }
 
 /* ── Mode 3: Icons only (tooltip via title attribute) ── */
