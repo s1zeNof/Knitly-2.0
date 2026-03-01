@@ -103,9 +103,9 @@ const getNavigationUrl = (notification) => {
             if (trackId) return `/track/${trackId}`;
             return null;
         case 'new_follower':
-            return fromUser?.nickname ? `/user/${fromUser.nickname}` : null;
+            return fromUser?.nickname ? `/${fromUser.nickname}` : null;
         default:
-            return fromUser?.nickname ? `/user/${fromUser.nickname}` : null;
+            return fromUser?.nickname ? `/${fromUser.nickname}` : null;
     }
 };
 

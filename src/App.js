@@ -134,7 +134,6 @@ const AppLayout = () => {
                     <Route path="/register" element={<Register />} />
                     <Route path="/search" element={<SearchPage />} />
                     <Route path="/profile" element={<ProfilePage />} />
-                    <Route path="/user/:userNickname" element={<ProfilePage openShareModal={openShareModal} />} />
                     <Route path="/settings" element={<Settings />} />
                     <Route path="/settings/emoji-packs" element={<EmojiPacksSettings />} />
                     <Route path="/settings/emoji-packs/edit/:packId" element={<EditEmojiPack />} />
@@ -158,6 +157,9 @@ const AppLayout = () => {
                             </AdminRoute>
                         }
                     />
+                    {/* Clean Twitter-style URLs — must be last (catch-all) */}
+                    <Route path="/:userNickname/status/:postId" element={<PostPage openShareModal={openShareModal} />} />
+                    <Route path="/:userNickname" element={<ProfilePage openShareModal={openShareModal} />} />
                 </Routes>
             </main>
             <BottomNavBar isPlayerVisible={isPlayerVisible} />

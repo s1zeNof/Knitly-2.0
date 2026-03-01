@@ -97,7 +97,7 @@ const SearchPage = () => {
                             <h4>Артисти</h4>
                             <div className="artist-results-grid">
                                 {results.artists.map(artist => (
-                                    <Link to={`/user/${artist.nickname}`} key={artist.id} className="artist-card">
+                                    <Link to={`/${artist.nickname}`} key={artist.id} className="artist-card">
                                         <img src={artist.photoURL || default_picture} alt={artist.displayName} />
                                         <p>{artist.displayName}</p>
                                         <span>@{artist.nickname}</span>
@@ -111,7 +111,7 @@ const SearchPage = () => {
                             <h4>Слухачі</h4>
                             <div className="artist-results-grid">
                                 {results.users.map(user => (
-                                    <Link to={`/user/${user.nickname}`} key={user.id} className="artist-card">
+                                    <Link to={`/${user.nickname}`} key={user.id} className="artist-card">
                                         <img src={user.photoURL || default_picture} alt={user.displayName} />
                                         <p>{user.displayName}</p>
                                         <span>@{user.nickname}</span>

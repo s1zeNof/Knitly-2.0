@@ -154,13 +154,13 @@ const Comment = ({ comment, postId, postAuthorId, isPinned }) => {
                     </div>
                 )}
                 <div className="comment-item">
-                    <Link to={`/user/${comment.authorUsername}`}>
+                    <Link to={`/${comment.authorUsername}`}>
                         <img src={comment.authorAvatarUrl || default_picture} alt={comment.authorUsername} className="comment-author-avatar"/>
                     </Link>
                     <div className="comment-content-wrapper">
                         <div className="comment-bubble">
                             <div className="comment-header">
-                                <Link to={`/user/${comment.authorUsername}`} className="comment-author-name">@{comment.authorUsername}</Link>
+                                <Link to={`/${comment.authorUsername}`} className="comment-author-name">@{comment.authorUsername}</Link>
                                 <span className="comment-timestamp">{formatTime(comment.createdAt)} {comment.isEdited && '(ред.)'}</span>
                             </div>
                             {isEditing ? (
