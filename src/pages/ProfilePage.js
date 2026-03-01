@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { db } from '../services/firebase';
-import { query, collection, where, getDocs, doc, updateDoc, arrayUnion, arrayRemove, getDoc, setDoc, serverTimestamp, addDoc, runTransaction } from 'firebase/firestore';
+import { query, collection, where, getDocs, doc, updateDoc, arrayUnion, arrayRemove, getDoc, setDoc, serverTimestamp, addDoc, runTransaction, onSnapshot } from 'firebase/firestore';
 import { useUserContext } from '../contexts/UserContext';
 import { useUserTracks } from '../hooks/useUserTracks';
 import TrackList from '../components/common/TrackList';
@@ -18,6 +18,7 @@ import toast from 'react-hot-toast';
 import default_picture from '../img/Default-Images/default-picture.svg';
 import verifiedIcon from '../img/Profile-Settings/verified_icon-lg-bl.svg';
 import PageLoader from '../components/common/PageLoader';
+import NowPlayingBanner from '../components/profile/NowPlayingBanner';
 import './Profile.css';
 
 const MusicIcon = () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 18V5l12-2v13" /><circle cx="6" cy="18" r="3" /><circle cx="18" cy="16" r="3" /></svg>;
@@ -40,6 +41,7 @@ const ProfilePage = ({ openBrowser, openShareModal }) => {
     const [isActionMenuOpen, setActionMenuOpen] = useState(false);
     const actionMenuRef = useRef(null);
     const [isGiftModalOpen, setIsGiftModalOpen] = useState(false);
+    const [nowPlayingData, setNowPlayingData] = useState(null);
 
     const isOwnProfile = !userNickname || (profileUser && currentUser && profileUser.uid === currentUser.uid);
     const targetUserId = profileUser?.uid;
@@ -105,6 +107,23 @@ const ProfilePage = ({ openBrowser, openShareModal }) => {
             fetchUserData();
         }
     }, [userNickname, currentUser, authLoading, navigate]);
+
+    // Real-time listener for nowPlaying field — updates the banner widget live
+    useEffect(() => {
+        if (!profileUser?.uid) {
+            setNowPlayingData(null);
+            return;
+        }
+        const userRef = doc(db, 'users', profileUser.uid);
+        const unsubscribe = onSnapshot(userRef, (snap) => {
+            if (snap.exists()) {
+                setNowPlayingData(snap.data().nowPlaying || null);
+            } else {
+                setNowPlayingData(null);
+            }
+        });
+        return () => unsubscribe();
+    }, [profileUser?.uid]);
 
     const handleFollowToggle = async () => {
         if (!currentUser || !profileUser || isProcessingFollow || isOwnProfile) return;
@@ -267,6 +286,8 @@ const ProfilePage = ({ openBrowser, openShareModal }) => {
             <div className="page-profile-container">
                 <div className="page-profile-header">
                     <div className="page-profile-background" style={{ backgroundImage: `url(${profileUser.backgroundImage || ''})` }}>
+                        {/* Now Playing banner widget — shown when user is broadcasting */}
+                        {nowPlayingData && <NowPlayingBanner nowPlaying={nowPlayingData} />}
                         {/* Actions icon — top-right of banner, other profiles only */}
                         {!isOwnProfile && (
                             <div className="profile-banner-actions" ref={actionMenuRef}>

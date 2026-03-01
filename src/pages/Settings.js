@@ -69,6 +69,7 @@ const Settings = () => {
     const [groupInvitePrivacy, setGroupInvitePrivacy] = useState('everyone');
     const [allowMessageRequests, setAllowMessageRequests] = useState(true);
     const [allowGroupRequests, setAllowGroupRequests] = useState(true);
+    const [showNowPlaying, setShowNowPlaying] = useState(false);
     const previewRefs = useRef({});
 
     const [isHeaderShrunk, setIsHeaderShrunk] = useState(false);
@@ -110,6 +111,7 @@ const Settings = () => {
             setGroupInvitePrivacy(user.settings?.privacy?.groupInvitePrivacy || 'everyone');
             setAllowMessageRequests(user.settings?.privacy?.allowMessageRequests !== false);
             setAllowGroupRequests(user.settings?.privacy?.allowGroupRequests !== false);
+            setShowNowPlaying(user.settings?.privacy?.showNowPlaying || false);
 
             const userCountry = countryOptions.find(c => c.value === user.country);
             if (userCountry) {
@@ -218,6 +220,7 @@ const Settings = () => {
                 'settings.privacy.groupInvitePrivacy': groupInvitePrivacy,
                 'settings.privacy.allowMessageRequests': allowMessageRequests,
                 'settings.privacy.allowGroupRequests': allowGroupRequests,
+                'settings.privacy.showNowPlaying': showNowPlaying,
             };
             await updateDoc(userRef, updatedData);
             await refreshUser();
@@ -368,6 +371,18 @@ const Settings = () => {
                 </div>
                 <label className="switch">
                     <input type="checkbox" checked={isNamePublic} onChange={() => setIsNamePublic(!isNamePublic)} />
+                    <span className="slider round"></span>
+                </label>
+            </div>
+
+            {/* Now Playing visibility */}
+            <div className="privacy-toggle">
+                <div>
+                    <p>Показувати що я слухаю на профілі</p>
+                    <span>Відвідувачі вашого профілю бачитимуть трек, який ви зараз слухаєте.</span>
+                </div>
+                <label className="switch">
+                    <input type="checkbox" checked={showNowPlaying} onChange={() => setShowNowPlaying(!showNowPlaying)} />
                     <span className="slider round"></span>
                 </label>
             </div>

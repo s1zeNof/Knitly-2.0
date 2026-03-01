@@ -1,11 +1,14 @@
 import React, { createContext, useState, useContext, useRef, useEffect, useCallback, useMemo } from 'react';
 import { db } from '../services/firebase';
-import { doc, updateDoc, increment } from 'firebase/firestore';
+import { doc, updateDoc, increment, serverTimestamp } from 'firebase/firestore';
+import { useUserContext } from './UserContext';
 
 const PlayerContext = createContext();
 const PlayerTimeContext = createContext();
 
 export const PlayerProvider = ({ children }) => {
+    const { user } = useUserContext();
+
     const [currentTrack, setCurrentTrack] = useState(null);
     const [isPlaying, setIsPlaying] = useState(false);
     const [duration, setDuration] = useState(0);
@@ -14,6 +17,8 @@ export const PlayerProvider = ({ children }) => {
     const [queue, setQueue] = useState([]);
     const [history, setHistory] = useState([]);
     const [notification, setNotification] = useState({ message: '', type: 'info' });
+    // Track that was manually shared via "НОВІ" button (null = none)
+    const [liveSharedTrackId, setLiveSharedTrackId] = useState(null);
 
     const audioRef = useRef(new Audio());
     // crossOrigin має встановлюватись один раз, не на кожен рендер
@@ -151,6 +156,80 @@ export const PlayerProvider = ({ children }) => {
         showNotification(`Трек "${trackToRemove.title}" видалено з черги`);
     }, [queue, showNotification]);
 
+    // ── NOW PLAYING ────────────────────────────────────────────────
+
+    /** Write the current nowPlaying to the user's Firestore document */
+    const writeNowPlaying = useCallback(async (track) => {
+        if (!user?.uid || !track) return;
+        try {
+            await updateDoc(doc(db, 'users', user.uid), {
+                nowPlaying: {
+                    id: track.id,
+                    title: track.title,
+                    artist: track.authorName || '',
+                    coverUrl: track.coverArtUrl || null,
+                    updatedAt: serverTimestamp(),
+                },
+            });
+        } catch (err) {
+            console.error('writeNowPlaying error:', err);
+        }
+    }, [user?.uid]); // eslint-disable-line react-hooks/exhaustive-deps
+
+    /** Remove nowPlaying from the user's Firestore document */
+    const clearNowPlayingInFirestore = useCallback(async () => {
+        if (!user?.uid) return;
+        try {
+            await updateDoc(doc(db, 'users', user.uid), { nowPlaying: null });
+        } catch (err) {
+            console.error('clearNowPlaying error:', err);
+        }
+    }, [user?.uid]); // eslint-disable-line react-hooks/exhaustive-deps
+
+    /** Auto-broadcast: write/clear when track changes or setting is toggled */
+    useEffect(() => {
+        if (!user?.uid) return;
+        const showNowPlaying = user?.settings?.privacy?.showNowPlaying;
+        if (showNowPlaying) {
+            if (currentTrack) writeNowPlaying(currentTrack);
+            else clearNowPlayingInFirestore();
+        } else if (!liveSharedTrackId) {
+            // Setting turned off and no manual share → clear
+            clearNowPlayingInFirestore();
+        }
+        // writeNowPlaying / clearNowPlayingInFirestore are stable callbacks — safe to omit
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [currentTrack?.id, user?.settings?.privacy?.showNowPlaying]);
+
+    /** Reset liveSharedTrackId when the user moves to a different track */
+    useEffect(() => {
+        if (liveSharedTrackId && currentTrack?.id !== liveSharedTrackId) {
+            setLiveSharedTrackId(null);
+            if (!user?.settings?.privacy?.showNowPlaying) {
+                clearNowPlayingInFirestore();
+            }
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [currentTrack?.id]);
+
+    /** Toggle the "НОВІ" live-share for the current track */
+    const toggleLiveShare = useCallback(() => {
+        if (!currentTrack) return;
+        if (liveSharedTrackId === currentTrack.id) {
+            // Toggle off — stop sharing
+            setLiveSharedTrackId(null);
+            if (!user?.settings?.privacy?.showNowPlaying) {
+                clearNowPlayingInFirestore();
+            }
+        } else {
+            // Toggle on — start sharing
+            setLiveSharedTrackId(currentTrack.id);
+            writeNowPlaying(currentTrack);
+        }
+    }, [currentTrack, liveSharedTrackId, user, writeNowPlaying, clearNowPlayingInFirestore]);
+
+    // ──────────────────────────────────────────────────────────────
+
     // Стабільний контекст — не змінюється кожні 250мс при відтворенні
     const value = useMemo(() => ({
         currentTrack,
@@ -168,10 +247,14 @@ export const PlayerProvider = ({ children }) => {
         removeFromQueue,
         playNext,
         playPrev,
-        showNotification
+        showNotification,
+        // Now Playing
+        liveSharedTrackId,
+        toggleLiveShare,
     }), [
         currentTrack, isPlaying, volume, queue, history, notification,
-        handlePlayPause, togglePlayPause, seek, setVolume, addToQueue, removeFromQueue, playNext, playPrev, showNotification
+        handlePlayPause, togglePlayPause, seek, setVolume, addToQueue, removeFromQueue, playNext, playPrev, showNotification,
+        liveSharedTrackId, toggleLiveShare,
     ]);
 
     // Volatile контекст — змінюється кожні 250мс при відтворенні треку

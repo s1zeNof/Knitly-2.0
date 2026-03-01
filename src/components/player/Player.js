@@ -11,9 +11,10 @@ const NextIcon = () => <svg height="20" width="20" viewBox="0 0 24 24"><path fil
 const PrevIcon = () => <svg height="20" width="20" viewBox="0 0 24 24"><path fill="currentColor" d="M6 6h2v12H6zm3.5 6l8.5 6V6z"></path></svg>;
 const VolumeHighIcon = () => <svg height="20" width="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg>;
 const VolumeMutedIcon = () => <svg height="20" width="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><line x1="23" y1="9" x2="17" y2="15"></line><line x1="17" y1="9" x2="23" y2="15"></line></svg>;
+const BroadcastIcon = () => <svg height="18" width="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M1 8.5A13 13 0 0 1 23 8.5"/><path d="M5 12.5a8 8 0 0 1 14 0"/><path d="M9 16a3 3 0 0 1 6 0"/><circle cx="12" cy="19" r="1" fill="currentColor" stroke="none"/></svg>;
 
 const Player = () => { // Забираємо пропс className, він більше не потрібен
-    const { currentTrack, isPlaying, togglePlayPause, seek, volume, setVolume, playNext, playPrev } = usePlayerContext();
+    const { currentTrack, isPlaying, togglePlayPause, seek, volume, setVolume, playNext, playPrev, liveSharedTrackId, toggleLiveShare } = usePlayerContext();
     const { currentTime, duration } = usePlayerTime();
     const [isPanelOpen, setIsPanelOpen] = useState(false);
     const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
@@ -98,7 +99,16 @@ const Player = () => { // Забираємо пропс className, він біл
                 </div>
                 
                 <div className="player-actions">
-                     <button className="player-action-button" onClick={(e) => { e.stopPropagation(); setIsPanelOpen(true); }}>
+                    {/* НОВІ — share current track to profile */}
+                    <button
+                        className={`player-action-button player-live-share-btn ${liveSharedTrackId === currentTrack?.id ? 'active' : ''}`}
+                        onClick={(e) => { e.stopPropagation(); toggleLiveShare(); }}
+                        title={liveSharedTrackId === currentTrack?.id ? 'Прибрати з профілю' : 'Показати на профілі'}
+                    >
+                        <BroadcastIcon />
+                        {liveSharedTrackId !== currentTrack?.id && <span className="player-new-badge">НОВІ</span>}
+                    </button>
+                    <button className="player-action-button" onClick={(e) => { e.stopPropagation(); setIsPanelOpen(true); }}>
                         <ExpandIcon />
                     </button>
                     <div className="volume-container">
