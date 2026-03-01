@@ -442,8 +442,9 @@
 /* ---- MOBILE ---- */
 @media (max-width: 900px) {
   /* Swap action group positions: desktop → hide, mobile → show below stats */
-  .profile-actions-desktop-only { display: none; }
-  .profile-actions-mobile-only {
+  /* Double-class selectors needed to beat the 0,2,0 specificity of desktop rules */
+  .page-profile-actions-group.profile-actions-desktop-only { display: none; }
+  .page-profile-actions-group.profile-actions-mobile-only {
     display: flex;
     flex-wrap: wrap;
     gap: 0.65rem;
