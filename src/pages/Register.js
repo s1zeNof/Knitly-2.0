@@ -68,7 +68,7 @@ const Register = () => {
     /* ── password validation ── */
     const pwdCheck = {
         hasLetter: /[a-zA-Zа-яА-ЯёЁіІїЇєЄ]/.test(password),
-        hasNumberOrSpecial: /[0-9#?!&@$%^*()_+=\-]/.test(password),
+        hasNumberOrSpecial: /[0-9#?!&@$%^*()_+=-]/.test(password),
         hasLength: password.length >= 10,
     };
     const pwdValid = pwdCheck.hasLetter && pwdCheck.hasNumberOrSpecial && pwdCheck.hasLength;

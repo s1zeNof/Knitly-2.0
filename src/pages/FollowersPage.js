@@ -13,12 +13,7 @@ const BackIcon = () => (
         <path d="M19 12H5M12 5l-7 7 7 7" />
     </svg>
 );
-const UsersIcon = () => (
-    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" />
-        <path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" />
-    </svg>
-);
+
 const LockIcon = () => (
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <rect x="3" y="11" width="18" height="11" rx="2" ry="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" />
@@ -26,8 +21,6 @@ const LockIcon = () => (
 );
 
 /* ---- Helpers ---- */
-const BATCH_SIZE = 30;
-
 async function fetchUsersByUids(uids) {
     if (!uids || uids.length === 0) return [];
     // Sanitise: keep only non-empty strings (guards against null/undefined in array)
