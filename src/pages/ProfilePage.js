@@ -265,7 +265,28 @@ const ProfilePage = ({ openBrowser, openShareModal }) => {
         <>
             <div className="page-profile-container">
                 <div className="page-profile-header">
-                    <div className="page-profile-background" style={{ backgroundImage: `url(${profileUser.backgroundImage || ''})` }}></div>
+                    <div className="page-profile-background" style={{ backgroundImage: `url(${profileUser.backgroundImage || ''})` }}>
+                        {/* Actions icon — top-right of banner, other profiles only */}
+                        {!isOwnProfile && (
+                            <div className="profile-banner-actions" ref={actionMenuRef}>
+                                <button
+                                    className="profile-banner-action-btn"
+                                    onClick={() => setActionMenuOpen(!isActionMenuOpen)}
+                                    aria-label="Дії"
+                                >
+                                    <ActionsIcon />
+                                </button>
+                                <div className={`profile-actions-dropdown ${isActionMenuOpen ? 'visible' : ''}`}>
+                                    <button className="dropdown-action-button" onClick={() => { setIsGiftModalOpen(true); setActionMenuOpen(false); }}>
+                                        Надіслати подарунок
+                                    </button>
+                                    <button className="dropdown-action-button danger" onClick={() => { alert('Функціонал блокування в розробці'); setActionMenuOpen(false); }}>
+                                        Заблокувати
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+                    </div>
                     <div className="page-profile-header-content">
                         <div className="page-profile-avatar-wrapper">
                             <img src={profileUser.photoURL || default_picture} alt="Avatar" className="page-profile-avatar" onError={(e) => { e.target.onerror = null; e.target.src = default_picture; }} />
@@ -284,20 +305,6 @@ const ProfilePage = ({ openBrowser, openShareModal }) => {
                                     <button className="page-profile-secondary-button" onClick={handleStartConversation}>
                                         Повідомлення
                                     </button>
-                                    <div className="profile-actions-menu-container" ref={actionMenuRef}>
-                                        <button className="page-profile-secondary-button with-icon" onClick={() => setActionMenuOpen(!isActionMenuOpen)}>
-                                            <span>Дії</span>
-                                            <ActionsIcon />
-                                        </button>
-                                        <div className={`profile-actions-dropdown ${isActionMenuOpen ? 'visible' : ''}`}>
-                                            <button className="dropdown-action-button" onClick={() => { setIsGiftModalOpen(true); setActionMenuOpen(false); }}>
-                                                Надіслати подарунок
-                                            </button>
-                                            <button className="dropdown-action-button danger" onClick={() => { alert('Функціонал блокування в розробці'); setActionMenuOpen(false); }}>
-                                                Заблокувати
-                                            </button>
-                                        </div>
-                                    </div>
                                 </>
                             )}
                         </div>

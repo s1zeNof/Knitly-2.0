@@ -11,6 +11,41 @@
   min-height: calc(100vh - 70px);
 }
 
+/* ---- BANNER ACTIONS (top-right icon) ---- */
+.profile-banner-actions {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  z-index: 6;
+}
+
+.profile-banner-action-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgba(10, 10, 15, 0.55);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.profile-banner-action-btn:hover {
+  background: rgba(10, 10, 15, 0.8);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+/* dropdown anchored to banner-actions top-right */
+.profile-banner-actions .profile-actions-dropdown {
+  top: calc(100% + 8px);
+  right: 0;
+}
+
 /* ---- FULL-WIDTH BANNER ---- */
 .page-profile-header {
   display: flex;
