@@ -29,9 +29,13 @@ const BATCH_SIZE = 30;
 
 async function fetchUsersByUids(uids) {
     if (!uids || uids.length === 0) return [];
+    // Filter out any undefined/null/empty values to avoid Firestore errors
+    const cleanUids = uids.filter(uid => typeof uid === 'string' && uid.length > 0);
+    if (cleanUids.length === 0) return [];
     const results = [];
-    for (let i = 0; i < uids.length; i += BATCH_SIZE) {
-        const batch = uids.slice(i, i + BATCH_SIZE);
+    for (let i = 0; i < cleanUids.length; i += BATCH_SIZE) {
+        const batch = cleanUids.slice(i, i + BATCH_SIZE);
+        if (batch.length === 0) continue;
         const snap = await getDocs(
             query(collection(db, 'users'), where(documentId(), 'in', batch))
         );
