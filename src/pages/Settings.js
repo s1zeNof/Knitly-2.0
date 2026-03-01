@@ -506,9 +506,9 @@ const Settings = () => {
 
     return (
         <div ref={scrollContainerRef} className="settings-page-container">
-            <header className={`settings-page-header ${isHeaderShrunk ? 'shrunk' : ''}`}>
+            <div className={`settings-page-header ${isHeaderShrunk ? 'shrunk' : ''}`}>
                 <h1>Налаштування</h1>
-            </header>
+            </div>
             <div ref={headerTriggerRef} className="header-scroll-trigger"></div>
 
             <div className="settings-layout">

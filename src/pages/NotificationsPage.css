@@ -147,7 +147,7 @@
     transform: translateX(-50%);
     width: 60%;
     height: 2.5px;
-    background: linear-gradient(90deg, transparent, var(--color-accent), transparent);
+
     border-radius: 2px;
 }
 

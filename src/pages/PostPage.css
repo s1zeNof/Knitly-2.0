@@ -3,7 +3,8 @@
 }
 
 .post-page-wrapper {
-    max-width: 680px;
+    max-width: 100% !important;
+    width: 100% !important;
     margin: 0 auto;
     padding: 1.5rem 0.5rem 6rem;
 }
