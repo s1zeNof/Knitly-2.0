@@ -291,7 +291,8 @@ const ProfilePage = ({ openBrowser, openShareModal }) => {
                         <div className="page-profile-avatar-wrapper">
                             <img src={profileUser.photoURL || default_picture} alt="Avatar" className="page-profile-avatar" onError={(e) => { e.target.onerror = null; e.target.src = default_picture; }} />
                         </div>
-                        <div className="page-profile-actions-group">
+                        {/* Desktop: actions sit beside avatar */}
+                        <div className="page-profile-actions-group profile-actions-desktop-only">
                             {isOwnProfile ? (
                                 <>
                                     <button className="page-profile-secondary-button" onClick={() => navigate('/settings')}>Редагувати профіль</button>
@@ -320,6 +321,24 @@ const ProfilePage = ({ openBrowser, openShareModal }) => {
                         <div className="page-profile-stats">
                             <div className="page-profile-stat-item"><strong>{profileUser.followers?.length || 0}</strong><span>Підписники</span></div>
                             <div className="page-profile-stat-item"><strong>{profileUser.following?.length || 0}</strong><span>Підписки</span></div>
+                        </div>
+                        {/* Mobile: actions below stats */}
+                        <div className="page-profile-actions-group profile-actions-mobile-only">
+                            {isOwnProfile ? (
+                                <>
+                                    <button className="page-profile-secondary-button" onClick={() => navigate('/settings')}>Редагувати профіль</button>
+                                    <button className="page-profile-logout-button" onClick={handleLogout}>Вийти</button>
+                                </>
+                            ) : (
+                                <>
+                                    <button className="page-profile-action-button" onClick={handleFollowToggle} disabled={isProcessingFollow}>
+                                        {isFollowing ? "Відписатися" : "Підписатися"}
+                                    </button>
+                                    <button className="page-profile-secondary-button" onClick={handleStartConversation}>
+                                        Повідомлення
+                                    </button>
+                                </>
+                            )}
                         </div>
                     </div>
 

@@ -119,7 +119,16 @@ const Header = () => {
                         <BackArrowIcon />
                     </button>
                     <span className="other-profile-username">@{profileNicknameFromUrl}</span>
-                    <div style={{ width: 40 }} />
+                    <div className="mobile-header-actions">
+                        <Link to="/notifications" className="mobile-header-action notification">
+                            <BellIcon />
+                            {unreadNotificationsCount > 0 && <span className="mobile-badge">{unreadNotificationsCount}</span>}
+                        </Link>
+                        <Link to="/messages" className="mobile-header-action notification">
+                            <MessagesIcon />
+                            {totalUnreadMessages > 0 && <span className="mobile-badge">{totalUnreadMessages}</span>}
+                        </Link>
+                    </div>
                 </div>
             );
         }
