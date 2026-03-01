@@ -68,16 +68,17 @@ const ProfilePage = ({ openBrowser, openShareModal }) => {
                     const querySnapshot = await getDocs(usersQuery);
                     if (!querySnapshot.empty) {
                         const userDoc = querySnapshot.docs[0];
-                        if (currentUser && userDoc.id === currentUser.uid) {
-                            navigate('/profile', { replace: true });
-                            return;
-                        }
                         userToFetchId = userDoc.id;
                         userToFetchData = userDoc.data();
                     } else {
                         throw new Error("Користувача не знайдено");
                     }
                 } else if (currentUser) {
+                    // /profile route — redirect to canonical /user/:nickname URL
+                    if (currentUser.nickname) {
+                        navigate(`/user/${currentUser.nickname}`, { replace: true });
+                        return;
+                    }
                     userToFetchId = currentUser.uid;
                     userToFetchData = currentUser;
                 } else {
@@ -160,7 +161,10 @@ const ProfilePage = ({ openBrowser, openShareModal }) => {
         }
     };
 
-    const handleLogout = () => signOut(auth).then(() => navigate('/'));
+    const handleLogout = () => {
+        if (!window.confirm('Ви впевнені, що хочете вийти?')) return;
+        signOut(auth).then(() => navigate('/'));
+    };
 
     const handleSendGift = async (gift, recipientUser) => {
         if (!currentUser) {
@@ -268,7 +272,10 @@ const ProfilePage = ({ openBrowser, openShareModal }) => {
                         </div>
                         <div className="page-profile-actions-group">
                             {isOwnProfile ? (
-                                <button className="page-profile-logout-button" onClick={handleLogout}>Вийти</button>
+                                <>
+                                    <button className="page-profile-secondary-button" onClick={() => navigate('/settings')}>Редагувати профіль</button>
+                                    <button className="page-profile-logout-button" onClick={handleLogout}>Вийти</button>
+                                </>
                             ) : (
                                 <>
                                     <button className="page-profile-action-button" onClick={handleFollowToggle} disabled={isProcessingFollow}>
