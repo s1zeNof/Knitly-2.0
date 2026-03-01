@@ -39,6 +39,12 @@
     overflow: hidden;
 }
 
+.post-page-divider {
+    border: none;
+    border-top: 1px solid var(--color-border);
+    margin: 0;
+}
+
 /* Skeleton */
 .post-page-skeleton {
     display: flex;

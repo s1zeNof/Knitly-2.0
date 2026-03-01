@@ -33,7 +33,7 @@ const formatPostTime = (timestamp) => {
     return postDate.toLocaleDateString('uk-UA', { day: 'numeric', month: 'long' });
 };
 
-const PostCard = ({ post, openBrowser, openShareModal }) => {
+const PostCard = ({ post, openBrowser, openShareModal, isDetailView = false }) => {
     const { user: currentUser } = useUserContext();
     const { handlePlayPause } = usePlayerContext();
     const navigate = useNavigate();
@@ -169,6 +169,7 @@ const PostCard = ({ post, openBrowser, openShareModal }) => {
     const handleDeletePost = () => { if (window.confirm('Ви впевнені, що хочете видалити цей допис?')) deletePostMutation.mutate(); };
 
     const handleCardClick = (e) => {
+        if (isDetailView) return;
         if (e.target.closest('button, a, input, [role="button"], .reaction-badge, .post-options-container')) return;
         navigate(`/${primaryAuthor.nickname}/status/${post.id}`);
     };
@@ -226,7 +227,7 @@ const PostCard = ({ post, openBrowser, openShareModal }) => {
 
     return (
         <>
-            <div className="post-card" onClick={handleCardClick}>
+            <div className={`post-card${isDetailView ? ' detail-view' : ''}`} onClick={handleCardClick}>
                 <div className="post-thread-container">
                     <div className="post-main-content">
                         <Link to={`/${primaryAuthor.nickname}`} className="post-avatar-link">
@@ -301,10 +302,18 @@ const PostCard = ({ post, openBrowser, openShareModal }) => {
                                             <Heart size={18} />
                                             <span>{post.likesCount || 0}</span>
                                         </button>
-                                        <button className="post-action-button" onClick={() => setCommentsVisible(!commentsVisible)} title="Коментарі">
-                                            <MessageCircle size={18} />
-                                            <span>{post.commentsCount || 0}</span>
-                                        </button>
+                                        {!isDetailView && (
+                                            <button className="post-action-button" onClick={() => setCommentsVisible(!commentsVisible)} title="Коментарі">
+                                                <MessageCircle size={18} />
+                                                <span>{post.commentsCount || 0}</span>
+                                            </button>
+                                        )}
+                                        {isDetailView && (
+                                            <span className="post-action-button post-action-static" title="Коментарі">
+                                                <MessageCircle size={18} />
+                                                <span>{post.commentsCount || 0}</span>
+                                            </span>
+                                        )}
                                         <button className="post-action-button" onClick={() => setShowFullPicker(true)} title="Реакції">
                                             <Smile size={18} />
                                         </button>
@@ -322,7 +331,7 @@ const PostCard = ({ post, openBrowser, openShareModal }) => {
                             )}
                         </div>
                     </div>
-                    {commentsVisible && <CommentSection postId={post.id} postAuthorId={primaryAuthor.uid} />}
+                    {commentsVisible && !isDetailView && <CommentSection postId={post.id} postAuthorId={primaryAuthor.uid} inputOnly={true} />}
                 </div>
             </div>
             {showFullPicker && (<EmojiPickerPlus onClose={() => setShowFullPicker(false)} onEmojiSelect={handleReactionSelect} />)}

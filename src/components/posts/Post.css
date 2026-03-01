@@ -953,3 +953,100 @@
         margin-left: 0;
     }
 }
+
+/* ======================================================
+   Comment compose row (used in CommentSection)
+   ====================================================== */
+
+.comment-compose-row {
+    display: flex;
+    gap: 0.75rem;
+    align-items: flex-start;
+    padding: 0.875rem 0;
+}
+
+.comment-compose-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0;
+}
+
+.comment-compose-body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.comment-compose-input {
+    width: 100%;
+    background: none;
+    border: none;
+    outline: none;
+    color: var(--color-text-primary);
+    font-size: 0.95rem;
+    line-height: 1.5;
+    resize: none;
+    font-family: inherit;
+    min-height: 36px;
+}
+
+.comment-compose-input::placeholder {
+    color: var(--color-text-secondary);
+}
+
+.comment-compose-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.comment-submit-btn {
+    background: var(--color-accent);
+    color: #fff;
+    border: none;
+    border-radius: 2rem;
+    padding: 0.4rem 1.1rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity 0.15s;
+    line-height: 1.4;
+}
+
+.comment-submit-btn:hover:not(:disabled) {
+    opacity: 0.85;
+}
+
+.comment-submit-btn:disabled {
+    opacity: 0.4;
+    cursor: default;
+}
+
+.comment-loading {
+    font-size: 0.85rem;
+    color: var(--color-text-secondary);
+    padding: 0.75rem 0;
+    text-align: center;
+}
+
+/* detail-view: disable hover/click cues on the card */
+.post-card.detail-view {
+    cursor: default;
+}
+
+.post-card.detail-view:hover {
+    background-color: var(--color-bg-secondary, #1a1a1a);
+}
+
+.post-action-static {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    color: var(--color-text-secondary);
+    font-size: 0.85rem;
+    padding: 0.4rem 0.6rem;
+    cursor: default;
+}

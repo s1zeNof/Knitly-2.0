@@ -4,6 +4,7 @@ import { db } from '../services/firebase';
 import { doc, getDoc } from 'firebase/firestore';
 import { useUserContext } from '../contexts/UserContext';
 import PostCard from '../components/posts/PostCard';
+import CommentSection from '../components/posts/CommentSection';
 import LeftSidebar from '../components/layout/LeftSidebar';
 import './PostPage.css';
 
@@ -13,7 +14,7 @@ const BackIcon = () => (
     </svg>
 );
 
-const PostPage = () => {
+const PostPage = ({ openShareModal }) => {
     const { postId } = useParams();
     const navigate = useNavigate();
     const { user: currentUser } = useUserContext();
@@ -25,8 +26,7 @@ const PostPage = () => {
         if (!postId) { setNotFound(true); setLoading(false); return; }
         const fetchPost = async () => {
             try {
-                const postRef = doc(db, 'posts', postId);
-                const snap = await getDoc(postRef);
+                const snap = await getDoc(doc(db, 'posts', postId));
                 if (snap.exists()) {
                     setPost({ id: snap.id, ...snap.data() });
                 } else {
@@ -42,7 +42,6 @@ const PostPage = () => {
         fetchPost();
     }, [postId]);
 
-    // Scroll to comment hash if present
     useEffect(() => {
         if (!loading && window.location.hash) {
             const el = document.querySelector(window.location.hash);
@@ -50,12 +49,15 @@ const PostPage = () => {
         }
     }, [loading]);
 
+    const primaryAuthor = post
+        ? (post.authors ? post.authors[0] : { uid: post.authorId, nickname: post.authorUsername, photoURL: post.authorAvatarUrl })
+        : null;
+
     return (
         <div className="home-container">
             <LeftSidebar isOpen={true} />
             <main className="main-content post-page-main">
                 <div className="post-page-wrapper">
-                    {/* Back button */}
                     <button className="post-page-back" onClick={() => navigate(-1)}>
                         <BackIcon />
                         <span>Назад</span>
@@ -75,15 +77,28 @@ const PostPage = () => {
                             <button onClick={() => navigate('/')}>На головну</button>
                         </div>
                     ) : (
-                        <div className="post-page-card">
-                            <PostCard
-                                post={post}
-                                currentUser={currentUser}
-                                openBrowser={() => { }}
-                                openShareModal={() => { }}
-                                showComments={true}
+                        <>
+                            {/* Post — detail view (no hover/click navigation) */}
+                            <div className="post-page-card">
+                                <PostCard
+                                    post={post}
+                                    currentUser={currentUser}
+                                    openBrowser={() => {}}
+                                    openShareModal={openShareModal || (() => {})}
+                                    isDetailView={true}
+                                />
+                            </div>
+
+                            {/* Divider */}
+                            <div className="post-page-divider" />
+
+                            {/* Comment compose + full paginated list */}
+                            <CommentSection
+                                postId={post.id}
+                                postAuthorId={primaryAuthor?.uid}
+                                inputOnly={false}
                             />
-                        </div>
+                        </>
                     )}
                 </div>
             </main>
