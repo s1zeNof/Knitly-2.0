@@ -162,3 +162,57 @@
         display: none;
     }
 }
+
+/* ================================================================
+   SIDEBAR DISPLAY MODES (desktop only)
+   ================================================================ */
+
+/* Smooth transition for padding on app-main-content */
+.app-main-content {
+    transition: padding-left 0.25s ease;
+}
+
+/* ── Mode 2: Icons + hover-expand ── */
+body.sidebar-mode-hover .left-sidebar {
+    width: 64px;
+    overflow: hidden;
+    transition: width 0.25s ease, margin-left 0.4s ease-in-out;
+}
+body.sidebar-mode-hover .left-sidebar.open {
+    margin-left: 0;
+}
+body.sidebar-mode-hover .left-sidebar:hover {
+    width: 280px;
+}
+body.sidebar-mode-hover .nav-label,
+body.sidebar-mode-hover .profile-info {
+    opacity: 0;
+    max-width: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    transition: opacity 0.18s ease, max-width 0.25s ease;
+    display: inline-block;
+}
+body.sidebar-mode-hover .left-sidebar:hover .nav-label,
+body.sidebar-mode-hover .left-sidebar:hover .profile-info {
+    opacity: 1;
+    max-width: 220px;
+}
+body.sidebar-mode-hover .sidebar-badge {
+    right: 4px;
+    top: 6px;
+}
+
+/* ── Mode 3: Icons only (tooltip via title attribute) ── */
+body.sidebar-mode-icons .left-sidebar {
+    width: 64px;
+    overflow: hidden;
+}
+body.sidebar-mode-icons .nav-label,
+body.sidebar-mode-icons .profile-info {
+    display: none;
+}
+body.sidebar-mode-icons .sidebar-badge {
+    right: 4px;
+    top: 6px;
+}

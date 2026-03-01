@@ -6,6 +6,7 @@ import { UserProvider, useUserContext } from './contexts/UserContext';
 import { PlayerProvider, usePlayerContext } from './contexts/PlayerContext';
 
 import Header from './components/layout/Header';
+import LeftSidebar from './components/layout/LeftSidebar';
 import Home from './pages/Home';
 import Login from './pages/Login';
 import Register from './pages/Register';
@@ -117,18 +118,31 @@ const AppLayout = () => {
         }
     }, [isMobile, user, isPlayerVisible, inChatView]);
 
-    // Hide sidebar layout offset for guests once auth state is resolved
+    // Manage all sidebar-related body classes (mode + guest fallback)
     useEffect(() => {
+        const modes = ['sidebar-mode-full', 'sidebar-mode-hover', 'sidebar-mode-icons'];
         if (!authLoading && !user) {
+            // Guest: no sidebar at all
             document.body.classList.add('no-sidebar');
+            modes.forEach(m => document.body.classList.remove(m));
+        } else if (user && !isMobile) {
+            // Logged-in on desktop: apply chosen mode
+            document.body.classList.remove('no-sidebar');
+            const mode = user.settings?.sidebar?.mode || 'full';
+            modes.forEach(m => document.body.classList.remove(m));
+            document.body.classList.add(`sidebar-mode-${mode}`);
         } else {
+            // Mobile or still loading: clear all sidebar classes
+            modes.forEach(m => document.body.classList.remove(m));
             document.body.classList.remove('no-sidebar');
         }
-    }, [authLoading, user]);
+    }, [authLoading, user, isMobile]);
 
     const handleToggleSidebar = () => {
         setIsSidebarOpen(prev => !prev);
     };
+
+    const isMessagesPage = location.pathname === '/messages';
 
     return (
         <>
@@ -136,6 +150,8 @@ const AppLayout = () => {
                 showTagPageMenu={isSidebarPage}
                 onTagPageMenuClick={handleToggleSidebar}
             />
+            {/* Global sidebar — all pages except /messages and mobile */}
+            {user && !isMobile && !isMessagesPage && <LeftSidebar isOpen={true} />}
             <main className="app-main-content">
                 <Routes>
                     <Route path="/" element={<Home openBrowser={openBrowser} openShareModal={openShareModal} />} />
@@ -155,7 +171,7 @@ const AppLayout = () => {
                     <Route path="/userlist" element={<UserList />} />
                     <Route path="/create-emoji-pack" element={<CreateEmojiPack />} />
                     <Route path="/track/:trackId" element={<TrackPage />} />
-                    <Route path="/tags/:tagName" element={<TagPage isSidebarOpen={isSidebarOpen} />} />
+                    <Route path="/tags/:tagName" element={<TagPage />} />
                     <Route path="/post/:postId" element={<PostPage />} />
                     <Route path="/notifications" element={<NotificationsPage />} />
                     <Route path="/studio" element={<CreatorStudio />} />

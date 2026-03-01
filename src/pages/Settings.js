@@ -20,6 +20,7 @@ const ChatIcon = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor
 const EmojiIcon = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"></circle><path d="M8 14s1.5 2 4 2 4-2 4-2"></path><line x1="9" y1="9" x2="9.01" y2="9"></line><line x1="15" y1="9" x2="15.01" y2="9"></line></svg>;
 const WalletIcon = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 12V7a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h7"></path><path d="M16 12h4a2 2 0 1 1 0 4h-4v-4z"></path><path d="M18 10V8"></path><path d="M18 16v2"></path></svg>;
 const HistoryIcon = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M1 4v6h6" /><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10" /></svg>;
+const AppearanceIcon = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>;
 
 // Clean SVG icons replacing emoji/text
 const SmileIcon = () => (
@@ -62,6 +63,7 @@ const Settings = () => {
     const [chatFolders, setChatFolders] = useState([]);
     const [isFolderModalOpen, setIsFolderModalOpen] = useState(false);
     const [editingFolder, setEditingFolder] = useState(null);
+    const [sidebarMode, setSidebarMode] = useState('full');
     const [deleteAnimation, setDeleteAnimation] = useState('animation-vortex-out');
     const [messagePrivacy, setMessagePrivacy] = useState('everyone');
     const [groupInvitePrivacy, setGroupInvitePrivacy] = useState('everyone');
@@ -102,6 +104,7 @@ const Settings = () => {
             setProfileImageUrl(user.photoURL || '');
             setBackgroundImageUrl(user.backgroundImage || '');
             setIsNamePublic(user.isNamePublic !== false);
+            setSidebarMode(user.settings?.sidebar?.mode || 'full');
             setDeleteAnimation(user.settings?.chat?.deleteAnimation || 'animation-vortex-out');
             setMessagePrivacy(user.settings?.privacy?.messagePrivacy || 'everyone');
             setGroupInvitePrivacy(user.settings?.privacy?.groupInvitePrivacy || 'everyone');
@@ -209,6 +212,7 @@ const Settings = () => {
                 photoURL: profileImageUrl,
                 backgroundImage: backgroundImageUrl,
                 isNamePublic,
+                'settings.sidebar.mode': sidebarMode,
                 'settings.chat.deleteAnimation': deleteAnimation,
                 'settings.privacy.messagePrivacy': messagePrivacy,
                 'settings.privacy.groupInvitePrivacy': groupInvitePrivacy,
@@ -524,6 +528,36 @@ const Settings = () => {
         );
     };
 
+    const renderAppearanceTab = () => (
+        <div className="settings-tab-content">
+            <div className="form-section">
+                <label>Вигляд бокової панелі <small style={{ fontWeight: 400, opacity: 0.5 }}>лише на ПК</small></label>
+                <p className="form-section-description">Оберіть, як відображається бокова панель навігації на великих екранах.</p>
+                <div className="sidebar-mode-selector">
+                    {[
+                        { value: 'full',  title: 'Завжди повністю',               desc: 'Іконки та підписи сторінок завжди видимі' },
+                        { value: 'hover', title: 'Іконки + розгортання',          desc: 'При наведенні панель розгортається і показує підписи' },
+                        { value: 'icons', title: 'Лише іконки',                   desc: 'Лише іконки, підказка при наведенні курсора' },
+                    ].map(opt => (
+                        <label
+                            key={opt.value}
+                            className={`sidebar-mode-option ${sidebarMode === opt.value ? 'selected' : ''}`}
+                            onClick={() => setSidebarMode(opt.value)}
+                        >
+                            <span className="sidebar-mode-radio">
+                                {sidebarMode === opt.value && <span className="sidebar-mode-radio-dot" />}
+                            </span>
+                            <div>
+                                <strong>{opt.title}</strong>
+                                <span>{opt.desc}</span>
+                            </div>
+                        </label>
+                    ))}
+                </div>
+            </div>
+        </div>
+    );
+
     return (
         <div ref={scrollContainerRef} className="settings-page-container">
             <div className={`settings-page-header ${isHeaderShrunk ? 'shrunk' : ''}`}>
@@ -537,6 +571,7 @@ const Settings = () => {
                     <button className={activeTab === 'wallet' ? 'active' : ''} onClick={() => setActiveTab('wallet')}><WalletIcon /> Гаманець</button>
                     {/* 👇 ДОДАЄМО НОВУ КНОПКУ В САЙДБАР 👇 */}
                     <button className={activeTab === 'giftHistory' ? 'active' : ''} onClick={() => setActiveTab('giftHistory')}><HistoryIcon /> Історія подарунків</button>
+                    <button className={activeTab === 'appearance' ? 'active' : ''} onClick={() => setActiveTab('appearance')}><AppearanceIcon /> Вигляд</button>
                     <button className={activeTab === 'chat' ? 'active' : ''} onClick={() => setActiveTab('chat')}><ChatIcon /> Чати</button>
                     <button className={activeTab === 'emoji' ? 'active' : ''} onClick={() => setActiveTab('emoji')}><EmojiIcon /> Емоджі-паки</button>
                     <button className={activeTab === 'privacy' ? 'active' : ''} onClick={() => setActiveTab('privacy')}><PrivacyIcon /> Приватність</button>
@@ -544,6 +579,7 @@ const Settings = () => {
                 </aside>
                 <main className="settings-main-content">
                     {activeTab === 'profile' && renderProfileTab()}
+                    {activeTab === 'appearance' && renderAppearanceTab()}
                     {activeTab === 'wallet' && <WalletTab />}
                     {activeTab === 'giftHistory' && <GiftHistoryTab />} {/* <-- РЕНДЕРИМО НОВИЙ КОМПОНЕНТ */}
                     {activeTab === 'chat' && renderChatTab()}

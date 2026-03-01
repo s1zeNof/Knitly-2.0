@@ -5,10 +5,6 @@ import { collection, query, where, orderBy, limit, getDocs } from 'firebase/fire
 import { getTagIllustration } from '../config/tagConfig';
 import { usePlayerContext } from '../contexts/PlayerContext'; 
 
-// --- ПОЧАТОК ЗМІН ---
-import LeftSidebar from '../components/layout/LeftSidebar'; // Імпортуємо новий компонент
-// --- КІНЕЦЬ ЗМІН ---
-
 import TrackList from '../components/common/TrackList';
 import PageLoader from '../components/common/PageLoader';
 import './TagPage.css';
@@ -16,9 +12,7 @@ import default_picture from '../img/Default-Images/default-picture.svg';
 
 const PlayAllIcon = () => <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>;
 
-// --- ПОЧАТОК ЗМІН ---
-const TagPage = ({ isSidebarOpen }) => {
-// --- КІНЕЦЬ ЗМІН ---
+const TagPage = () => {
     const { tagName } = useParams();
     const { handlePlayPause, addToQueue } = usePlayerContext();
 
@@ -108,11 +102,8 @@ const TagPage = ({ isSidebarOpen }) => {
         return <PageLoader text="Завантаження..." />;
     }
 
-    // --- ПОЧАТОК ЗМІН ---
     return (
-        <div className="tag-page-wrapper">
-            <LeftSidebar isOpen={isSidebarOpen} />
-            <div className={`tag-page-content-pusher ${isSidebarOpen ? 'sidebar-open' : ''}`}>
+        <div className="tag-page-content-pusher">
                 <div className="tag-page-container">
                     <header className="tag-hero-section" style={{ backgroundImage: `url(${illustration})` }}>
                         <div className="tag-hero-overlay"></div>
@@ -170,9 +161,7 @@ const TagPage = ({ isSidebarOpen }) => {
                     </main>
                 </div>
             </div>
-        </div>
     );
-    // --- КІНЕЦЬ ЗМІН ---
 };
 
 export default TagPage;

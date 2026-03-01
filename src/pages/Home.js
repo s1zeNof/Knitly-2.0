@@ -6,7 +6,6 @@ import { db } from '../services/firebase';
 import { collection, getDocs, query, where, orderBy, limit } from 'firebase/firestore';
 import { getTagIllustration } from '../config/tagConfig';
 
-import LeftSidebar from '../components/layout/LeftSidebar';
 import './Home.css';
 import default_picture from '../img/Default-Images/default-picture.svg';
 
@@ -115,10 +114,8 @@ const Home = ({ openBrowser, openShareModal }) => {
     }, [currentUser?.uid, followingRef]); // eslint-disable-line react-hooks/exhaustive-deps
 
     return (
-        <>
-            <div className="home-container">
-                <LeftSidebar isOpen={true} />
-                <main className="main-content">
+        <div className="home-container">
+            <main className="main-content">
                     {(loading || authLoading) ? <HomeLoader /> : (
                         <>
                             {/* Hero Section */}
@@ -238,8 +235,7 @@ const Home = ({ openBrowser, openShareModal }) => {
                         </>
                     )}
                 </main>
-            </div>
-        </>
+        </div>
     );
 };
 

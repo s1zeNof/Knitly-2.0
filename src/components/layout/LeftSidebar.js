@@ -44,27 +44,25 @@ const LeftSidebar = ({ isOpen }) => {
                     </div>
                 )}
                 <nav className="sidebar-nav">
-                    <NavLink to="/" className="nav-item"><HomeIcon /> Головна</NavLink>
-                    <NavLink to="/gifts" className="nav-item"><GiftIcon /> Подарунки</NavLink>
-                    <NavLink to="/apps" className="nav-item"><AppsIcon /> Міні-додатки</NavLink>
-                    {user && <NavLink to="/studio" className="nav-item"><DashboardIcon /> Творча студія</NavLink>}
-                    <NavLink to="/upload" className="nav-item"><UploadIcon /> Завантажити</NavLink>
-                    <NavLink to="/library" className="nav-item"><LibraryIcon /> Моя бібліотека</NavLink>
-                    
-                    <NavLink to="/messages" className="nav-item">
-                        <MessagesIcon /> Повідомлення
+                    <NavLink to="/" className="nav-item" title="Головна"><HomeIcon /><span className="nav-label">Головна</span></NavLink>
+                    <NavLink to="/gifts" className="nav-item" title="Подарунки"><GiftIcon /><span className="nav-label">Подарунки</span></NavLink>
+                    <NavLink to="/apps" className="nav-item" title="Міні-додатки"><AppsIcon /><span className="nav-label">Міні-додатки</span></NavLink>
+                    {user && <NavLink to="/studio" className="nav-item" title="Творча студія"><DashboardIcon /><span className="nav-label">Творча студія</span></NavLink>}
+                    <NavLink to="/upload" className="nav-item" title="Завантажити"><UploadIcon /><span className="nav-label">Завантажити</span></NavLink>
+                    <NavLink to="/library" className="nav-item" title="Моя бібліотека"><LibraryIcon /><span className="nav-label">Моя бібліотека</span></NavLink>
+                    <NavLink to="/messages" className="nav-item" title="Повідомлення">
+                        <MessagesIcon /><span className="nav-label">Повідомлення</span>
                         {totalUnreadMessages > 0 && <span className="sidebar-badge">{totalUnreadMessages}</span>}
                     </NavLink>
-                    <NavLink to="/notifications" className="nav-item">
-                        <BellIcon /> Сповіщення
+                    <NavLink to="/notifications" className="nav-item" title="Сповіщення">
+                        <BellIcon /><span className="nav-label">Сповіщення</span>
                         {unreadNotificationsCount > 0 && <span className="sidebar-badge">{unreadNotificationsCount}</span>}
                     </NavLink>
-
                 </nav>
             </div>
             <div className="sidebar-footer">
-                <Link to="/settings" className="nav-item"><SettingsIcon /> Налаштування</Link>
-                <Link to="/help" className="nav-item"><HelpIcon /> Допомога</Link>
+                <Link to="/settings" className="nav-item" title="Налаштування"><SettingsIcon /><span className="nav-label">Налаштування</span></Link>
+                <Link to="/help" className="nav-item" title="Допомога"><HelpIcon /><span className="nav-label">Допомога</span></Link>
             </div>
         </aside>
     );

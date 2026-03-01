@@ -3,7 +3,6 @@ import { useParams, useNavigate, useLocation, Link } from 'react-router-dom';
 import { collection, query, where, getDocs, getDoc, doc, updateDoc, arrayUnion, arrayRemove } from 'firebase/firestore';
 import { db } from '../services/firebase';
 import { useUserContext } from '../contexts/UserContext';
-import LeftSidebar from '../components/layout/LeftSidebar';
 import default_picture from '../img/Default-Images/default-picture.svg';
 import './FollowersPage.css';
 
@@ -218,7 +217,6 @@ const FollowersPage = () => {
 
     const withLayout = (children) => (
         <div className="home-container">
-            <LeftSidebar isOpen={true} />
             <main className="main-content followers-main">
                 <div className="followers-page">
                     {children}

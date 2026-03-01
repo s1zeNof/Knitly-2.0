@@ -79,8 +79,22 @@ body {
     /* --- КІНЕЦЬ ЗМІН --- */
 }
 
-/* When user is a guest, sidebar is hidden — remove its 280px left offset */
+/* When user is a guest, sidebar is hidden — no offset needed */
 body.no-sidebar .main-content {
+    margin-left: 0;
+    max-width: 100%;
+}
+
+/* ── Global sidebar content offset per display mode ── */
+/* Sidebar is position:fixed — shift app-main-content instead of per-page margins */
+body.sidebar-mode-full  .app-main-content { padding-left: 280px; }
+body.sidebar-mode-hover .app-main-content { padding-left: 64px; }
+body.sidebar-mode-icons .app-main-content { padding-left: 64px; }
+
+/* Reset inner .main-content margin — global sidebar now owns the offset */
+body.sidebar-mode-full  .main-content,
+body.sidebar-mode-hover .main-content,
+body.sidebar-mode-icons .main-content {
     margin-left: 0;
     max-width: 100%;
 }

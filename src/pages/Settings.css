@@ -942,6 +942,75 @@ input:checked+.slider:before {
     white-space: pre-wrap;
 }
 
+/* ── Sidebar mode selector (Appearance tab) ── */
+.sidebar-mode-selector {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-top: 0.75rem;
+}
+
+.sidebar-mode-option {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.85rem 1rem;
+    border-radius: 0.5rem;
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: background-color 0.15s, border-color 0.15s;
+}
+
+.sidebar-mode-option:hover {
+    background-color: rgba(255, 255, 255, 0.04);
+}
+
+.sidebar-mode-option.selected {
+    border-color: var(--color-accent);
+    background-color: rgba(168, 85, 247, 0.08);
+}
+
+.sidebar-mode-radio {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    border: 2px solid var(--color-border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: border-color 0.15s;
+}
+
+.sidebar-mode-option.selected .sidebar-mode-radio {
+    border-color: var(--color-accent);
+}
+
+.sidebar-mode-radio-dot {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: var(--color-accent);
+    display: block;
+}
+
+.sidebar-mode-option div {
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+}
+
+.sidebar-mode-option strong {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--color-text-primary);
+}
+
+.sidebar-mode-option span {
+    font-size: 0.82rem;
+    color: var(--color-text-secondary);
+}
+
 .preview-modal-note {
     display: flex;
     align-items: center;
