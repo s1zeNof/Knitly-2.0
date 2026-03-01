@@ -46,7 +46,6 @@ const Settings = () => {
     const [firstName, setFirstName] = useState('');
     const [lastName, setLastName] = useState('');
     const [birthDate, setBirthDate] = useState('');
-    const [displayName, setDisplayName] = useState('');
     const [nickname, setNickname] = useState('');
     const [description, setDescription] = useState('');
     const [profileImageUrl, setProfileImageUrl] = useState('');
@@ -98,7 +97,6 @@ const Settings = () => {
             setFirstName(user.firstName || '');
             setLastName(user.lastName || '');
             setBirthDate(user.birthDate || '');
-            setDisplayName(user.displayName || '');
             setNickname(user.nickname || '');
             setDescription(user.description || '');
             setProfileImageUrl(user.photoURL || '');
@@ -197,12 +195,13 @@ const Settings = () => {
             }
 
             const userRef = doc(db, 'users', user.uid);
+            const combinedDisplayName = [firstName.trim(), lastName.trim()].filter(Boolean).join(' ');
             const updatedData = {
                 firstName: firstName.trim(),
                 lastName: lastName.trim(),
                 birthDate: birthDate || '',
-                displayName,
-                displayName_lowercase: displayName.toLowerCase(),
+                displayName: combinedDisplayName,
+                displayName_lowercase: combinedDisplayName.toLowerCase(),
                 nickname,
                 description,
                 country: selectedCountry ? selectedCountry.value : '',
@@ -299,17 +298,11 @@ const Settings = () => {
             </div>
             <div className="form-row">
                 <div className="form-group">
-                    <label htmlFor="displayName">Ім&apos;я та Прізвище <small style={{ fontWeight: 400, opacity: 0.5 }}>відображається на профілі</small></label>
-                    <input id="displayName" type="text" className="form-input" value={displayName} onChange={(e) => setDisplayName(e.target.value)} placeholder="Як вас звуть" />
-                </div>
-            </div>
-            <div className="form-row">
-                <div className="form-group">
-                    <label htmlFor="settings-first-name">Справжнє ім&apos;я <small style={{ fontWeight: 400, opacity: 0.5 }}>не публічне</small></label>
+                    <label htmlFor="settings-first-name">Ім&apos;я</label>
                     <input id="settings-first-name" type="text" className="form-input" value={firstName} onChange={(e) => setFirstName(e.target.value)} placeholder="Ім'я" />
                 </div>
                 <div className="form-group">
-                    <label htmlFor="settings-last-name">Прізвище <small style={{ fontWeight: 400, opacity: 0.5 }}>не публічне</small></label>
+                    <label htmlFor="settings-last-name">Прізвище</label>
                     <input id="settings-last-name" type="text" className="form-input" value={lastName} onChange={(e) => setLastName(e.target.value)} placeholder="Прізвище" />
                 </div>
             </div>
@@ -320,7 +313,6 @@ const Settings = () => {
                 </div>
             </div>
             <div className="form-row">
-                <div className="form-group" style={{ display: 'none' }}>{/* displayName handled above */}</div>
                 <div className="form-group">
                     <label htmlFor="nickname">Нікнейм (URL профілю)</label>
                     <div className="input-group">
@@ -595,7 +587,7 @@ const Settings = () => {
                                     alt="Аватар"
                                 />
                             </div>
-                            <p className="preview-profile-name">{displayName || 'Ваше ім\'я'}</p>
+                            <p className="preview-profile-name">{[firstName, lastName].filter(Boolean).join(' ') || 'Ваше ім\'я'}</p>
                             <p className="preview-profile-nickname">@{nickname || 'nickname'}</p>
                             {description && <p className="preview-profile-desc">{description}</p>}
                         </div>
