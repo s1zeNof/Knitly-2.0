@@ -2,17 +2,25 @@
    FollowersPage.css
    ================================================================ */
 
+/* ── Layout integration ── */
+/* Kills the extra padding that main-content adds so our topbar sits flush */
+.followers-main {
+    padding-top: 0 !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+}
+
 /* ── Page shell ── */
+/* Lives inside .main-content — no own background or min-height needed */
 .followers-page {
-    min-height: 100vh;
-    background: var(--color-bg, #0e0e10);
-    color: var(--color-text, #f0f0f0);
     display: flex;
     flex-direction: column;
-    max-width: 1100px;
+    width: 100%;
+    max-width: 900px;
     margin: 0 auto;
-    padding: 0 1rem 4rem;
+    padding: 0 2rem 4rem;
     box-sizing: border-box;
+    color: var(--color-text-primary, #e5e7eb);
 }
 
 /* ── Top bar ── */
@@ -20,11 +28,13 @@
     display: flex;
     align-items: center;
     gap: 0.75rem;
-    padding: 1rem 0 0.75rem;
+    padding: 1.25rem 0 0.75rem;
     position: sticky;
     top: 0;
     z-index: 10;
-    background: var(--color-bg, #0e0e10);
+    background: rgba(18, 18, 18, 0.92);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
     border-bottom: 1px solid rgba(255, 255, 255, 0.06);
     margin-bottom: 0.25rem;
 }
@@ -298,9 +308,11 @@
 }
 
 /* ── Responsive ── */
-@media (max-width: 600px) {
+@media (max-width: 768px) {
+    /* On mobile the sidebar is hidden, so no margin-left needed.
+       The .main-content from home-container handles this automatically. */
     .followers-page {
-        padding: 0 0.5rem 5rem;
+        padding: 0 1rem 5rem;
     }
     .followers-grid {
         grid-template-columns: 1fr;

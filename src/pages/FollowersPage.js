@@ -3,6 +3,7 @@ import { useParams, useNavigate, useLocation, Link } from 'react-router-dom';
 import { collection, query, where, getDocs, getDoc, doc, updateDoc, arrayUnion, arrayRemove } from 'firebase/firestore';
 import { db } from '../services/firebase';
 import { useUserContext } from '../contexts/UserContext';
+import LeftSidebar from '../components/layout/LeftSidebar';
 import default_picture from '../img/Default-Images/default-picture.svg';
 import './FollowersPage.css';
 
@@ -222,20 +223,29 @@ const FollowersPage = () => {
         }
     };
 
-    if (pageLoading) {
-        return (
-            <div className="followers-page">
-                <div className="followers-topbar">
-                    <button className="followers-back" onClick={() => navigate(-1)}><BackIcon /></button>
-                    <div className="skeleton-box" style={{ width: 140, height: 20, borderRadius: 8 }} />
+    const withLayout = (children) => (
+        <div className="home-container">
+            <LeftSidebar isOpen={true} />
+            <main className="main-content followers-main">
+                <div className="followers-page">
+                    {children}
                 </div>
+            </main>
+        </div>
+    );
+
+    if (pageLoading) {
+        return withLayout(
+            <div className="followers-topbar">
+                <button className="followers-back" onClick={() => navigate(-1)}><BackIcon /></button>
+                <div className="skeleton-box" style={{ width: 140, height: 20, borderRadius: 8 }} />
             </div>
         );
     }
 
     if (!profileUser) {
-        return (
-            <div className="followers-page">
+        return withLayout(
+            <>
                 <div className="followers-topbar">
                     <button className="followers-back" onClick={() => navigate(-1)}><BackIcon /></button>
                 </div>
@@ -243,13 +253,12 @@ const FollowersPage = () => {
                     <span className="followers-empty-icon">🔍</span>
                     <h3>Користувача не знайдено</h3>
                 </div>
-            </div>
+            </>
         );
     }
 
-    return (
-        <div className="followers-page">
-
+    return withLayout(
+        <>
             {/* ── Top bar ── */}
             <div className="followers-topbar">
                 <button className="followers-back" onClick={() => navigate(`/${nickname}`)} aria-label="Назад">
@@ -303,7 +312,7 @@ const FollowersPage = () => {
                     </div>
                 )}
             </div>
-        </div>
+        </>
     );
 };
 
