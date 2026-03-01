@@ -35,6 +35,7 @@ import AppsMarketplace from './pages/AppsMarketplace';
 import GiftsMarketplace from './pages/GiftsMarketplace';
 import ShareModal from './components/common/ShareModal';
 import CloudinaryMigration from './pages/CloudinaryMigration';
+import GuestPrompt from './components/common/GuestPrompt';
 
 import './styles/index.css';
 import './components/posts/Post.css';
@@ -54,7 +55,7 @@ const queryClient = new QueryClient({
 
 const AppLayout = () => {
     const { notification, currentTrack } = usePlayerContext();
-    const { user } = useUserContext();
+    const { user, authLoading } = useUserContext();
     const isPlayerVisible = !!currentTrack;
     const location = useLocation();
 
@@ -116,6 +117,15 @@ const AppLayout = () => {
         }
     }, [isMobile, user, isPlayerVisible, inChatView]);
 
+    // Hide sidebar layout offset for guests once auth state is resolved
+    useEffect(() => {
+        if (!authLoading && !user) {
+            document.body.classList.add('no-sidebar');
+        } else {
+            document.body.classList.remove('no-sidebar');
+        }
+    }, [authLoading, user]);
+
     const handleToggleSidebar = () => {
         setIsSidebarOpen(prev => !prev);
     };
@@ -173,6 +183,9 @@ const AppLayout = () => {
             {isShareModalOpen && postToShare && (
                 <ShareModal post={postToShare} onClose={closeShareModal} />
             )}
+
+            {/* Guest prompt: bottom banner + 20s popup for unauthenticated users */}
+            {!user && <GuestPrompt />}
 
             {notification.message && (
                 <div className={`toast-notification ${notification.type}`}>

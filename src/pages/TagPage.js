@@ -10,6 +10,7 @@ import LeftSidebar from '../components/layout/LeftSidebar'; // Імпортує�
 // --- КІНЕЦЬ ЗМІН ---
 
 import TrackList from '../components/common/TrackList';
+import PageLoader from '../components/common/PageLoader';
 import './TagPage.css';
 import default_picture from '../img/Default-Images/default-picture.svg';
 
@@ -104,7 +105,7 @@ const TagPage = ({ isSidebarOpen }) => {
     };
 
     if (loading) {
-        return <div className="tag-page-loader">Завантаження...</div>;
+        return <PageLoader text="Завантаження..." />;
     }
 
     // --- ПОЧАТОК ЗМІН ---

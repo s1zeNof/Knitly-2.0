@@ -5,6 +5,7 @@ import { doc, getDoc, collection, query, where, documentId, getDocs, updateDoc }
 import { usePlayerContext } from '../contexts/PlayerContext';
 import { useUserContext } from '../contexts/UserContext';
 import TrackList from '../components/common/TrackList';
+import PageLoader from '../components/common/PageLoader';
 import './PlaylistPage.css';
 
 // Іконки
@@ -124,7 +125,7 @@ const PlaylistPage = () => {
         }
     };
 
-    if (loading) return <div className="loading-placeholder">Завантаження плейлиста...</div>;
+    if (loading) return <PageLoader text="Завантаження плейлиста..." />;
     if (!playlist) return <div className="loading-placeholder">Плейлист не знайдено.</div>;
 
     const isOwner = currentUser?.uid === playlist.creatorId;

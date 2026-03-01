@@ -1,0 +1,276 @@
+/* ================================================================
+   GuestPrompt — bottom banner + 20-second popup
+   ================================================================ */
+
+/* ── Bottom banner ── */
+.guest-banner {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 900;
+    background: rgba(15, 15, 20, 0.92);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border-top: 1px solid rgba(168, 85, 247, 0.25);
+    padding: 1rem 2rem;
+    animation: banner-slide-up 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes banner-slide-up {
+    from { transform: translateY(100%); opacity: 0; }
+    to   { transform: translateY(0);    opacity: 1; }
+}
+
+.guest-banner-content {
+    max-width: 1100px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.5rem;
+}
+
+.guest-banner-text {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+}
+.guest-banner-title {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #fff;
+    white-space: nowrap;
+}
+.guest-banner-sub {
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.5);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.guest-banner-actions {
+    display: flex;
+    gap: 0.65rem;
+    flex-shrink: 0;
+}
+
+.guest-btn-login {
+    padding: 0.5rem 1.25rem;
+    border-radius: 500px;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    background: transparent;
+    color: #fff;
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: border-color 0.15s, background 0.15s;
+}
+.guest-btn-login:hover {
+    border-color: rgba(255, 255, 255, 0.5);
+    background: rgba(255, 255, 255, 0.06);
+}
+
+.guest-btn-signup {
+    padding: 0.5rem 1.25rem;
+    border-radius: 500px;
+    border: none;
+    background: var(--color-accent, #a855f7);
+    color: #fff;
+    font-size: 0.875rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.15s, transform 0.1s;
+}
+.guest-btn-signup:hover {
+    background: #9333ea;
+    transform: translateY(-1px);
+}
+
+/* ── Popup overlay ── */
+.guest-popup-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 1200;
+    background: rgba(0, 0, 0, 0.65);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1.5rem;
+    animation: overlay-fade-in 0.3s ease;
+}
+
+@keyframes overlay-fade-in {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+}
+
+/* ── Popup card ── */
+.guest-popup {
+    position: relative;
+    width: 100%;
+    max-width: 420px;
+    background: rgba(22, 22, 28, 0.97);
+    border: 1px solid rgba(168, 85, 247, 0.2);
+    border-radius: 24px;
+    padding: 2.5rem 2rem 2rem;
+    box-shadow:
+        0 0 0 1px rgba(255,255,255,0.05),
+        0 32px 64px rgba(0, 0, 0, 0.6),
+        0 0 60px rgba(168, 85, 247, 0.12);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    animation: popup-scale-in 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes popup-scale-in {
+    from { opacity: 0; transform: scale(0.88) translateY(16px); }
+    to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.guest-popup-close {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: none;
+    background: rgba(255, 255, 255, 0.08);
+    color: rgba(255, 255, 255, 0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+}
+.guest-popup-close:hover {
+    background: rgba(255, 255, 255, 0.14);
+    color: #fff;
+}
+
+/* ── Equalizer decoration ── */
+.guest-popup-icon {
+    display: flex;
+    align-items: flex-end;
+    gap: 4px;
+    height: 44px;
+    margin-bottom: 1.5rem;
+}
+
+.guest-eq-bar {
+    width: 6px;
+    border-radius: 3px;
+    background: var(--color-accent, #a855f7);
+    transform-origin: bottom;
+    animation: guest-eq 0.9s ease-in-out infinite;
+}
+.guest-eq-bar:nth-child(1) { height: 18px; animation-delay: 0s; }
+.guest-eq-bar:nth-child(2) { height: 36px; animation-delay: 0.15s; }
+.guest-eq-bar:nth-child(3) { height: 44px; animation-delay: 0.3s; }
+.guest-eq-bar:nth-child(4) { height: 28px; animation-delay: 0.45s; }
+.guest-eq-bar:nth-child(5) { height: 16px; animation-delay: 0.6s; }
+
+@keyframes guest-eq {
+    0%, 100% { transform: scaleY(0.35); opacity: 0.5; }
+    50%       { transform: scaleY(1);    opacity: 1; }
+}
+
+/* ── Popup text ── */
+.guest-popup-title {
+    font-size: 1.4rem;
+    font-weight: 800;
+    color: #fff;
+    margin: 0 0 0.75rem;
+    letter-spacing: -0.02em;
+    line-height: 1.2;
+}
+
+.guest-popup-desc {
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.55);
+    line-height: 1.65;
+    margin: 0 0 2rem;
+    max-width: 320px;
+}
+
+/* ── Popup buttons ── */
+.guest-popup-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    width: 100%;
+    margin-bottom: 1.25rem;
+}
+
+.guest-popup-signup {
+    width: 100%;
+    padding: 0.85rem 1.5rem;
+    border-radius: 500px;
+    border: none;
+    background: var(--color-accent, #a855f7);
+    color: #fff;
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.15s, transform 0.1s, box-shadow 0.15s;
+}
+.guest-popup-signup:hover {
+    background: #9333ea;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 20px rgba(168, 85, 247, 0.4);
+}
+
+.guest-popup-login {
+    width: 100%;
+    padding: 0.85rem 1.5rem;
+    border-radius: 500px;
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    background: transparent;
+    color: rgba(255, 255, 255, 0.85);
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: border-color 0.15s, background 0.15s;
+}
+.guest-popup-login:hover {
+    border-color: rgba(255, 255, 255, 0.4);
+    background: rgba(255, 255, 255, 0.05);
+}
+
+/* ── Fine print ── */
+.guest-popup-terms {
+    font-size: 0.72rem;
+    color: rgba(255, 255, 255, 0.3);
+    line-height: 1.6;
+    margin: 0;
+}
+.guest-popup-link {
+    color: rgba(168, 85, 247, 0.7);
+    cursor: pointer;
+    transition: color 0.15s;
+}
+.guest-popup-link:hover { color: #a855f7; }
+
+/* ── Mobile ── */
+@media (max-width: 600px) {
+    .guest-banner {
+        padding: 0.875rem 1rem;
+    }
+    .guest-banner-content {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.75rem;
+    }
+    .guest-banner-sub { display: none; }
+    .guest-banner-actions { width: 100%; }
+    .guest-btn-login, .guest-btn-signup { flex: 1; text-align: center; }
+    .guest-popup { padding: 2rem 1.25rem 1.5rem; border-radius: 20px; }
+    .guest-popup-title { font-size: 1.2rem; }
+}

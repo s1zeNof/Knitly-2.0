@@ -110,6 +110,13 @@ const MessagesPage = ({ openBrowser }) => {
         return conversations.find(c => c.id === selectedConversationId);
     }, [conversations, selectedConversationId, currentUser]);
 
+    // Redirect non-authenticated users away from messages
+    useEffect(() => {
+        if (!authLoading && !currentUser) {
+            navigate('/', { replace: true });
+        }
+    }, [authLoading, currentUser, navigate]);
+
     useEffect(() => {
         if (!currentUser) { if (!authLoading) setLoading(false); return; }
         setLoading(true);

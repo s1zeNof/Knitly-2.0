@@ -19,9 +19,12 @@ const AppsIcon = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor
 
 
 const LeftSidebar = ({ isOpen }) => {
-    const { user, totalUnreadMessages, unreadNotificationsCount } = useUserContext();
+    const { user, authLoading, totalUnreadMessages, unreadNotificationsCount } = useUserContext();
     const { currentTrack } = usePlayerContext();
     const isPlayerVisible = !!currentTrack;
+
+    // Guests never see the sidebar — hide it once auth state is resolved
+    if (!authLoading && !user) return null;
 
     return (
         <aside className={`left-sidebar ${isOpen ? 'open' : ''} ${isPlayerVisible ? 'player-visible-padding' : ''}`}>

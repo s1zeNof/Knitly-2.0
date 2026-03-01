@@ -233,6 +233,17 @@ header::before {
     cursor: pointer;
 }
 
+/* Invisible bridge that fills the 10px gap between avatar and dropdown
+   so hover doesn't break when moving the cursor between them */
+.user-profile::after {
+    content: '';
+    position: absolute;
+    bottom: -14px;
+    left: -8px;
+    right: -8px;
+    height: 14px;
+}
+
 .user-profile .profile-picture {
     border-radius: 50%;
     width: 42px;

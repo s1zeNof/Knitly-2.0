@@ -79,6 +79,12 @@ body {
     /* --- КІНЕЦЬ ЗМІН --- */
 }
 
+/* When user is a guest, sidebar is hidden — remove its 280px left offset */
+body.no-sidebar .main-content {
+    margin-left: 0;
+    max-width: 100%;
+}
+
 a {
     color: inherit;
     text-decoration: none;

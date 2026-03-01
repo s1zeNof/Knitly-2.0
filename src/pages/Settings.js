@@ -299,11 +299,17 @@ const Settings = () => {
             </div>
             <div className="form-row">
                 <div className="form-group">
-                    <label htmlFor="settings-first-name">Ім&apos;я</label>
+                    <label htmlFor="displayName">Ім&apos;я та Прізвище <small style={{ fontWeight: 400, opacity: 0.5 }}>відображається на профілі</small></label>
+                    <input id="displayName" type="text" className="form-input" value={displayName} onChange={(e) => setDisplayName(e.target.value)} placeholder="Як вас звуть" />
+                </div>
+            </div>
+            <div className="form-row">
+                <div className="form-group">
+                    <label htmlFor="settings-first-name">Справжнє ім&apos;я <small style={{ fontWeight: 400, opacity: 0.5 }}>не публічне</small></label>
                     <input id="settings-first-name" type="text" className="form-input" value={firstName} onChange={(e) => setFirstName(e.target.value)} placeholder="Ім'я" />
                 </div>
                 <div className="form-group">
-                    <label htmlFor="settings-last-name">Прізвище <small style={{ fontWeight: 400, opacity: 0.5 }}>необов&apos;язково</small></label>
+                    <label htmlFor="settings-last-name">Прізвище <small style={{ fontWeight: 400, opacity: 0.5 }}>не публічне</small></label>
                     <input id="settings-last-name" type="text" className="form-input" value={lastName} onChange={(e) => setLastName(e.target.value)} placeholder="Прізвище" />
                 </div>
             </div>
@@ -314,10 +320,7 @@ const Settings = () => {
                 </div>
             </div>
             <div className="form-row">
-                <div className="form-group">
-                    <label htmlFor="displayName">Псевдонім / Назва</label>
-                    <input id="displayName" type="text" className="form-input" value={displayName} onChange={(e) => setDisplayName(e.target.value)} placeholder="Відображуване ім'я" />
-                </div>
+                <div className="form-group" style={{ display: 'none' }}>{/* displayName handled above */}</div>
                 <div className="form-group">
                     <label htmlFor="nickname">Нікнейм (URL профілю)</label>
                     <div className="input-group">

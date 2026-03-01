@@ -5,6 +5,7 @@ import { doc, getDoc, collection, query, where, orderBy, limit, getDocs } from '
 import { usePlayerContext } from '../contexts/PlayerContext';
 import Waveform from '../components/player/Waveform'; // <<< ПЕРЕВІРТЕ НАЯВНІСТЬ ЦЬОГО ІМПОРТУ
 import TrackList from '../components/common/TrackList';
+import PageLoader from '../components/common/PageLoader';
 import './TrackPage.css';
 import default_picture from '../img/Default-Images/default-picture.svg';
 
@@ -89,7 +90,7 @@ const TrackPage = () => {
     };
 
     if (loading) {
-        return <div className="track-page-loading">Завантаження треку...</div>;
+        return <PageLoader text="Завантаження треку..." />;
     }
 
     if (!track) {
@@ -144,7 +145,7 @@ const TrackPage = () => {
                     <div className="track-content-section">
                         <h3>Популярні треки від {author?.displayName || 'виконавця'}</h3>
                         {loadingPopular ? (
-                            <p>Завантаження...</p>
+                            <PageLoader />
                         ) : popularTracks.length > 0 ? (
                             <>
                                 <TrackList initialTracks={popularTracks.slice(0, visiblePopularCount)} />
@@ -161,7 +162,7 @@ const TrackPage = () => {
 
                     <div className="track-content-section">
                         <h3>Альбоми</h3>
-                        {loadingPopular ? <p>Завантаження...</p> : albums.length > 0 ? (
+                        {loadingPopular ? <PageLoader /> : albums.length > 0 ? (
                              <div className="albums-grid">
                                 {albums.map(album => (
                                     <div key={album.id} className="album-card">

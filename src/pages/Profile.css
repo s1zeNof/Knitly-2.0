@@ -77,9 +77,10 @@
 }
 
 /* ---- DESKTOP/MOBILE ACTION GROUP TOGGLE ---- */
-/* Desktop: show beside avatar, hide below stats */
-.profile-actions-mobile-only { display: none; }
-.profile-actions-desktop-only { display: flex; }
+/* Use double-class selectors to beat .page-profile-actions-group { display:flex }
+   which has the same specificity but appears later in the file */
+.page-profile-actions-group.profile-actions-mobile-only { display: none; }
+.page-profile-actions-group.profile-actions-desktop-only { display: flex; }
 
 /* ---- AVATAR + ACTION ROW ---- */
 .page-profile-header-content {
