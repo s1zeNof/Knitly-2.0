@@ -173,30 +173,32 @@
 }
 
 /* ── Mode 2: Icons + hover-expand ── */
+/*
+   With box-sizing: border-box (set on .left-sidebar), width: 64px includes padding.
+   We reduce side padding to 11px so content area = 64 - 22 = 42px:
+     - nav-item left pad: 10px + icon: 22px = 32px → icon fits ✓
+     - gap (15px) + label start: 47px → clipped by sidebar overflow ✓
+   On hover the sidebar grows to 280px and padding is restored to 20px.
+*/
 body.sidebar-mode-hover .left-sidebar {
     width: 64px;
+    padding-left: 11px;
+    padding-right: 11px;
     overflow: hidden;
-    transition: width 0.25s ease, margin-left 0.4s ease-in-out;
-}
-body.sidebar-mode-hover .left-sidebar.open {
-    margin-left: 0;
+    transition: width 0.25s ease, padding-left 0.25s ease, padding-right 0.25s ease, margin-left 0.4s ease-in-out;
 }
 body.sidebar-mode-hover .left-sidebar:hover {
     width: 280px;
+    padding-left: 20px;
+    padding-right: 20px;
 }
-body.sidebar-mode-hover .nav-label,
-body.sidebar-mode-hover .profile-info {
-    opacity: 0;
-    max-width: 0;
-    overflow: hidden;
+/* Keep labels on a single line so they reveal cleanly as sidebar widens */
+body.sidebar-mode-hover .nav-label {
     white-space: nowrap;
-    transition: opacity 0.18s ease, max-width 0.25s ease;
-    display: inline-block;
 }
-body.sidebar-mode-hover .left-sidebar:hover .nav-label,
-body.sidebar-mode-hover .left-sidebar:hover .profile-info {
-    opacity: 1;
-    max-width: 220px;
+body.sidebar-mode-hover .profile-name,
+body.sidebar-mode-hover .profile-nickname {
+    white-space: nowrap;
 }
 body.sidebar-mode-hover .sidebar-badge {
     right: 4px;
@@ -206,6 +208,8 @@ body.sidebar-mode-hover .sidebar-badge {
 /* ── Mode 3: Icons only (tooltip via title attribute) ── */
 body.sidebar-mode-icons .left-sidebar {
     width: 64px;
+    padding-left: 11px;
+    padding-right: 11px;
     overflow: hidden;
 }
 body.sidebar-mode-icons .nav-label,

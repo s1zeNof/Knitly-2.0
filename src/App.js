@@ -60,7 +60,6 @@ const AppLayout = () => {
     const isPlayerVisible = !!currentTrack;
     const location = useLocation();
 
-    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
 
     const [browserUrl, setBrowserUrl] = useState('');
@@ -138,17 +137,12 @@ const AppLayout = () => {
         }
     }, [authLoading, user, isMobile]);
 
-    const handleToggleSidebar = () => {
-        setIsSidebarOpen(prev => !prev);
-    };
-
     const isMessagesPage = location.pathname === '/messages';
 
     return (
         <>
             <Header
                 showTagPageMenu={isSidebarPage}
-                onTagPageMenuClick={handleToggleSidebar}
             />
             {/* Global sidebar — all pages except /messages and mobile */}
             {user && !isMobile && !isMessagesPage && <LeftSidebar isOpen={true} />}
