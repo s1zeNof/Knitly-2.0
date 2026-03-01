@@ -355,6 +355,43 @@ header::before {
     box-shadow: 0 0 10px rgba(236, 72, 153, 0.5);
 }
 
+/* Other user profile header: ← @nickname */
+.other-profile-header {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+}
+
+.mobile-back-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: none;
+    border: none;
+    color: var(--color-text-primary);
+    cursor: pointer;
+    padding: 0.4rem;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    flex-shrink: 0;
+    transition: background 0.15s;
+}
+
+.mobile-back-btn:hover {
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.other-profile-username {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--color-text-primary);
+    flex: 1;
+    text-align: center;
+}
+
 .profile-context-header {
     width: 100%;
     display: flex;

@@ -7,6 +7,26 @@
     box-sizing: border-box;
 }
 
+.auth-back-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    background: none;
+    border: none;
+    color: var(--color-text-secondary);
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 0.5rem 0.25rem;
+    margin-bottom: 0.5rem;
+    border-radius: 8px;
+    transition: color 0.15s;
+}
+
+.auth-back-btn:hover {
+    color: var(--color-text-primary);
+}
+
 .auth-form-wrapper {
     width: 100%;
     max-width: 450px;
