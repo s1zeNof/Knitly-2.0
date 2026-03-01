@@ -105,7 +105,7 @@ const HeaderSearch = () => {
                         </Link>
                     ))}
                     {results?.artists?.map(artist => (
-                        <Link to={`/user/${artist.nickname}`} key={artist.id} className="dropdown-item artist" onClick={closeDropdown}>
+                        <Link to={`/${artist.nickname}`} key={artist.id} className="dropdown-item artist" onClick={closeDropdown}>
                             <img src={artist.photoURL || default_picture} alt={artist.displayName} />
                              <div className="item-info">
                                 <p>{artist.displayName}</p>

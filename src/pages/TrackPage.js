@@ -107,7 +107,7 @@ const TrackPage = () => {
                     </button>
                     <div className="track-header-details">
                         <h1>{track.title}</h1>
-                        <Link to={`/user/${author?.nickname}`}>{track.authorName}</Link>
+                        <Link to={`/${author?.nickname}`}>{track.authorName}</Link>
                     </div>
                 </div>
                 <div className="track-header-waveform">
@@ -127,11 +127,11 @@ const TrackPage = () => {
                     <div className="track-author-card">
                          {author && (
                             <>
-                                <Link to={`/user/${author.nickname}`}>
+                                <Link to={`/${author.nickname}`}>
                                     <img src={author.photoURL || default_picture} alt={author.displayName} />
                                 </Link>
                                 <div className="track-author-info">
-                                    <Link to={`/user/${author.nickname}`}>{author.displayName}</Link>
+                                    <Link to={`/${author.nickname}`}>{author.displayName}</Link>
                                     <span>{author.followers?.length || 0} підписників</span>
                                 </div>
                                 <button className="follow-button disabled" disabled>Підписатися</button>

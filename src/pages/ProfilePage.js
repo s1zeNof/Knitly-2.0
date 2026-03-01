@@ -74,9 +74,9 @@ const ProfilePage = ({ openBrowser, openShareModal }) => {
                         throw new Error("Користувача не знайдено");
                     }
                 } else if (currentUser) {
-                    // /profile route — redirect to canonical /user/:nickname URL
+                    // /profile route — redirect to canonical /:nickname URL
                     if (currentUser.nickname) {
-                        navigate(`/user/${currentUser.nickname}`, { replace: true });
+                        navigate(`/${currentUser.nickname}`, { replace: true });
                         return;
                     }
                     userToFetchId = currentUser.uid;
@@ -121,7 +121,7 @@ const ProfilePage = ({ openBrowser, openShareModal }) => {
                 await addDoc(notificationRef, {
                     type: 'new_follower',
                     fromUser: { uid: currentUser.uid, nickname: currentUser.nickname, photoURL: currentUser.photoURL },
-                    entityId: currentUser.uid, entityLink: `/user/${currentUser.nickname}`,
+                    entityId: currentUser.uid, entityLink: `/${currentUser.nickname}`,
                     timestamp: serverTimestamp(), read: false
                 });
             }

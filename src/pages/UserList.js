@@ -47,7 +47,7 @@ const UserList = () => {
                             <img src={user.photoURL || '/path/to/default-avatar.jpg'} alt={`${user.displayName || 'User'}'s Avatar`} className="sidebar-user-picture" />
                             <div>
                                 {/*<p>{user.displayName || 'No Name'}</p>*/}
-                                <Link to={`/user/${user.nickname || user.id}`}>
+                                <Link to={`/${user.nickname || user.id}`}>
                                 <p>
                                     @{user.nickname || user.id}
                                     {user.isVerified && <img src={verifiedIcon} className="verified-badge" alt="Verified" />}
@@ -76,7 +76,7 @@ const UserList = () => {
                                 <Link to="/profile">
                                     <>{user.displayName || 'No Name'}{user.isVerified && <img src={verifiedIcon} className="verified-badge" alt="Verified" />}</>
                                 </Link> : 
-                                <Link to={`/user/${user.nickname || user.id}`}>
+                                <Link to={`/${user.nickname || user.id}`}>
                                     <>{user.displayName || 'No Name'}{user.isVerified && <img src={verifiedIcon} className="verified-badge" alt="Verified" />}</>
                                 </Link>
                             }

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useMutation, useQueryClient } from 'react-query';
 import { db } from '../../services/firebase';
 import { doc, runTransaction, updateDoc, deleteDoc, getDoc, collection, addDoc, serverTimestamp, increment } from 'firebase/firestore';
@@ -36,6 +36,7 @@ const formatPostTime = (timestamp) => {
 const PostCard = ({ post, openBrowser, openShareModal }) => {
     const { user: currentUser } = useUserContext();
     const { handlePlayPause } = usePlayerContext();
+    const navigate = useNavigate();
     const queryClient = useQueryClient();
     const menuRef = useRef(null);
 
@@ -167,13 +168,18 @@ const PostCard = ({ post, openBrowser, openShareModal }) => {
 
     const handleDeletePost = () => { if (window.confirm('Ви впевнені, що хочете видалити цей допис?')) deletePostMutation.mutate(); };
 
+    const handleCardClick = (e) => {
+        if (e.target.closest('button, a, input, [role="button"], .reaction-badge, .post-options-container')) return;
+        navigate(`/${primaryAuthor.nickname}/status/${post.id}`);
+    };
+
     const renderAuthors = (authors) => {
         if (!authors || authors.length === 0) return null;
         return (
             <div className="post-author-links">
                 {authors.map((author, index) => (
                     <React.Fragment key={author.uid}>
-                        <Link to={`/user/${author.nickname}`} className="post-author-name"> @{author.nickname} </Link>
+                        <Link to={`/${author.nickname}`} className="post-author-name"> @{author.nickname} </Link>
                         {index < authors.length - 2 && ', '}
                         {index === authors.length - 2 && ' та '}
                     </React.Fragment>
@@ -220,10 +226,10 @@ const PostCard = ({ post, openBrowser, openShareModal }) => {
 
     return (
         <>
-            <div className="post-card">
+            <div className="post-card" onClick={handleCardClick}>
                 <div className="post-thread-container">
                     <div className="post-main-content">
-                        <Link to={`/user/${primaryAuthor.nickname}`} className="post-avatar-link">
+                        <Link to={`/${primaryAuthor.nickname}`} className="post-avatar-link">
                             <div className={`post-avatar-wrapper ${!isAvatarLoaded ? 'skeleton' : ''}`}>
                                 <img
                                     key={post.id}

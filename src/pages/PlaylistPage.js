@@ -150,7 +150,7 @@ const PlaylistPage = () => {
                     <p className="playlist-type">Плейлист</p>
                     <h1 className="playlist-title">{playlist.title}</h1>
                     <p className="playlist-creator">
-                        Створено <Link to={`/user/${playlist.creatorName}`}>{playlist.creatorName}</Link> • {playlist.trackIds.length} треків
+                        Створено <Link to={`/${playlist.creatorName}`}>{playlist.creatorName}</Link> • {playlist.trackIds.length} треків
                     </p>
                 </div>
             </header>
