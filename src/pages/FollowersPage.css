@@ -1,0 +1,327 @@
+/* ================================================================
+   FollowersPage.css
+   ================================================================ */
+
+/* ── Page shell ── */
+.followers-page {
+    min-height: 100vh;
+    background: var(--color-bg, #0e0e10);
+    color: var(--color-text, #f0f0f0);
+    display: flex;
+    flex-direction: column;
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 1rem 4rem;
+    box-sizing: border-box;
+}
+
+/* ── Top bar ── */
+.followers-topbar {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1rem 0 0.75rem;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background: var(--color-bg, #0e0e10);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    margin-bottom: 0.25rem;
+}
+
+.followers-back {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: none;
+    background: rgba(255, 255, 255, 0.06);
+    color: var(--color-text, #f0f0f0);
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: background 0.15s;
+}
+.followers-back:hover {
+    background: rgba(255, 255, 255, 0.12);
+}
+
+.followers-topbar-info {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    min-width: 0;
+}
+.followers-topbar-name {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--color-text, #f0f0f0);
+    text-decoration: none;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.followers-topbar-name:hover {
+    text-decoration: underline;
+}
+.followers-topbar-nick {
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.45);
+}
+
+/* ── Tabs ── */
+.followers-tabs {
+    display: flex;
+    gap: 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    margin-bottom: 1.5rem;
+    overflow-x: auto;
+    scrollbar-width: none;
+}
+.followers-tabs::-webkit-scrollbar { display: none; }
+
+.followers-tab {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.75rem 1.1rem;
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: color 0.15s, border-color 0.15s;
+    flex-shrink: 0;
+    margin-bottom: -1px;
+}
+.followers-tab:hover:not(.disabled) {
+    color: var(--color-text, #f0f0f0);
+}
+.followers-tab.active {
+    color: var(--color-text, #f0f0f0);
+    border-bottom-color: var(--color-accent, #a855f7);
+    font-weight: 600;
+}
+.followers-tab.disabled {
+    cursor: default;
+    opacity: 0.4;
+}
+
+.followers-tab-label { line-height: 1; }
+
+.followers-tab-count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 20px;
+    height: 20px;
+    padding: 0 5px;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.09);
+    font-size: 0.7rem;
+    font-weight: 600;
+    line-height: 1;
+}
+.followers-tab.active .followers-tab-count {
+    background: rgba(168, 85, 247, 0.25);
+    color: #c084fc;
+}
+
+.followers-tab-lock {
+    display: flex;
+    align-items: center;
+    opacity: 0.5;
+}
+
+/* ── Content area ── */
+.followers-content {
+    flex: 1;
+}
+
+/* ── Grid ── */
+.followers-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(310px, 1fr));
+    gap: 0.75rem;
+}
+
+/* ── User card ── */
+.follower-card {
+    display: flex;
+    align-items: center;
+    gap: 0.875rem;
+    padding: 0.875rem 1rem;
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s, transform 0.12s;
+    position: relative;
+}
+.follower-card:hover {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.13);
+    transform: translateY(-1px);
+}
+
+.follower-avatar {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0;
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.06);
+}
+
+.follower-info {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+.follower-name {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--color-text, #f0f0f0);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.follower-nick {
+    font-size: 0.78rem;
+    color: rgba(255, 255, 255, 0.45);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.follower-bio {
+    font-size: 0.78rem;
+    color: rgba(255, 255, 255, 0.55);
+    margin: 3px 0 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.follower-sub-count {
+    font-size: 0.72rem;
+    color: rgba(255, 255, 255, 0.35);
+    margin-top: 2px;
+}
+
+/* ── Follow button ── */
+.follower-follow-btn {
+    flex-shrink: 0;
+    padding: 0.4rem 0.85rem;
+    border-radius: 20px;
+    border: 1px solid var(--color-accent, #a855f7);
+    background: transparent;
+    color: var(--color-accent, #a855f7);
+    font-size: 0.78rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s, opacity 0.15s;
+    white-space: nowrap;
+}
+.follower-follow-btn:hover {
+    background: var(--color-accent, #a855f7);
+    color: #fff;
+}
+.follower-follow-btn.following {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.2);
+    color: rgba(255, 255, 255, 0.7);
+}
+.follower-follow-btn.following:hover {
+    background: rgba(239, 68, 68, 0.15);
+    border-color: rgba(239, 68, 68, 0.5);
+    color: #f87171;
+}
+.follower-follow-btn:disabled {
+    opacity: 0.5;
+    cursor: default;
+}
+
+/* ── Skeleton ── */
+.follower-card.skeleton {
+    cursor: default;
+    pointer-events: none;
+}
+.skeleton-box {
+    background: linear-gradient(90deg,
+        rgba(255,255,255,0.05) 25%,
+        rgba(255,255,255,0.09) 50%,
+        rgba(255,255,255,0.05) 75%
+    );
+    background-size: 200% 100%;
+    animation: skeleton-shimmer 1.4s ease infinite;
+    border-radius: 4px;
+}
+.follower-avatar.skeleton-box {
+    border-radius: 50%;
+}
+@keyframes skeleton-shimmer {
+    0%   { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+
+/* ── Empty state ── */
+.followers-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 5rem 1rem;
+    text-align: center;
+    gap: 0.5rem;
+}
+.followers-empty-icon {
+    font-size: 3rem;
+    margin-bottom: 0.5rem;
+}
+.followers-empty h3 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--color-text, #f0f0f0);
+    margin: 0;
+}
+.followers-empty p {
+    font-size: 0.875rem;
+    color: rgba(255, 255, 255, 0.45);
+    margin: 0;
+    max-width: 300px;
+}
+
+/* ── Responsive ── */
+@media (max-width: 600px) {
+    .followers-page {
+        padding: 0 0.5rem 5rem;
+    }
+    .followers-grid {
+        grid-template-columns: 1fr;
+    }
+    .follower-card {
+        padding: 0.75rem;
+    }
+    .followers-tab {
+        padding: 0.7rem 0.75rem;
+        font-size: 0.82rem;
+    }
+}
+
+@media (min-width: 900px) {
+    .followers-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (min-width: 1200px) {
+    .followers-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}

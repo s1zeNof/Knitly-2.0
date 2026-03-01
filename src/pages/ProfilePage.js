@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import { db } from '../services/firebase';
 import { query, collection, where, getDocs, doc, updateDoc, arrayUnion, arrayRemove, getDoc, setDoc, serverTimestamp, addDoc, runTransaction } from 'firebase/firestore';
 import { useUserContext } from '../contexts/UserContext';
@@ -319,8 +319,8 @@ const ProfilePage = ({ openBrowser, openShareModal }) => {
                         <p className="page-profile-nickname">@{profileUser.nickname}</p>
                         <p className="page-profile-description">{profileUser.description || 'No description'}</p>
                         <div className="page-profile-stats">
-                            <div className="page-profile-stat-item"><strong>{profileUser.followers?.length || 0}</strong><span>Підписники</span></div>
-                            <div className="page-profile-stat-item"><strong>{profileUser.following?.length || 0}</strong><span>Підписки</span></div>
+                            <Link to={`/${profileUser.nickname}/followers`} className="page-profile-stat-item page-profile-stat-link"><strong>{profileUser.followers?.length || 0}</strong><span>Підписники</span></Link>
+                            <Link to={`/${profileUser.nickname}/following`} className="page-profile-stat-item page-profile-stat-link"><strong>{profileUser.following?.length || 0}</strong><span>Підписки</span></Link>
                         </div>
                         {/* Mobile: actions below stats */}
                         <div className="page-profile-actions-group profile-actions-mobile-only">

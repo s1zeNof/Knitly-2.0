@@ -29,6 +29,7 @@ import CreatorStudio from './pages/CreatorStudio';
 import NotificationsPage from './pages/NotificationsPage';
 import PostPage from './pages/PostPage';
 import SearchPage from './pages/SearchPage';
+import FollowersPage from './pages/FollowersPage';
 import InAppBrowser from './components/common/InAppBrowser';
 import AppsMarketplace from './pages/AppsMarketplace';
 import GiftsMarketplace from './pages/GiftsMarketplace';
@@ -159,6 +160,8 @@ const AppLayout = () => {
                     />
                     {/* Clean Twitter-style URLs — must be last (catch-all) */}
                     <Route path="/:userNickname/status/:postId" element={<PostPage openShareModal={openShareModal} />} />
+                    <Route path="/:userNickname/followers" element={<FollowersPage />} />
+                    <Route path="/:userNickname/following" element={<FollowersPage />} />
                     <Route path="/:userNickname" element={<ProfilePage openShareModal={openShareModal} />} />
                 </Routes>
             </main>

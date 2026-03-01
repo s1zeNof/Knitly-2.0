@@ -302,6 +302,12 @@
   opacity: 0.8;
 }
 
+/* When stat-item is a <Link>, strip anchor defaults */
+.page-profile-stat-link {
+  text-decoration: none;
+  color: inherit;
+}
+
 .page-profile-stat-item strong {
   font-size: 1.2rem;
   font-weight: 800;
