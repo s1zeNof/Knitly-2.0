@@ -36,6 +36,7 @@ const ProfilePage = ({ openBrowser, openShareModal }) => {
     const [profileUser, setProfileUser] = useState(null);
     const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState('music');
+    const [feedSubTab, setFeedSubTab] = useState('threads');
     const [isFollowing, setIsFollowing] = useState(false);
     const [isProcessingFollow, setIsProcessingFollow] = useState(false);
     const [isActionMenuOpen, setActionMenuOpen] = useState(false);
@@ -266,11 +267,26 @@ const ProfilePage = ({ openBrowser, openShareModal }) => {
                 return (
                     <div>
                         {isOwnProfile && <CreatePostForm />}
-                        <Feed
-                            profileUserId={profileUser.uid}
-                            openBrowser={openBrowser}
-                            openShareModal={openShareModal}
-                        />
+                        <div className="profile-feed-subtabs">
+                            <button className={`profile-feed-subtab${feedSubTab === 'threads' ? ' active' : ''}`} onClick={() => setFeedSubTab('threads')}>Ланцюжок</button>
+                            <button className={`profile-feed-subtab${feedSubTab === 'replies' ? ' active' : ''}`} onClick={() => setFeedSubTab('replies')}>Відповіді</button>
+                            <button className={`profile-feed-subtab${feedSubTab === 'media' ? ' active' : ''}`} onClick={() => setFeedSubTab('media')}>Медіафайли</button>
+                            <button className={`profile-feed-subtab${feedSubTab === 'reposts' ? ' active' : ''}`} onClick={() => setFeedSubTab('reposts')}>Репости</button>
+                        </div>
+                        {(feedSubTab === 'threads' || feedSubTab === 'media') && (
+                            <Feed
+                                userId={profileUser.uid}
+                                feedFilter={feedSubTab}
+                                openBrowser={openBrowser}
+                                openShareModal={openShareModal}
+                            />
+                        )}
+                        {(feedSubTab === 'replies' || feedSubTab === 'reposts') && (
+                            <div className="feed-subtab-placeholder">
+                                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+                                <p>Цей розділ буде доступний найближчим часом</p>
+                            </div>
+                        )}
                     </div>
                 );
             default:

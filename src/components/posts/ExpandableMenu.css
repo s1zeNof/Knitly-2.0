@@ -55,17 +55,38 @@
 
 /* Адаптивність для телефонів */
 @media (max-width: 768px) {
+    /* Контейнер залишається у нормальному потоці — кнопка + не стрибає */
     .expandable-menu-container {
-        /* На мобільних позиціонуємо відносно футера форми */
-        position: absolute;
-        bottom: 100%; /* Розміщуємо над футером */
-        left: 0.75rem;
-        margin-bottom: 0.75rem;
+        position: relative;
     }
-    
+
+    /* Кнопки з'являються як попап ВГОРІ від кнопки + */
     .menu-items-wrapper {
-        /* Кнопки вистрибують ВГОРУ */
-        flex-direction: column-reverse; 
-        gap: 0.75rem;
+        position: absolute;
+        bottom: calc(100% + 10px);
+        left: 0;
+        flex-direction: row;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        background-color: var(--color-bg-medium);
+        border: 1px solid var(--color-border);
+        border-radius: 0.875rem;
+        padding: 0.625rem;
+        box-shadow: 0 -6px 24px rgba(0, 0, 0, 0.45);
+        z-index: 200;
+    }
+
+    /* Стрілочка вниз від попапу */
+    .menu-items-wrapper::after {
+        content: '';
+        position: absolute;
+        bottom: -6px;
+        left: 14px;
+        width: 12px;
+        height: 12px;
+        background-color: var(--color-bg-medium);
+        border-right: 1px solid var(--color-border);
+        border-bottom: 1px solid var(--color-border);
+        transform: rotate(45deg);
     }
 }

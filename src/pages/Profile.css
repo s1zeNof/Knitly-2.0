@@ -412,6 +412,56 @@
   margin-bottom: 2rem;
 }
 
+/* ---- PROFILE FEED SUB-TABS ---- */
+.profile-feed-subtabs {
+  display: flex;
+  border-bottom: 1px solid var(--color-border);
+  margin-bottom: 0;
+}
+
+.profile-feed-subtab {
+  flex: 1;
+  padding: 0.875rem 0.5rem;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: var(--color-text-secondary);
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
+  white-space: nowrap;
+}
+
+.profile-feed-subtab:hover {
+  color: var(--color-text-primary);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.profile-feed-subtab.active {
+  color: var(--color-text-primary);
+  font-weight: 700;
+  border-bottom-color: var(--color-accent);
+}
+
+.feed-subtab-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  padding: 4rem 2rem;
+  color: var(--color-text-secondary);
+}
+
+.feed-subtab-placeholder svg {
+  opacity: 0.4;
+}
+
+.feed-subtab-placeholder p {
+  font-size: 0.95rem;
+  opacity: 0.6;
+}
+
 @media (min-width: 1100px) {
   .profile-music-layout {
     grid-template-columns: 1fr 1fr;

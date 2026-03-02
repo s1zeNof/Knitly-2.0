@@ -32,14 +32,14 @@ const fetchPosts = async (userId, followingList) => {
   }
 };
 
-const Feed = ({ userId = null, followingList = null, openBrowser, openShareModal }) => {
+const Feed = ({ userId = null, followingList = null, feedFilter = 'threads', openBrowser, openShareModal }) => {
   useEffect(() => {
     return () => { };
   }, []);
 
   const queryKey = ['feedPosts', userId, JSON.stringify(followingList)];
 
-  const { data: posts, isLoading, error } = useQuery(
+  const { data: rawPosts, isLoading, error } = useQuery(
     queryKey,
     async () => {
       const result = await fetchPosts(userId, followingList);
@@ -53,6 +53,13 @@ const Feed = ({ userId = null, followingList = null, openBrowser, openShareModal
       cacheTime: 5 * 60 * 1000,
     }
   );
+
+  // Client-side filter: media tab shows only posts with track/album attachments
+  const posts = React.useMemo(() => {
+    if (!rawPosts) return [];
+    if (feedFilter === 'media') return rawPosts.filter(p => p.attachment && p.attachment.type !== 'poll');
+    return rawPosts;
+  }, [rawPosts, feedFilter]);
 
   if (isLoading) return <div className="feed-loader-container" style={{ display: 'flex', justifyContent: 'center', padding: '40px' }}><div className="loader-spinner"></div></div>;
   if (error) return <div className="feed-error">Не вдалося завантажити дописи.</div>;
