@@ -410,18 +410,18 @@
     position: relative;
 }
 
-/* Yarn / knitting-thread connector between post and comments */
+/* Yarn / knitting-thread connector between post and comments
+   — 4-layer SVG: shadow depth + main ply + crossing ply + highlight shine */
 .post-main-content::after {
     content: '';
     position: absolute;
     top: 52px;
     bottom: 0;
-    left: 20px;
-    width: 4px;
-    /* Two interweaving strands = twisted yarn look */
-    background-image: url("data:image/svg+xml,%3Csvg width='4' height='40' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M 2 0 C 4 10, 0 20, 2 30 C 4 35, 4 40, 2 40' stroke='%23a855f7' fill='none' stroke-width='1.6' stroke-opacity='0.45' stroke-linecap='round'/%3E%3Cpath d='M 2 0 C 0 10, 4 20, 2 30 C 0 35, 0 40, 2 40' stroke='%23a855f7' fill='none' stroke-width='1.6' stroke-opacity='0.2' stroke-linecap='round'/%3E%3C/svg%3E");
+    left: 18px;
+    width: 8px;
+    background-image: url("data:image/svg+xml,%3Csvg width='8' height='20' xmlns='http://www.w3.org/2000/svg'%3E%3C!-- depth shadow --%3E%3Cpath d='M 4 0 C 7 5, 1 10, 4 15 C 7 17.5, 7 20, 4 20' stroke='%236b21a8' fill='none' stroke-width='4.5' stroke-opacity='0.28' stroke-linecap='round'/%3E%3C!-- main ply --%3E%3Cpath d='M 4 0 C 7 5, 1 10, 4 15 C 7 17.5, 7 20, 4 20' stroke='%23a855f7' fill='none' stroke-width='2.8' stroke-opacity='0.6' stroke-linecap='round'/%3E%3C!-- crossing ply --%3E%3Cpath d='M 4 0 C 1 5, 7 10, 4 15 C 1 17.5, 1 20, 4 20' stroke='%23c084fc' fill='none' stroke-width='2' stroke-opacity='0.38' stroke-linecap='round'/%3E%3C!-- highlight shine --%3E%3Cpath d='M 4 0 C 5.5 5, 2.5 10, 4 15 C 5.5 17.5, 5.5 20, 4 20' stroke='%23f3e8ff' fill='none' stroke-width='0.9' stroke-opacity='0.22' stroke-linecap='round'/%3E%3C/svg%3E");
     background-repeat: repeat-y;
-    background-size: 4px auto;
+    background-size: 8px auto;
     z-index: 0;
 }
 
@@ -441,13 +441,13 @@
     position: absolute;
     top: 0;
     bottom: 0;
-    left: 16px;
-    width: 4px;
+    left: 13px;
+    width: 6px;
     z-index: 0;
-    /* Matching yarn thread for comment chain */
-    background-image: url("data:image/svg+xml,%3Csvg width='4' height='40' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M 2 0 C 4 10, 0 20, 2 30 C 4 35, 4 40, 2 40' stroke='%23a855f7' fill='none' stroke-width='1.4' stroke-opacity='0.32' stroke-linecap='round'/%3E%3Cpath d='M 2 0 C 0 10, 4 20, 2 30 C 0 35, 0 40, 2 40' stroke='%23a855f7' fill='none' stroke-width='1.4' stroke-opacity='0.15' stroke-linecap='round'/%3E%3C/svg%3E");
+    /* Yarn thread — same two-ply style, slightly smaller for comments */
+    background-image: url("data:image/svg+xml,%3Csvg width='6' height='20' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M 3 0 C 5.5 5, 0.5 10, 3 15 C 5.5 17.5, 5.5 20, 3 20' stroke='%236b21a8' fill='none' stroke-width='3.5' stroke-opacity='0.18' stroke-linecap='round'/%3E%3Cpath d='M 3 0 C 5.5 5, 0.5 10, 3 15 C 5.5 17.5, 5.5 20, 3 20' stroke='%23a855f7' fill='none' stroke-width='2.2' stroke-opacity='0.38' stroke-linecap='round'/%3E%3Cpath d='M 3 0 C 0.5 5, 5.5 10, 3 15 C 0.5 17.5, 0.5 20, 3 20' stroke='%23c084fc' fill='none' stroke-width='1.6' stroke-opacity='0.22' stroke-linecap='round'/%3E%3Cpath d='M 3 0 C 4 5, 2 10, 3 15 C 4 17.5, 4 20, 3 20' stroke='%23f3e8ff' fill='none' stroke-width='0.7' stroke-opacity='0.15' stroke-linecap='round'/%3E%3C/svg%3E");
     background-repeat: repeat-y;
-    background-size: 4px auto;
+    background-size: 6px auto;
 }
 
 .comment-item {
