@@ -410,18 +410,18 @@
     position: relative;
 }
 
-/* Yarn / knitting-thread connector between post and comments
-   — 4-layer SVG: shadow depth + main ply + crossing ply + highlight shine */
+/* Yarn / knitting-thread: loose strand with a decorative bow-knot every ~80px
+   Tile = 20×80px:  short stem → bow (two petals + knot circle) → twisted 2-ply strand */
 .post-main-content::after {
     content: '';
     position: absolute;
     top: 52px;
     bottom: 0;
-    left: 18px;
-    width: 8px;
-    background-image: url("data:image/svg+xml,%3Csvg width='8' height='20' xmlns='http://www.w3.org/2000/svg'%3E%3C!-- depth shadow --%3E%3Cpath d='M 4 0 C 7 5, 1 10, 4 15 C 7 17.5, 7 20, 4 20' stroke='%236b21a8' fill='none' stroke-width='4.5' stroke-opacity='0.28' stroke-linecap='round'/%3E%3C!-- main ply --%3E%3Cpath d='M 4 0 C 7 5, 1 10, 4 15 C 7 17.5, 7 20, 4 20' stroke='%23a855f7' fill='none' stroke-width='2.8' stroke-opacity='0.6' stroke-linecap='round'/%3E%3C!-- crossing ply --%3E%3Cpath d='M 4 0 C 1 5, 7 10, 4 15 C 1 17.5, 1 20, 4 20' stroke='%23c084fc' fill='none' stroke-width='2' stroke-opacity='0.38' stroke-linecap='round'/%3E%3C!-- highlight shine --%3E%3Cpath d='M 4 0 C 5.5 5, 2.5 10, 4 15 C 5.5 17.5, 5.5 20, 4 20' stroke='%23f3e8ff' fill='none' stroke-width='0.9' stroke-opacity='0.22' stroke-linecap='round'/%3E%3C/svg%3E");
+    left: 12px;
+    width: 20px;
+    background-image: url("data:image/svg+xml,%3Csvg width='20' height='80' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M 10 0 C 10 3, 10 6, 10 9' stroke='%23a855f7' stroke-width='2' stroke-opacity='0.6' fill='none' stroke-linecap='round'/%3E%3Cpath d='M 10 9 C 4 6, 0 11, 4 16 C 7 19, 10 17, 10 13' stroke='%23a855f7' stroke-width='1.8' stroke-opacity='0.58' fill='none' stroke-linecap='round'/%3E%3Cpath d='M 10 9 C 16 6, 20 11, 16 16 C 13 19, 10 17, 10 13' stroke='%23c084fc' stroke-width='1.8' stroke-opacity='0.42' fill='none' stroke-linecap='round'/%3E%3Ccircle cx='10' cy='12' r='2.5' fill='%239333ea' fill-opacity='0.65'/%3E%3Ccircle cx='10' cy='12' r='1' fill='%23f3e8ff' fill-opacity='0.35'/%3E%3Cpath d='M 10 17 C 10 20, 10 22, 10 24' stroke='%23a855f7' stroke-width='2' stroke-opacity='0.6' fill='none' stroke-linecap='round'/%3E%3Cpath d='M 10 24 C 15 33, 5 44, 10 55 C 15 63, 15 71, 10 80' stroke='%23a855f7' stroke-width='2' stroke-opacity='0.55' fill='none' stroke-linecap='round'/%3E%3Cpath d='M 10 24 C 5 33, 15 44, 10 55 C 5 63, 5 71, 10 80' stroke='%23c084fc' stroke-width='1.5' stroke-opacity='0.3' fill='none' stroke-linecap='round'/%3E%3Cpath d='M 10 24 C 12 33, 7 44, 10 55 C 12 63, 12 71, 10 80' stroke='%23f3e8ff' stroke-width='0.7' stroke-opacity='0.15' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
     background-repeat: repeat-y;
-    background-size: 8px auto;
+    background-size: 20px auto;
     z-index: 0;
 }
 
@@ -441,13 +441,13 @@
     position: absolute;
     top: 0;
     bottom: 0;
-    left: 13px;
-    width: 6px;
+    left: 12px;
+    width: 8px;
     z-index: 0;
-    /* Yarn thread — same two-ply style, slightly smaller for comments */
-    background-image: url("data:image/svg+xml,%3Csvg width='6' height='20' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M 3 0 C 5.5 5, 0.5 10, 3 15 C 5.5 17.5, 5.5 20, 3 20' stroke='%236b21a8' fill='none' stroke-width='3.5' stroke-opacity='0.18' stroke-linecap='round'/%3E%3Cpath d='M 3 0 C 5.5 5, 0.5 10, 3 15 C 5.5 17.5, 5.5 20, 3 20' stroke='%23a855f7' fill='none' stroke-width='2.2' stroke-opacity='0.38' stroke-linecap='round'/%3E%3Cpath d='M 3 0 C 0.5 5, 5.5 10, 3 15 C 0.5 17.5, 0.5 20, 3 20' stroke='%23c084fc' fill='none' stroke-width='1.6' stroke-opacity='0.22' stroke-linecap='round'/%3E%3Cpath d='M 3 0 C 4 5, 2 10, 3 15 C 4 17.5, 4 20, 3 20' stroke='%23f3e8ff' fill='none' stroke-width='0.7' stroke-opacity='0.15' stroke-linecap='round'/%3E%3C/svg%3E");
+    /* Simpler loose two-ply yarn for comment chain (no bow — cleaner at small scale) */
+    background-image: url("data:image/svg+xml,%3Csvg width='8' height='30' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M 4 0 C 7.5 7, 0.5 15, 4 22 C 7.5 26, 7.5 30, 4 30' stroke='%23a855f7' fill='none' stroke-width='2' stroke-opacity='0.35' stroke-linecap='round'/%3E%3Cpath d='M 4 0 C 0.5 7, 7.5 15, 4 22 C 0.5 26, 0.5 30, 4 30' stroke='%23c084fc' fill='none' stroke-width='1.5' stroke-opacity='0.2' stroke-linecap='round'/%3E%3C/svg%3E");
     background-repeat: repeat-y;
-    background-size: 6px auto;
+    background-size: 8px auto;
 }
 
 .comment-item {
