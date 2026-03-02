@@ -1,10 +1,11 @@
 /* --- Форма створення поста --- */
 .create-post-form {
-    background-color: var(--color-bg-medium);
-    padding: 0.75rem;
-    border-radius: 0.75rem;
-    border: 1px solid var(--color-border);
-    margin-bottom: 2rem;
+    background: linear-gradient(145deg, rgba(28, 26, 34, 0.9) 0%, rgba(22, 20, 28, 0.95) 100%);
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    border-radius: 1.375rem;
+    padding: 1rem 1.25rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 2px 16px rgba(0, 0, 0, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.04);
 }
 
 .create-post-form .form-header {
@@ -55,7 +56,7 @@
 .feed-container {
     display: flex;
     flex-direction: column;
-    gap: 1rem;
+    gap: 1.25rem;
 }
 
 .feed-loader,
@@ -65,20 +66,54 @@
     color: var(--color-text-secondary);
 }
 
+/* Анімація появи картки */
+.post-card-anim {
+    animation: cardFadeIn 0.3s ease both;
+}
+
+@keyframes cardFadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
 /* --- Картка поста --- */
 .post-card {
-    background-color: var(--color-bg-medium);
-    border: 1px solid var(--color-border);
-    border-radius: 0.75rem;
-    padding: 0.75rem;
-    display: flex;
-    gap: 1rem;
+    background: linear-gradient(145deg, rgba(28, 26, 34, 0.95) 0%, rgba(20, 18, 25, 0.98) 100%);
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    border-radius: 1.375rem;
+    padding: 1.25rem 1.25rem 0.875rem;
     cursor: pointer;
-    transition: background-color 0.15s ease;
+    transition: transform 0.28s cubic-bezier(0.2, 0, 0, 1),
+                box-shadow 0.28s ease,
+                border-color 0.28s ease;
+    position: relative;
+    box-shadow:
+        0 1px 3px rgba(0, 0, 0, 0.25),
+        0 4px 20px rgba(0, 0, 0, 0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.045);
+    overflow: hidden;
+}
+
+/* Subtle top-edge shine */
+.post-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 8%;
+    right: 8%;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.07), transparent);
+    pointer-events: none;
 }
 
 .post-card:hover {
-    background-color: #1f1f1f;
+    transform: translateY(-2px);
+    border-color: rgba(168, 85, 247, 0.22);
+    box-shadow:
+        0 4px 8px rgba(0, 0, 0, 0.2),
+        0 16px 48px rgba(0, 0, 0, 0.38),
+        0 0 0 1px rgba(168, 85, 247, 0.1),
+        inset 0 1px 0 rgba(255, 255, 255, 0.06);
 }
 
 /* --- СТИЛІ ДЛЯ АНІМАЦІЇ ЗАВАНТАЖЕННЯ АВАТАРА --- */
@@ -87,12 +122,19 @@
 }
 
 .post-avatar-wrapper {
-    width: 48px;
-    height: 48px;
+    width: 44px;
+    height: 44px;
     border-radius: 50%;
     overflow: hidden;
     position: relative;
-    background-color: var(--color-border);
+    background-color: var(--color-bg-light);
+    flex-shrink: 0;
+    transition: box-shadow 0.25s ease;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.4);
+}
+
+.post-avatar-link:hover .post-avatar-wrapper {
+    box-shadow: 0 0 0 2.5px var(--color-accent), 0 4px 16px rgba(168, 85, 247, 0.4);
 }
 
 .post-author-avatar {
@@ -151,11 +193,14 @@
 }
 
 .post-author-name {
-    font-weight: 600;
+    font-weight: 700;
     color: var(--color-text-primary);
+    letter-spacing: -0.01em;
+    transition: color 0.15s;
 }
 
 .post-author-name:hover {
+    color: var(--color-accent);
     text-decoration: underline;
 }
 
@@ -175,7 +220,10 @@
 /* --- Дії з постом (лайки, коментарі) --- */
 .post-actions {
     display: flex;
-    gap: 1.5rem;
+    gap: 0.15rem;
+    margin-top: 0.75rem;
+    padding-top: 0.625rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.045);
 }
 
 .post-action-button {
@@ -184,29 +232,44 @@
     color: var(--color-text-secondary);
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: 0.35rem;
+    font-size: 0.82rem;
     font-weight: 500;
     cursor: pointer;
-    transition: color 0.2s;
+    padding: 0.45rem 0.7rem;
+    border-radius: 2rem;
+    transition: color 0.2s, background 0.2s;
+    font-family: var(--font-main);
+    letter-spacing: 0.01em;
 }
 
-.post-action-button:hover,
-.post-action-button.like:hover {
+.post-action-button:hover {
     color: var(--color-accent);
+    background: rgba(168, 85, 247, 0.1);
+}
+
+.post-action-button.like:hover {
+    color: #ef4444;
+    background: rgba(239, 68, 68, 0.09);
 }
 
 .post-action-button svg {
-    width: 20px;
-    height: 20px;
+    width: 17px;
+    height: 17px;
 }
 
 .post-action-button.like.liked,
 .post-action-button.like.liked:hover {
     color: #ef4444;
+    background: rgba(239, 68, 68, 0.09);
 }
 
 .post-action-button.like.liked svg {
     fill: #ef4444;
+}
+
+.post-action-static {
+    pointer-events: none;
 }
 
 /* --- Реакції --- */
@@ -215,24 +278,27 @@
     flex-wrap: wrap;
     gap: 0.5rem;
     margin-top: 0.75rem;
-    padding-bottom: 0.75rem;
+    padding-bottom: 0.5rem;
 }
 
 .reaction-badge {
     display: flex;
     align-items: center;
-    background-color: var(--color-bg-light);
-    border: 1px solid var(--color-border);
-    border-radius: 1rem;
-    padding: 4px 10px;
+    background: rgba(40, 38, 50, 0.85);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 2rem;
+    padding: 3px 10px;
     cursor: pointer;
     transition: all 0.2s ease;
     user-select: none;
+    backdrop-filter: blur(4px);
 }
 
 .reaction-badge:hover {
-    transform: scale(1.08);
-    border-color: var(--color-accent);
+    transform: scale(1.08) translateY(-1px);
+    border-color: rgba(168, 85, 247, 0.45);
+    background: rgba(168, 85, 247, 0.12);
+    box-shadow: 0 4px 12px rgba(168, 85, 247, 0.2);
 }
 
 .reaction-emoji {
@@ -256,8 +322,9 @@
 }
 
 .reaction-badge.user-reacted {
-    background-color: rgba(45, 223, 184, 0.2);
-    border-color: var(--color-accent);
+    background: rgba(168, 85, 247, 0.18);
+    border-color: rgba(168, 85, 247, 0.5);
+    box-shadow: 0 2px 8px rgba(168, 85, 247, 0.2);
 }
 
 .reaction-badge.user-reacted .reaction-count {
@@ -291,13 +358,15 @@
     position: absolute;
     right: 0;
     top: 100%;
-    background-color: var(--color-bg-light);
-    border: 1px solid var(--color-border);
-    border-radius: 0.5rem;
-    padding: 0.5rem;
+    background: rgba(32, 30, 40, 0.95);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 0.875rem;
+    padding: 0.4rem;
     z-index: 10;
-    width: 150px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    width: 155px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(255,255,255,0.04);
 }
 
 .options-menu-small button {
@@ -306,19 +375,27 @@
     background: none;
     border: none;
     color: var(--color-text-primary);
-    padding: 0.75rem 1rem;
+    padding: 0.6rem 0.875rem;
     text-align: left;
-    border-radius: 0.25rem;
+    border-radius: 0.5rem;
     cursor: pointer;
-    font-size: 0.9rem;
+    font-size: 0.875rem;
+    font-family: var(--font-main);
+    transition: background 0.15s;
 }
 
 .options-menu-small button:hover {
-    background-color: var(--color-accent);
+    background: rgba(168, 85, 247, 0.18);
+    color: #fff;
+}
+
+.options-menu-small button.option-delete {
+    color: var(--color-error);
 }
 
 .options-menu-small button.option-delete:hover {
-    background-color: var(--color-error);
+    background: rgba(239, 68, 68, 0.18);
+    color: var(--color-error);
 }
 
 /* --- "Нитка" та коментарі --- */
@@ -333,19 +410,23 @@
     position: relative;
 }
 
+/* Yarn / knitting-thread connector between post and comments */
 .post-main-content::after {
     content: '';
     position: absolute;
-    top: 48px;
+    top: 52px;
     bottom: 0;
-    left: 24px;
-    width: 2px;
-    background-color: var(--color-border);
+    left: 20px;
+    width: 4px;
+    /* Two interweaving strands = twisted yarn look */
+    background-image: url("data:image/svg+xml,%3Csvg width='4' height='40' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M 2 0 C 4 10, 0 20, 2 30 C 4 35, 4 40, 2 40' stroke='%23a855f7' fill='none' stroke-width='1.6' stroke-opacity='0.45' stroke-linecap='round'/%3E%3Cpath d='M 2 0 C 0 10, 4 20, 2 30 C 0 35, 0 40, 2 40' stroke='%23a855f7' fill='none' stroke-width='1.6' stroke-opacity='0.2' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat: repeat-y;
+    background-size: 4px auto;
     z-index: 0;
 }
 
 .comment-section {
-    padding-left: 7.5px;
+    padding-left: 8px;
     box-sizing: border-box;
     margin-top: 1rem;
 }
@@ -361,10 +442,12 @@
     top: 0;
     bottom: 0;
     left: 16px;
-    width: 2px;
+    width: 4px;
     z-index: 0;
-    background-image: url("data:image/svg+xml,%3Csvg width='2' height='100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M 1 0 C 3 10, -1 15, 1 25 C 3 35, -1 40, 1 50 C 3 60, -1 65, 1 75 C 3 85, -1 90, 1 100' stroke='%233f3f46' fill='none' stroke-width='1.2' stroke-linecap='round'/%3E%3C/svg%3E");
+    /* Matching yarn thread for comment chain */
+    background-image: url("data:image/svg+xml,%3Csvg width='4' height='40' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M 2 0 C 4 10, 0 20, 2 30 C 4 35, 4 40, 2 40' stroke='%23a855f7' fill='none' stroke-width='1.4' stroke-opacity='0.32' stroke-linecap='round'/%3E%3Cpath d='M 2 0 C 0 10, 4 20, 2 30 C 0 35, 0 40, 2 40' stroke='%23a855f7' fill='none' stroke-width='1.4' stroke-opacity='0.15' stroke-linecap='round'/%3E%3C/svg%3E");
     background-repeat: repeat-y;
+    background-size: 4px auto;
 }
 
 .comment-item {
@@ -667,27 +750,44 @@
     height: 20px;
 }
 
+/* ======================================================
+   Premium Track Attachment Card
+   ====================================================== */
 .post-attachment-card {
     margin-top: 1rem;
-    border: 1px solid var(--color-border);
-    border-radius: 0.75rem;
-    background-color: var(--color-bg-light);
+    border-radius: 1rem;
+    background: linear-gradient(145deg, rgba(28, 28, 32, 0.8), rgba(20, 20, 24, 0.95));
+    border: 1px solid rgba(255, 255, 255, 0.08);
     display: flex;
     align-items: center;
     overflow: hidden;
-    transition: background-color 0.2s;
-    flex-wrap: wrap;
+    transition: transform 0.25s ease, border-color 0.25s, box-shadow 0.25s;
+    position: relative;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.post-attachment-card::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 4px;
+    background: linear-gradient(to bottom, var(--color-accent), #4f46e5);
+    border-radius: 4px 0 0 4px;
 }
 
 .post-attachment-card:hover {
-    background-color: var(--color-border);
+    transform: translateY(-2px);
+    border-color: rgba(168, 85, 247, 0.3);
+    box-shadow: 0 8px 25px rgba(168, 85, 247, 0.15);
 }
 
 .attachment-link-wrapper {
     display: flex;
     align-items: center;
     gap: 1rem;
-    padding: 1rem;
+    padding: 0.85rem 1rem 0.85rem 1.15rem;
     flex-grow: 1;
     text-decoration: none;
     color: inherit;
@@ -695,11 +795,12 @@
 }
 
 .attachment-cover {
-    width: 80px;
-    height: 80px;
+    width: 64px;
+    height: 64px;
     object-fit: cover;
-    border-radius: 0.5rem;
+    border-radius: 0.6rem;
     flex-shrink: 0;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
 }
 
 .attachment-info {
@@ -708,39 +809,75 @@
 }
 
 .attachment-type {
-    font-size: 0.8rem;
+    display: inline-block;
+    font-size: 0.68rem;
     font-weight: 700;
     color: var(--color-accent);
     text-transform: uppercase;
+    letter-spacing: 0.07em;
+    background: rgba(168, 85, 247, 0.12);
+    padding: 1px 6px;
+    border-radius: 4px;
+    margin-bottom: 0.25rem;
 }
 
 .attachment-title {
-    font-size: 1.1rem;
-    font-weight: 600;
-    margin: 0.25rem 0;
-    white-space: normal;
-    word-wrap: break-word;
+    font-size: 1.05rem;
+    font-weight: 700;
+    margin: 0 0 0.15rem 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: var(--color-text-primary);
 }
 
 .attachment-author {
     color: var(--color-text-secondary);
-    font-size: 0.9rem;
+    font-size: 0.78rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .attachment-play-button {
-    background-color: transparent;
+    flex-shrink: 0;
+    width: 48px;
+    height: 48px;
+    margin-right: 1rem;
+    border-radius: 50%;
+    background: var(--color-accent);
     border: none;
-    color: white;
+    color: #fff;
     cursor: pointer;
-    padding: 1.5rem;
-    align-self: stretch;
     display: flex;
     align-items: center;
-    transition: background-color 0.2s;
+    justify-content: center;
+    transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.2s;
+    box-shadow: 0 4px 15px rgba(168, 85, 247, 0.4);
 }
 
 .attachment-play-button:hover {
-    background-color: rgba(45, 223, 184, 0.2);
+    transform: scale(1.1);
+    box-shadow: 0 6px 20px rgba(168, 85, 247, 0.6);
+}
+
+.attachment-play-button:active {
+    transform: scale(0.95);
+}
+
+.mini-loader {
+    width: 18px;
+    height: 18px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: spin 0.6s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
 }
 
 /* --- Співавтори --- */
@@ -1003,14 +1140,41 @@
 
 @media (max-width: 480px) {
     .post-card {
-        padding: 0.5rem;
-        gap: 0.75rem;
+        padding: 0.65rem 0.65rem 0.5rem;
+        gap: 0.55rem;
     }
 
     .post-avatar-wrapper {
-        /* Адаптуємо розмір обгортки аватара */
-        width: 40px;
-        height: 40px;
+        width: 34px;
+        height: 34px;
+    }
+
+    .post-actions {
+        gap: 0;
+    }
+
+    .post-action-button {
+        padding: 0.35rem 0.4rem;
+        font-size: 0.78rem;
+    }
+
+    .attachment-cover {
+        width: 46px;
+        height: 46px;
+    }
+
+    .attachment-title {
+        font-size: 0.82rem;
+    }
+
+    .attachment-author {
+        font-size: 0.72rem;
+    }
+
+    .attachment-play-button {
+        width: 36px;
+        height: 36px;
+        margin-right: 0.5rem;
     }
 
     .collaborators-section,
@@ -1105,7 +1269,12 @@
 }
 
 .post-card.detail-view:hover {
-    background-color: var(--color-bg-secondary, #1a1a1a);
+    transform: none;
+    border-color: rgba(255, 255, 255, 0.07);
+    box-shadow:
+        0 1px 3px rgba(0, 0, 0, 0.25),
+        0 4px 20px rgba(0, 0, 0, 0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.045);
 }
 
 .post-action-static {
