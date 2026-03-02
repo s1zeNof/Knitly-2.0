@@ -410,8 +410,10 @@
     position: relative;
 }
 
-/* Yarn / knitting-thread: loose strand with a decorative bow-knot every ~80px
-   Tile = 20×80px:  short stem → bow (two petals + knot circle) → twisted 2-ply strand */
+/* Yarn / knitting-thread: seamlessly-tiling two-ply twist with a
+   diamond (rhombus) stitch-marker at the mid-point every 80 px.
+   Both plies complete a full S-curve period so tangent vectors at
+   y=0 and y=80 are identical → zero visible seam on repeat. */
 .post-main-content::after {
     content: '';
     position: absolute;
@@ -419,7 +421,7 @@
     bottom: 0;
     left: 12px;
     width: 20px;
-    background-image: url("data:image/svg+xml,%3Csvg width='20' height='80' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M 10 0 C 10 3, 10 6, 10 9' stroke='%23a855f7' stroke-width='2' stroke-opacity='0.6' fill='none' stroke-linecap='round'/%3E%3Cpath d='M 10 9 C 4 6, 0 11, 4 16 C 7 19, 10 17, 10 13' stroke='%23a855f7' stroke-width='1.8' stroke-opacity='0.58' fill='none' stroke-linecap='round'/%3E%3Cpath d='M 10 9 C 16 6, 20 11, 16 16 C 13 19, 10 17, 10 13' stroke='%23c084fc' stroke-width='1.8' stroke-opacity='0.42' fill='none' stroke-linecap='round'/%3E%3Ccircle cx='10' cy='12' r='2.5' fill='%239333ea' fill-opacity='0.65'/%3E%3Ccircle cx='10' cy='12' r='1' fill='%23f3e8ff' fill-opacity='0.35'/%3E%3Cpath d='M 10 17 C 10 20, 10 22, 10 24' stroke='%23a855f7' stroke-width='2' stroke-opacity='0.6' fill='none' stroke-linecap='round'/%3E%3Cpath d='M 10 24 C 15 33, 5 44, 10 55 C 15 63, 15 71, 10 80' stroke='%23a855f7' stroke-width='2' stroke-opacity='0.55' fill='none' stroke-linecap='round'/%3E%3Cpath d='M 10 24 C 5 33, 15 44, 10 55 C 5 63, 5 71, 10 80' stroke='%23c084fc' stroke-width='1.5' stroke-opacity='0.3' fill='none' stroke-linecap='round'/%3E%3Cpath d='M 10 24 C 12 33, 7 44, 10 55 C 12 63, 12 71, 10 80' stroke='%23f3e8ff' stroke-width='0.7' stroke-opacity='0.15' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-image: url("data:image/svg+xml,%3Csvg width='20' height='80' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M 10 0 C 16 13, 16 27, 10 40 C 4 53, 4 67, 10 80' stroke='%23a855f7' fill='none' stroke-width='2' stroke-opacity='0.6' stroke-linecap='round'/%3E%3Cpath d='M 10 0 C 4 13, 4 27, 10 40 C 16 53, 16 67, 10 80' stroke='%23c084fc' fill='none' stroke-width='1.5' stroke-opacity='0.3' stroke-linecap='round'/%3E%3Cpath d='M 10 0 C 13 13, 13 27, 10 40 C 7 53, 7 67, 10 80' stroke='%23f3e8ff' fill='none' stroke-width='0.7' stroke-opacity='0.15' stroke-linecap='round'/%3E%3Cpath d='M 10 30 L 15.5 40 L 10 50 L 4.5 40 Z' fill='none' stroke='%23a855f7' stroke-width='1.6' stroke-opacity='0.7' stroke-linejoin='round'/%3E%3Ccircle cx='10' cy='40' r='1.8' fill='%239333ea' fill-opacity='0.6'/%3E%3Cpath d='M 10 30 L 13.5 38' stroke='%23f3e8ff' stroke-width='0.9' stroke-opacity='0.28' stroke-linecap='round'/%3E%3C/svg%3E");
     background-repeat: repeat-y;
     background-size: 20px auto;
     z-index: 0;
