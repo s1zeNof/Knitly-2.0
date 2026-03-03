@@ -15,9 +15,9 @@ const SECTIONS = [
 
 export default function TermsPage() {
     return (
-        <article>
+        <div>
             {/* ── Hero ── */}
-            <header className="lp-hero">
+            <div className="lp-hero">
                 <nav className="lp-breadcrumb" aria-label="Хлібні крихти">
                     <Link to="/">Knitly</Link>
                     <span className="lp-breadcrumb-sep" aria-hidden="true">›</span>
@@ -25,14 +25,14 @@ export default function TermsPage() {
                     <span className="lp-breadcrumb-sep" aria-hidden="true">›</span>
                     <span>Умови використання</span>
                 </nav>
-                <p className="lp-badge">📋 Юридичний документ</p>
+                <p className="lp-badge">Юридичний документ</p>
                 <h1 className="lp-title">Умови використання</h1>
                 <div className="lp-meta">
-                    <span className="lp-meta-item">🗓 Набирають чинності: 1 березня 2025 р.</span>
-                    <span className="lp-meta-item">🔄 Оновлено: 1 березня 2025 р.</span>
-                    <span className="lp-meta-item">🌐 Чинні для: knitly.app</span>
+                    <span className="lp-meta-item">Набирають чинності: 1 березня 2025 р.</span>
+                    <span className="lp-meta-item">Оновлено: 1 березня 2025 р.</span>
+                    <span className="lp-meta-item">Чинні для: knitly.app</span>
                 </div>
-            </header>
+            </div>
 
             {/* ── Table of contents ── */}
             <nav className="lp-toc" aria-label="Зміст">
@@ -226,6 +226,6 @@ export default function TermsPage() {
                 </div>
 
             </div>
-        </article>
+        </div>
     );
 }

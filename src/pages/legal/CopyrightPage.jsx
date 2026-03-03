@@ -15,9 +15,9 @@ const SECTIONS = [
 
 export default function CopyrightPage() {
     return (
-        <article>
+        <div>
             {/* ── Hero ── */}
-            <header className="lp-hero">
+            <div className="lp-hero">
                 <nav className="lp-breadcrumb" aria-label="Хлібні крихти">
                     <Link to="/">Knitly</Link>
                     <span className="lp-breadcrumb-sep" aria-hidden="true">›</span>
@@ -25,14 +25,14 @@ export default function CopyrightPage() {
                     <span className="lp-breadcrumb-sep" aria-hidden="true">›</span>
                     <span>Авторські права</span>
                 </nav>
-                <p className="lp-badge">©️ Авторські права та DMCA</p>
+                <p className="lp-badge">Авторські права та DMCA</p>
                 <h1 className="lp-title">Авторські права & DMCA</h1>
                 <div className="lp-meta">
-                    <span className="lp-meta-item">🗓 Набирає чинності: 1 березня 2025 р.</span>
-                    <span className="lp-meta-item">🔄 Оновлено: 1 березня 2025 р.</span>
-                    <span className="lp-meta-item">⚖️ DMCA + Закон України про АП</span>
+                    <span className="lp-meta-item">Набирає чинності: 1 березня 2025 р.</span>
+                    <span className="lp-meta-item">Оновлено: 1 березня 2025 р.</span>
+                    <span className="lp-meta-item">DMCA + Закон України про авторське право</span>
                 </div>
-            </header>
+            </div>
 
             {/* ── Table of contents ── */}
             <nav className="lp-toc" aria-label="Зміст">
@@ -234,6 +234,6 @@ export default function CopyrightPage() {
                 </div>
 
             </div>
-        </article>
+        </div>
     );
 }

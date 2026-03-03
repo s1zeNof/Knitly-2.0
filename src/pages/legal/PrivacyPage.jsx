@@ -15,9 +15,9 @@ const SECTIONS = [
 
 export default function PrivacyPage() {
     return (
-        <article>
+        <div>
             {/* ── Hero ── */}
-            <header className="lp-hero">
+            <div className="lp-hero">
                 <nav className="lp-breadcrumb" aria-label="Хлібні крихти">
                     <Link to="/">Knitly</Link>
                     <span className="lp-breadcrumb-sep" aria-hidden="true">›</span>
@@ -25,14 +25,14 @@ export default function PrivacyPage() {
                     <span className="lp-breadcrumb-sep" aria-hidden="true">›</span>
                     <span>Конфіденційність</span>
                 </nav>
-                <p className="lp-badge">🔐 Захист даних</p>
+                <p className="lp-badge">Захист даних</p>
                 <h1 className="lp-title">Політика конфіденційності</h1>
                 <div className="lp-meta">
-                    <span className="lp-meta-item">🗓 Набирає чинності: 1 березня 2025 р.</span>
-                    <span className="lp-meta-item">🔄 Оновлено: 1 березня 2025 р.</span>
-                    <span className="lp-meta-item">⚖️ GDPR + Закон України №2297-VI</span>
+                    <span className="lp-meta-item">Набирає чинності: 1 березня 2025 р.</span>
+                    <span className="lp-meta-item">Оновлено: 1 березня 2025 р.</span>
+                    <span className="lp-meta-item">GDPR + Закон України №2297-VI</span>
                 </div>
-            </header>
+            </div>
 
             {/* ── Table of contents ── */}
             <nav className="lp-toc" aria-label="Зміст">
@@ -235,6 +235,6 @@ export default function PrivacyPage() {
                 </div>
 
             </div>
-        </article>
+        </div>
     );
 }

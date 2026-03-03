@@ -3,7 +3,10 @@
    ============================================================ */
 
 .ll-root {
-    min-height: 100vh;
+    /* #root has overflow:hidden + height:100% — we become the scroll container */
+    height: 100%;
+    overflow-y: auto;
+    overflow-x: hidden;
     display: flex;
     flex-direction: column;
     background: #0e0d12;
@@ -17,11 +20,12 @@
     max-width: 1200px;
     width: 100%;
     margin: 0 auto;
-    padding: 2.5rem 2rem;
+    padding: 2rem 2rem 3rem;
     display: grid;
     grid-template-columns: 220px 1fr;
     gap: 3rem;
     align-items: start;
+    box-sizing: border-box;
 }
 
 /* ── Sidebar ── */
@@ -103,7 +107,7 @@
     .ll-body {
         grid-template-columns: 1fr;
         gap: 0;
-        padding: 1.5rem 1.25rem;
+        padding: 1rem 1rem 2.5rem;
     }
 
     .ll-sidebar {
@@ -113,7 +117,7 @@
         flex-wrap: wrap;
         gap: 0.375rem;
         align-items: center;
-        margin-bottom: 2rem;
+        margin-bottom: 1.25rem;
     }
 
     .ll-sidebar-label,
@@ -126,6 +130,11 @@
         border: 1px solid rgba(255,255,255,0.07);
         font-size: 0.82rem;
         margin-bottom: 0;
+        /* Hide emoji icon on mobile chips — save space */
+    }
+
+    .ll-sidebar-icon {
+        display: none;
     }
 
     .ll-sidebar-active {
@@ -135,6 +144,6 @@
 
 @media (max-width: 480px) {
     .ll-body {
-        padding: 1rem 0.875rem;
+        padding: 0.75rem 0.875rem 2rem;
     }
 }

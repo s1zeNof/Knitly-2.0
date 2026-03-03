@@ -2,11 +2,18 @@
    Shared styles for all legal pages
    ============================================================ */
 
-/* ── Page hero ── */
+/* ── Page hero ──
+   IMPORTANT: must be display:flex+column — global Header.css sets
+   all <header> elements to display:flex which breaks the layout.
+   We use <div className="lp-hero"> in JSX, but keep this rule as a guard. */
 .lp-hero {
-    padding: 2.5rem 0 2rem;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 2rem 0 1.75rem;
     border-bottom: 1px solid rgba(255,255,255,0.06);
-    margin-bottom: 2.5rem;
+    margin-bottom: 2rem;
+    width: 100%;
 }
 
 .lp-breadcrumb {
@@ -32,40 +39,43 @@
     display: inline-flex;
     align-items: center;
     gap: 0.375rem;
-    font-size: 0.72rem;
+    font-size: 0.68rem;
     font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 0.08em;
+    letter-spacing: 0.1em;
     color: #a855f7;
     background: rgba(168,85,247,0.1);
     border: 1px solid rgba(168,85,247,0.2);
     border-radius: 4px;
-    padding: 3px 8px;
-    margin-bottom: 0.875rem;
+    padding: 3px 9px;
+    margin-bottom: 0.75rem;
+    flex-shrink: 0;
 }
 
 .lp-title {
     font-family: 'Urbanist', sans-serif;
-    font-size: 2.2rem;
+    font-size: 2rem;
     font-weight: 800;
     letter-spacing: -0.03em;
     color: #f4f4f5;
-    margin: 0 0 0.625rem 0;
+    margin: 0 0 0.75rem 0;
     line-height: 1.2;
+    width: 100%;
 }
 
 .lp-meta {
     display: flex;
     align-items: center;
-    gap: 1.25rem;
+    gap: 1rem;
     flex-wrap: wrap;
+    width: 100%;
 }
 
 .lp-meta-item {
-    display: flex;
+    display: inline-flex;
     align-items: center;
-    gap: 0.375rem;
-    font-size: 0.82rem;
+    gap: 0.3rem;
+    font-size: 0.8rem;
     color: #71717a;
 }
 
@@ -263,10 +273,65 @@
 }
 
 /* ── Responsive ── */
-@media (max-width: 640px) {
-    .lp-title { font-size: 1.65rem; }
+@media (max-width: 768px) {
+    .lp-hero {
+        padding: 1.25rem 0 1.25rem;
+        margin-bottom: 1.5rem;
+    }
 
-    .lp-toc-list { columns: 1; }
+    .lp-title {
+        font-size: 1.6rem;
+        margin-bottom: 0.625rem;
+    }
 
-    .lp-section-title { font-size: 1.05rem; }
+    .lp-toc {
+        padding: 1rem 1.125rem;
+        margin-bottom: 1.75rem;
+    }
+
+    .lp-toc-list {
+        columns: 1;
+    }
+
+    .lp-section {
+        margin-bottom: 2rem;
+    }
+
+    .lp-section-title {
+        font-size: 1.05rem;
+    }
+
+    .lp-meta {
+        gap: 0.6rem;
+    }
+
+    .lp-meta-item {
+        font-size: 0.75rem;
+    }
+
+    .lp-highlight,
+    .lp-warning,
+    .lp-info {
+        padding: 0.75rem 1rem;
+        font-size: 0.875rem;
+    }
+
+    .lp-contact-card {
+        padding: 1.125rem 1.25rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .lp-title {
+        font-size: 1.4rem;
+    }
+
+    .lp-breadcrumb {
+        font-size: 0.75rem;
+    }
+
+    .lp-section p,
+    .lp-section li {
+        font-size: 0.9rem;
+    }
 }

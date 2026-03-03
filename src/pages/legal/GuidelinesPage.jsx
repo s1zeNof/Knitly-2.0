@@ -36,9 +36,9 @@ const DONT_RULES = [
 
 export default function GuidelinesPage() {
     return (
-        <article>
+        <div>
             {/* ── Hero ── */}
-            <header className="lp-hero">
+            <div className="lp-hero">
                 <nav className="lp-breadcrumb" aria-label="Хлібні крихти">
                     <Link to="/">Knitly</Link>
                     <span className="lp-breadcrumb-sep" aria-hidden="true">›</span>
@@ -46,14 +46,14 @@ export default function GuidelinesPage() {
                     <span className="lp-breadcrumb-sep" aria-hidden="true">›</span>
                     <span>Правила спільноти</span>
                 </nav>
-                <p className="lp-badge">🤝 Правила спільноти</p>
+                <p className="lp-badge">Правила спільноти</p>
                 <h1 className="lp-title">Правила спільноти</h1>
                 <div className="lp-meta">
-                    <span className="lp-meta-item">🗓 Набирають чинності: 1 березня 2025 р.</span>
-                    <span className="lp-meta-item">🔄 Оновлено: 1 березня 2025 р.</span>
-                    <span className="lp-meta-item">🎵 Для всіх учасників спільноти</span>
+                    <span className="lp-meta-item">Набирають чинності: 1 березня 2025 р.</span>
+                    <span className="lp-meta-item">Оновлено: 1 березня 2025 р.</span>
+                    <span className="lp-meta-item">Для всіх учасників спільноти</span>
                 </div>
-            </header>
+            </div>
 
             {/* ── Table of contents ── */}
             <nav className="lp-toc" aria-label="Зміст">
@@ -241,6 +241,6 @@ export default function GuidelinesPage() {
                 </div>
 
             </div>
-        </article>
+        </div>
     );
 }
