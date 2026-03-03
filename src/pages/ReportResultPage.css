@@ -1,0 +1,334 @@
+/* ============================================================
+   ReportResultPage — сторінка результату розгляду скарги
+   ============================================================ */
+
+.rrp-wrap {
+    display: flex;
+    justify-content: center;
+    padding: 2rem 1rem 4rem;
+    min-height: 60vh;
+}
+
+/* ── Картка ──────────────────────────────────────────────────── */
+.rrp-card {
+    width: 100%;
+    max-width: 560px;
+    background: linear-gradient(145deg, rgba(28, 26, 34, 0.95) 0%, rgba(20, 18, 25, 0.98) 100%);
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    border-radius: 1.5rem;
+    padding: 2rem;
+    box-shadow:
+        0 4px 40px rgba(0, 0, 0, 0.45),
+        inset 0 1px 0 rgba(255, 255, 255, 0.04);
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+/* ── Хедер ───────────────────────────────────────────────────── */
+.rrp-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.rrp-header-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    border-radius: 0.875rem;
+    background: rgba(168, 85, 247, 0.12);
+    border: 1px solid rgba(168, 85, 247, 0.25);
+    color: #a855f7;
+    flex-shrink: 0;
+}
+
+.rrp-title {
+    font-family: 'Urbanist', sans-serif;
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: #f4f4f5;
+    margin: 0 0 0.2rem;
+    letter-spacing: -0.015em;
+}
+
+.rrp-subtitle {
+    font-size: 0.82rem;
+    color: #71717a;
+    margin: 0;
+}
+
+/* ── Статус-бейдж ────────────────────────────────────────────── */
+.rrp-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.55rem 1rem;
+    border-radius: 2rem;
+    font-family: 'Urbanist', sans-serif;
+    font-size: 0.875rem;
+    font-weight: 600;
+    width: fit-content;
+}
+
+.rrp-status--resolved {
+    background: rgba(34, 197, 94, 0.12);
+    border: 1px solid rgba(34, 197, 94, 0.3);
+    color: #4ade80;
+}
+
+.rrp-status--dismissed {
+    background: rgba(161, 161, 170, 0.1);
+    border: 1px solid rgba(161, 161, 170, 0.2);
+    color: #a1a1aa;
+}
+
+.rrp-status--pending {
+    background: rgba(251, 191, 36, 0.1);
+    border: 1px solid rgba(251, 191, 36, 0.25);
+    color: #fbbf24;
+}
+
+/* ── Деталі ──────────────────────────────────────────────────── */
+.rrp-details {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 1rem;
+    padding: 1rem 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.625rem;
+}
+
+.rrp-detail-row {
+    display: flex;
+    align-items: baseline;
+    gap: 0.625rem;
+    font-size: 0.875rem;
+}
+
+.rrp-detail-label {
+    color: #71717a;
+    font-weight: 500;
+    flex-shrink: 0;
+    min-width: 110px;
+}
+
+.rrp-detail-value {
+    color: #e4e4e7;
+}
+
+.rrp-detail-link {
+    color: #c084fc;
+    text-decoration: none;
+    transition: color 0.15s;
+}
+
+.rrp-detail-link:hover {
+    color: #e879f9;
+    text-decoration: underline;
+}
+
+/* ── Текст результату ────────────────────────────────────────── */
+.rrp-message {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.rrp-message p {
+    margin: 0;
+    font-size: 0.9rem;
+    line-height: 1.65;
+    color: #a1a1aa;
+}
+
+.rrp-inline-link {
+    color: #c084fc;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    transition: color 0.15s;
+}
+
+.rrp-inline-link:hover {
+    color: #e879f9;
+}
+
+.rrp-admin-note {
+    margin: 0.25rem 0 0;
+    padding: 0.75rem 1rem;
+    border-left: 3px solid rgba(168, 85, 247, 0.5);
+    background: rgba(168, 85, 247, 0.06);
+    border-radius: 0 0.625rem 0.625rem 0;
+    font-size: 0.875rem;
+    color: #c4b5fd;
+    line-height: 1.55;
+}
+
+.rrp-admin-note-label {
+    display: block;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #a855f7;
+    margin-bottom: 0.3rem;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+}
+
+/* ── Дії ─────────────────────────────────────────────────────── */
+.rrp-actions {
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+    padding-top: 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.875rem;
+}
+
+.rrp-actions-hint {
+    margin: 0;
+    font-size: 0.82rem;
+    color: #71717a;
+}
+
+.rrp-actions-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.625rem;
+}
+
+.rrp-btn-block,
+.rrp-btn-restrict {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.55rem 1.1rem;
+    border-radius: 0.75rem;
+    font-family: 'Urbanist', sans-serif;
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s, color 0.15s, opacity 0.15s;
+}
+
+/* Заблокувати — червоний (як кнопка виходу) */
+.rrp-btn-block {
+    background: rgba(239, 68, 68, 0.12);
+    border: 1px solid rgba(239, 68, 68, 0.35);
+    color: #f87171;
+}
+
+.rrp-btn-block:not(:disabled):hover {
+    background: rgba(239, 68, 68, 0.22);
+    border-color: rgba(239, 68, 68, 0.55);
+    color: #fca5a5;
+}
+
+/* Обмежити — нейтральний */
+.rrp-btn-restrict {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #a1a1aa;
+}
+
+.rrp-btn-restrict:not(:disabled):hover {
+    background: rgba(255, 255, 255, 0.09);
+    border-color: rgba(255, 255, 255, 0.18);
+    color: #e4e4e7;
+}
+
+.rrp-btn-block:disabled,
+.rrp-btn-restrict:disabled {
+    opacity: 0.5;
+    cursor: default;
+}
+
+/* ── Посилання "назад" ───────────────────────────────────────── */
+.rrp-back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.875rem;
+    color: #71717a;
+    text-decoration: none;
+    width: fit-content;
+    transition: color 0.15s;
+}
+
+.rrp-back-link:hover {
+    color: #a1a1aa;
+}
+
+/* ── Скелетон ────────────────────────────────────────────────── */
+.rrp-skeleton {
+    gap: 1.25rem;
+}
+
+.rrp-skeleton-line {
+    height: 14px;
+    border-radius: 6px;
+    background: rgba(255, 255, 255, 0.06);
+    animation: rrp-shimmer 1.5s infinite;
+    width: 75%;
+}
+
+.rrp-skeleton-line--wide  { width: 55%; height: 20px; }
+.rrp-skeleton-line--short { width: 35%; }
+
+@keyframes rrp-shimmer {
+    0%   { opacity: 0.5; }
+    50%  { opacity: 1;   }
+    100% { opacity: 0.5; }
+}
+
+/* ── "Не знайдено" ───────────────────────────────────────────── */
+.rrp-not-found {
+    align-items: center;
+    text-align: center;
+    padding: 3rem 2rem;
+}
+
+.rrp-not-found-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: rgba(239, 68, 68, 0.1);
+    border: 1.5px solid rgba(239, 68, 68, 0.25);
+    color: #f87171;
+    margin-bottom: 0.5rem;
+}
+
+.rrp-not-found-icon svg {
+    width: 28px;
+    height: 28px;
+}
+
+.rrp-not-found-title {
+    font-family: 'Urbanist', sans-serif;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #f4f4f5;
+    margin: 0 0 0.5rem;
+}
+
+.rrp-not-found-text {
+    font-size: 0.875rem;
+    color: #71717a;
+    line-height: 1.55;
+    max-width: 320px;
+    margin: 0 0 1.5rem;
+}
+
+/* ── Мобільний ───────────────────────────────────────────────── */
+@media (max-width: 600px) {
+    .rrp-wrap  { padding: 1rem 0.75rem 3rem; }
+    .rrp-card  { padding: 1.5rem 1.25rem; border-radius: 1.25rem; }
+    .rrp-actions-row { flex-direction: column; }
+    .rrp-btn-block,
+    .rrp-btn-restrict { width: 100%; justify-content: center; }
+    .rrp-detail-label { min-width: 90px; }
+}

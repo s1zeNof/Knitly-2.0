@@ -35,6 +35,7 @@ import AdminRoute from './components/layout/AdminRoute';
 import AdminPage from './pages/AdminPage';
 import CreatorStudio from './pages/CreatorStudio';
 import NotificationsPage from './pages/NotificationsPage';
+import ReportResultPage  from './pages/ReportResultPage';
 import PostPage from './pages/PostPage';
 import SearchPage from './pages/SearchPage';
 import FollowersPage from './pages/FollowersPage';
@@ -174,7 +175,8 @@ const AppLayout = () => {
                     <Route path="/track/:trackId" element={<TrackPage />} />
                     <Route path="/tags/:tagName" element={<TagPage />} />
                     <Route path="/post/:postId" element={<PostPage />} />
-                    <Route path="/notifications" element={<NotificationsPage />} />
+                    <Route path="/notifications"             element={<NotificationsPage />} />
+                    <Route path="/report-result/:reportId"  element={<ReportResultPage  />} />
                     <Route path="/studio" element={<CreatorStudio />} />
                     <Route path="/migrate-cloudinary" element={<CloudinaryMigration />} />
                     <Route

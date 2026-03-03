@@ -26,8 +26,16 @@ yarn-error.log*
 # --- FIREBASE KEYS (секретні!) ---
 src/firebaseSDK/
 
+# --- NODE.JS MIGRATION SCRIPTS (не для production build) ---
+# Самі скрипти в git — ОК (не містять ключів).
+# Ключі лежать в src/firebaseSDK/ — вже ігноруються вище.
+# src/scripts/ — стара папка, можна видалити вручну після верифікації scripts/
+
 # --- CUSTOM SCRIPTS / UTILS (не публічне API) ---
 updateReactions.js
 migrateTracks.js
 cors.json
 knitly@0.1.0
+
+# --- PROJECT MEMORY (ніколи не в git) ---
+KNITLY_CONTEXT.md

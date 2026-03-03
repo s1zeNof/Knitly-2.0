@@ -4,6 +4,7 @@ import { collection, query, where, getDocs, getDoc, doc, updateDoc, arrayUnion, 
 import { db } from '../services/firebase';
 import { useUserContext } from '../contexts/UserContext';
 import default_picture from '../img/Default-Images/default-picture.svg';
+import VerifiedBadge from '../components/common/VerifiedBadge';
 import './FollowersPage.css';
 
 /* ---- Icons ---- */
@@ -77,7 +78,11 @@ const UserCard = ({ user, currentUser, onFollowChange }) => {
                 onError={e => { e.target.onerror = null; e.target.src = default_picture; }}
             />
             <div className="follower-info">
-                <span className="follower-name">{user.displayName || user.nickname}</span>
+                <span className="follower-name">
+                    {user.displayName || user.nickname}
+                    {/* 🔮 кастомні емоджі тут у майбутньому */}
+                    {user.roles?.includes('verified') && <VerifiedBadge size="sm" />}
+                </span>
                 <span className="follower-nick">@{user.nickname}</span>
                 {user.description && (
                     <p className="follower-bio">{user.description}</p>

@@ -23,7 +23,7 @@ const TrackList = ({ userId, initialTracks = null, isLoading: isLoadingInitial =
     const { user: currentUser, refreshUser } = useUserContext();
     const { currentTrack, isPlaying, handlePlayPause, addToQueue, showNotification } = usePlayerContext();
     const { tracks: fetchedTracks, loading } = useUserTracks(userId);
-    
+
     const [displayTracks, setDisplayTracks] = useState([]);
     const [isDataLoading, setIsDataLoading] = useState(true);
     const [processingLikes, setProcessingLikes] = useState([]);
@@ -33,7 +33,7 @@ const TrackList = ({ userId, initialTracks = null, isLoading: isLoadingInitial =
     const [showAddToPlaylistModal, setShowAddToPlaylistModal] = useState(false);
     const [userPlaylists, setUserPlaylists] = useState([]);
     const [selectedTrack, setSelectedTrack] = useState(null);
-    
+
     const menuRefs = useRef({}); // Використовуємо об'єкт для рефів
     const [menuPosition, setMenuPosition] = useState({});
 
@@ -50,9 +50,9 @@ const TrackList = ({ userId, initialTracks = null, isLoading: isLoadingInitial =
     useEffect(() => {
         const handleClickOutside = (event) => {
             if (activeMenu && menuRefs.current[activeMenu] && !menuRefs.current[activeMenu].contains(event.target)) {
-                 if (!event.target.closest('.options-button-list')) {
+                if (!event.target.closest('.options-button-list')) {
                     setActiveMenu(null);
-                 }
+                }
             }
         };
 
@@ -106,7 +106,7 @@ const TrackList = ({ userId, initialTracks = null, isLoading: isLoadingInitial =
             });
 
             await refreshUser();
-            
+
             if (!isLiked && track.authorId !== currentUser.uid) {
                 const notificationRef = collection(db, 'users', track.authorId, 'notifications');
                 await addDoc(notificationRef, {
@@ -130,7 +130,7 @@ const TrackList = ({ userId, initialTracks = null, isLoading: isLoadingInitial =
     const openAddToPlaylistModal = async (track) => {
         if (!currentUser) return;
         setSelectedTrack(track);
-        
+
         try {
             const q = query(collection(db, 'playlists'), where('creatorId', '==', currentUser.uid));
             const querySnapshot = await getDocs(q);
@@ -143,7 +143,7 @@ const TrackList = ({ userId, initialTracks = null, isLoading: isLoadingInitial =
             showNotification("Не вдалося завантажити ваші плейлисти.", "error");
         }
     };
-    
+
     const handleAddTrackToPlaylist = async (playlistId) => {
         if (!selectedTrack) return;
         try {
@@ -166,9 +166,9 @@ const TrackList = ({ userId, initialTracks = null, isLoading: isLoadingInitial =
             // Примітка: фізичні файли в Supabase Storage НЕ видаляємо автоматично —
             // вони будуть перезаписані при наступному завантаженні або очищені вручну.
             await deleteDoc(doc(db, "tracks", trackToDelete.id));
-            
+
             setDisplayTracks(prevTracks => prevTracks.filter(t => t.id !== trackToDelete.id));
-            
+
             showNotification(`Трек "${trackToDelete.title}" успішно видалено.`, 'info');
         } catch (error) {
             console.error("Помилка видалення треку:", error);
@@ -177,7 +177,7 @@ const TrackList = ({ userId, initialTracks = null, isLoading: isLoadingInitial =
             setShowDeleteModal(null);
         }
     };
-    
+
     if (isDataLoading) return <div className="tracklist-placeholder">Завантаження треків...</div>;
     if (!displayTracks || displayTracks.length === 0) return <div className="tracklist-placeholder">Тут поки що немає треків.</div>;
 
@@ -190,48 +190,64 @@ const TrackList = ({ userId, initialTracks = null, isLoading: isLoadingInitial =
                     <button onClick={() => setViewMode('grid')} className={viewMode === 'grid' ? 'active' : ''}><GridIcon /></button>
                 </div>
             </div>
-           
+
             {viewMode === 'list' ? (
                 <div className="tracks-as-list">
                     {displayTracks.map(track => {
                         const isLiked = currentUser?.likedTracks?.includes(track.id);
                         return (
-                            <div key={track.id} className="track-item-list">
-                                <Link to={`/track/${track.id}`}>
-                                    <img src={track.coverArtUrl || DEFAULT_COVER_URL} alt={track.title} className="track-cover-list"/>
-                                </Link>
-                                <button className="play-button-list" onClick={() => handlePlayPause(track)}>
-                                    {isPlaying && currentTrack?.id === track.id ? <PauseIcon /> : <PlayIcon />}
-                                </button>
+                            <div
+                                key={track.id}
+                                className={`track-item-list${isPlaying && currentTrack?.id === track.id ? ' is-playing' : ''}`}
+                            >
+                                {/* Cover art with play overlay */}
+                                <div className="track-cover-wrapper" onClick={() => handlePlayPause(track)}>
+                                    <img src={track.coverArtUrl || DEFAULT_COVER_URL} alt={track.title} className="track-cover-list" />
+                                    <button className="play-overlay-list" aria-label="Play">
+                                        {isPlaying && currentTrack?.id === track.id ? (
+                                            <div className="eq-bars">
+                                                <span /><span /><span />
+                                            </div>
+                                        ) : (
+                                            <PlayIcon />
+                                        )}
+                                    </button>
+                                </div>
+
+                                {/* Track info */}
                                 <div className="track-info-list">
                                     <Link to={`/track/${track.id}`} className="track-title-list-link">
                                         <p className="track-title-list">{track.title}</p>
                                     </Link>
                                     <p className="track-artist-list">{track.authorName}</p>
                                 </div>
+
+                                {/* Stats */}
                                 <div className="track-stats-list">
                                     <span className="stat-item">
-                                        <HeadsetIcon/> 
+                                        <HeadsetIcon />
                                         <AnimatedCounter count={track.playCount || 0} />
                                     </span>
                                     <span className="stat-item">
-                                        <button 
-                                            className={`like-button ${isLiked ? 'liked' : ''}`} 
+                                        <button
+                                            className={`like-button ${isLiked ? 'liked' : ''}`}
                                             onClick={() => handleLikeToggle(track)}
                                             disabled={processingLikes.includes(track.id)}
                                         >
-                                            <HeartIcon/>
+                                            <HeartIcon />
                                         </button>
                                         <AnimatedCounter count={track.likesCount || 0} />
                                     </span>
                                 </div>
+
+                                {/* Options menu */}
                                 <div className="options-container">
                                     <button className="options-button-list" onClick={(e) => handleMenuClick(e, track.id)}>
-                                        <OptionsIcon/>
+                                        <OptionsIcon />
                                     </button>
                                     {activeMenu === track.id && (
-                                        <div 
-                                            ref={el => menuRefs.current[track.id] = el} 
+                                        <div
+                                            ref={el => menuRefs.current[track.id] = el}
                                             className={`options-menu active ${menuPosition[track.id]?.opensUp ? 'opens-up' : ''}`}
                                         >
                                             <button onClick={() => { addToQueue(track); setActiveMenu(null); }}>Додати в чергу</button>
@@ -250,13 +266,13 @@ const TrackList = ({ userId, initialTracks = null, isLoading: isLoadingInitial =
                     })}
                 </div>
             ) : (
-                 <div className="tracks-as-grid">
+                <div className="tracks-as-grid">
                     {displayTracks.map(track => {
                         const isLiked = currentUser?.likedTracks?.includes(track.id);
                         return (
-                             <div key={track.id} className="track-card-grid">
+                            <div key={track.id} className="track-card-grid">
                                 <div className="cover-container-grid" onClick={() => handlePlayPause(track)}>
-                                    <img src={track.coverArtUrl || DEFAULT_COVER_URL} alt={track.title} className="track-cover-grid"/>
+                                    <img src={track.coverArtUrl || DEFAULT_COVER_URL} alt={track.title} className="track-cover-grid" />
                                     <div className="play-overlay-grid">
                                         {isPlaying && currentTrack?.id === track.id ? <PauseIcon /> : <PlayIcon />}
                                     </div>
@@ -264,18 +280,18 @@ const TrackList = ({ userId, initialTracks = null, isLoading: isLoadingInitial =
                                 <Link to={`/track/${track.id}`}><p className="track-title-grid">{track.title}</p></Link>
                                 <div className="track-card-footer">
                                     <div className="track-stats-grid">
-                                        <span className="stat-item"><HeadsetIcon/> <AnimatedCounter count={track.playCount || 0} /></span>
-                                        <span className="stat-item"><HeartIcon/> <AnimatedCounter count={track.likesCount || 0} /></span>
+                                        <span className="stat-item"><HeadsetIcon /> <AnimatedCounter count={track.playCount || 0} /></span>
+                                        <span className="stat-item"><HeartIcon /> <AnimatedCounter count={track.likesCount || 0} /></span>
                                     </div>
-                                    <button 
-                                        className={`like-button-grid ${isLiked ? 'liked' : ''}`} 
+                                    <button
+                                        className={`like-button-grid ${isLiked ? 'liked' : ''}`}
                                         onClick={() => handleLikeToggle(track)}
                                         disabled={processingLikes.includes(track.id)}
                                     >
-                                        <HeartIcon/>
+                                        <HeartIcon />
                                     </button>
                                 </div>
-                             </div>
+                            </div>
                         )
                     })}
                 </div>
@@ -293,11 +309,11 @@ const TrackList = ({ userId, initialTracks = null, isLoading: isLoadingInitial =
                     </div>
                 </div>
             )}
-            
+
             {showAddToPlaylistModal && (
                 <div className="modal-overlay">
                     <div className="modal-content">
-                         <button className="modal-close-button" onClick={() => setShowAddToPlaylistModal(false)}>&times;</button>
+                        <button className="modal-close-button" onClick={() => setShowAddToPlaylistModal(false)}>&times;</button>
                         <h4>Додати до плейлиста</h4>
                         <div className="add-to-playlist-list">
                             {userPlaylists.length > 0 ? (

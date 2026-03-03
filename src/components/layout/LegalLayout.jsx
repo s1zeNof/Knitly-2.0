@@ -1,14 +1,15 @@
 import React, { useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
+import { FileText, ShieldCheck, Copyright, Users } from 'lucide-react';
 import PublicHeader from './PublicHeader';
 import SiteFooter from './SiteFooter';
 import './LegalLayout.css';
 
 const LEGAL_NAV = [
-    { to: '/terms',      label: 'Умови використання',        icon: '📋' },
-    { to: '/privacy',    label: 'Конфіденційність',           icon: '🔐' },
-    { to: '/copyright',  label: 'Авторські права & DMCA',    icon: '©️' },
-    { to: '/guidelines', label: 'Правила спільноти',          icon: '🤝' },
+    { to: '/terms',      label: 'Умови використання',     Icon: FileText    },
+    { to: '/privacy',    label: 'Конфіденційність',        Icon: ShieldCheck },
+    { to: '/copyright',  label: 'Авторські права & DMCA', Icon: Copyright   },
+    { to: '/guidelines', label: 'Правила спільноти',       Icon: Users       },
 ];
 
 export default function LegalLayout({ children }) {
@@ -28,13 +29,13 @@ export default function LegalLayout({ children }) {
                 <aside className="ll-sidebar" aria-label="Правові документи">
                     <p className="ll-sidebar-label">Правові документи</p>
                     <nav>
-                        {LEGAL_NAV.map(({ to, label, icon }) => (
+                        {LEGAL_NAV.map(({ to, label, Icon }) => (
                             <Link
                                 key={to}
                                 to={to}
                                 className={`ll-sidebar-link ${pathname === to ? 'll-sidebar-active' : ''}`}
                             >
-                                <span className="ll-sidebar-icon" aria-hidden="true">{icon}</span>
+                                <Icon className="ll-sidebar-icon" size={15} aria-hidden="true" />
                                 {label}
                             </Link>
                         ))}

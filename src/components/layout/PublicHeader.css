@@ -306,10 +306,14 @@
 
     .ph-hamburger {
         display: flex;
+        margin-left: 0; /* reset; parent justify-content:space-between handles positioning */
     }
 
     .ph-inner {
+        width: 100%;
         padding: 0 1.25rem;
+        justify-content: space-between;
+        gap: 0;
     }
 }
 

@@ -3,6 +3,7 @@ import { Link, NavLink } from 'react-router-dom';
 import { useUserContext } from '../../contexts/UserContext';
 import { usePlayerContext } from '../../contexts/PlayerContext'; 
 import default_picture from '../../img/Default-Images/default-picture.svg';
+import VerifiedBadge from '../common/VerifiedBadge';
 import './LeftSidebar.css';
 
 const HomeIcon = () => <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>;
@@ -33,7 +34,11 @@ const LeftSidebar = ({ isOpen }) => {
                     <Link to="/profile" className="sidebar-user-info">
                         <img src={user.photoURL || default_picture} alt="Avatar" className="profile-avatar" onError={(e) => { e.target.onerror = null; e.target.src = default_picture; }} />
                         <div className="profile-info">
-                            <span className="profile-name">{user.displayName || 'Мій Профіль'}</span>
+                            <span className="profile-name">
+                                {user.displayName || 'Мій Профіль'}
+                                {/* 🔮 кастомні емоджі тут у майбутньому */}
+                                {user.roles?.includes('verified') && <VerifiedBadge size="xs" />}
+                            </span>
                             <span className="profile-nickname">@{user.nickname || 'nickname'}</span>
                         </div>
                     </Link>

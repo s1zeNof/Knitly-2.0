@@ -20,6 +20,7 @@ import ReplyPreview from '../components/chat/ReplyPreview';
 import PinnedMessagesBar from '../components/chat/PinnedMessagesBar';
 import StoragePanel from '../components/chat/StoragePanel';
 import BookmarkIcon from '../components/common/BookmarkIcon';
+import VerifiedBadge from '../components/common/VerifiedBadge';
 import ForwardModal from '../components/common/ForwardModal';
 import ShareMusicModal from '../components/common/ShareMusicModal';
 import EmojiPickerPlus from '../components/chat/EmojiPickerPlus';
@@ -79,6 +80,8 @@ const MessagesPage = ({ openBrowser }) => {
     const [imageForEditor, setImageForEditor] = useState(null);
     const [uploadProgress, setUploadProgress] = useState(0);
     const [showUploadOverlay, setShowUploadOverlay] = useState(false);
+    // uid → roles[] — для відображення verified-бейджу у компаньонів
+    const [companionRoles, setCompanionRoles] = useState({});
     const [viewingImage, setViewingImage] = useState(null);
     const fileInputRef = useRef(null);
     const messagesEndRef = useRef(null);
@@ -153,6 +156,27 @@ const MessagesPage = ({ openBrowser }) => {
     useEffect(() => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     }, [messages]);
+
+    /* ── Завантажуємо roles для всіх компаньонів (1-on-1 чати) ──
+       Потрібно, щоб показати verified-бейдж у списку чатів і заголовку.
+       participantInfo у Firestore не зберігає roles — тому читаємо окремо. */
+    useEffect(() => {
+        if (!currentUser || conversations.length === 0) return;
+        const uids = [...new Set(
+            conversations
+                .filter(c => !c.isGroup)
+                .flatMap(c => (c.participantInfo || []).map(p => p.uid))
+                .filter(uid => uid && uid !== currentUser.uid)
+        )];
+        if (uids.length === 0) return;
+        Promise.all(uids.map(uid => getDoc(doc(db, 'users', uid))))
+            .then(snaps => {
+                const map = {};
+                snaps.forEach(snap => { if (snap.exists()) map[snap.id] = snap.data().roles || []; });
+                setCompanionRoles(map);
+            })
+            .catch(() => {/* якщо rules блокують — просто без бейджу */});
+    }, [conversations, currentUser]);
 
     const handleSwipeStart = (e) => {
         if (e.touches[0].clientX < 50) {
@@ -501,12 +525,17 @@ const MessagesPage = ({ openBrowser }) => {
                                 const convoName = isSavedChat ? 'Збережене' : (convo.isGroup ? convo.groupName : currentCompanion?.displayName);
                                 const convoPhoto = isSavedChat ? null : (convo.isGroup ? convo.groupPhotoURL || default_picture : currentCompanion?.photoURL);
                                 const unreadCount = isSavedChat ? 0 : (convo.unreadCounts?.[currentUser.uid] || 0);
+                                const convoCompanionRoles = (!isSavedChat && !convo.isGroup && currentCompanion?.uid)
+                                    ? (companionRoles[currentCompanion.uid] || []) : [];
                                 return (
                                     <div key={convo.id} className={`conversation-item ${selectedConversationId === convo.id ? 'active' : ''}`} onClick={() => handleSelectConversation(convo.id)}>
                                         <div className="conversation-item-main">
                                             {isSavedChat ? <div className="saved-messages-avatar"><BookmarkIcon /></div> : <img src={convoPhoto || default_picture} alt={convoName} />}
                                             <div className="conversation-details">
-                                                <p className="conversation-name">{convoName || 'Користувач'}</p>
+                                                <p className="conversation-name">
+                                                    {convoName || 'Користувач'}
+                                                    {convoCompanionRoles.includes('verified') && <VerifiedBadge size="xs" />}
+                                                </p>
                                                 <p className="conversation-last-message">{renderLastMessage(convo.lastMessage)}</p>
                                             </div>
                                         </div>
@@ -531,7 +560,17 @@ const MessagesPage = ({ openBrowser }) => {
                                     <div className="saved-messages-avatar header"><BookmarkIcon /></div> :
                                     <img src={selectedConversation.isGroup ? selectedConversation.groupPhotoURL || default_picture : companion?.photoURL || default_picture} alt="avatar" />
                                 }
-                                <h3>{selectedConversation.id === 'saved_messages' ? 'Збережене' : (selectedConversation.isGroup ? selectedConversation.groupName : companion?.displayName)}</h3>
+                                <h3>
+                                    {selectedConversation.id === 'saved_messages'
+                                        ? 'Збережене'
+                                        : selectedConversation.isGroup
+                                            ? selectedConversation.groupName
+                                            : companion?.displayName}
+                                    {/* 🔮 кастомні емоджі тут у майбутньому */}
+                                    {!selectedConversation.isGroup && selectedConversation.id !== 'saved_messages' &&
+                                        companion?.uid && (companionRoles[companion.uid] || []).includes('verified') &&
+                                        <VerifiedBadge size="xs" />}
+                                </h3>
                             </div>
                         ) : null}
                         {selectedConversation && (

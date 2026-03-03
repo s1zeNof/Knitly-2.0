@@ -16,7 +16,7 @@ import SendGiftModal from '../components/gifts/SendGiftModal';
 import toast from 'react-hot-toast';
 
 import default_picture from '../img/Default-Images/default-picture.svg';
-import verifiedIcon from '../img/Profile-Settings/verified_icon-lg-bl.svg';
+import VerifiedBadge from '../components/common/VerifiedBadge';
 import PageLoader from '../components/common/PageLoader';
 import NowPlayingBanner from '../components/profile/NowPlayingBanner';
 import './Profile.css';
@@ -351,8 +351,9 @@ const ProfilePage = ({ openBrowser, openShareModal }) => {
 
                     <div className="page-profile-info">
                         <h2 className="page-profile-display-name">
+                            {/* [ім'я] [🔮 кастомні емоджі тут у майбутньому] [галочка] */}
                             {profileUser.displayName || 'No Name'}
-                            {profileUser.isVerified && <img src={verifiedIcon} className="page-profile-verified-badge" alt="Verified" />}
+                            {profileUser.roles?.includes('verified') && <VerifiedBadge size="lg" />}
                         </h2>
                         <p className="page-profile-nickname">@{profileUser.nickname}</p>
                         <p className="page-profile-description">{profileUser.description || 'No description'}</p>

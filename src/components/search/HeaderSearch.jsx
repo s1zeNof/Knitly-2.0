@@ -5,6 +5,7 @@ import { collection, query, where, limit, getDocs } from 'firebase/firestore';
 import { useDebounce } from 'use-debounce';
 import { Link, useNavigate } from 'react-router-dom';
 import default_picture from '../../img/Default-Images/default-picture.svg';
+import VerifiedBadge from '../common/VerifiedBadge';
 import './HeaderSearch.css';
 
 const SearchIcon = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>;
@@ -108,7 +109,10 @@ const HeaderSearch = () => {
                         <Link to={`/${artist.nickname}`} key={artist.id} className="dropdown-item artist" onClick={closeDropdown}>
                             <img src={artist.photoURL || default_picture} alt={artist.displayName} />
                              <div className="item-info">
-                                <p>{artist.displayName}</p>
+                                <p>
+                                    {artist.displayName}
+                                    {artist.roles?.includes('verified') && <VerifiedBadge size="xs" />}
+                                </p>
                                 <span>@{artist.nickname}</span>
                             </div>
                         </Link>

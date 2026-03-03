@@ -1,0 +1,36 @@
+/* ── VerifiedBadge ────────────────────────────────────────────────────────────
+   Синя галочка верифікації.
+   Завжди inline-flex, вирівняна по вертикальному центру тексту.
+   ──────────────────────────────────────────────────────────────────────────── */
+
+.verified-badge-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    /* вертикальне вирівнювання в рядку тексту */
+    vertical-align: middle;
+    /* невеликий відступ зліва — від імені або від емоджі */
+    margin-left: 3px;
+    /* плавна поява */
+    animation: vb-pop 0.2s ease;
+    line-height: 0;
+}
+
+@keyframes vb-pop {
+    from { transform: scale(0.6); opacity: 0; }
+    to   { transform: scale(1);   opacity: 1; }
+}
+
+/* Розміри: визначаємо лише margin-left де потрібно відрізнятись */
+.verified-badge-icon--xs { margin-left: 2px; }
+.verified-badge-icon--lg { margin-left: 5px; }
+
+/* Легке підсвічування при ховері для підказки */
+.verified-badge-icon svg {
+    display: block;
+    transition: filter 0.15s;
+}
+.verified-badge-icon:hover svg {
+    filter: brightness(1.15);
+}

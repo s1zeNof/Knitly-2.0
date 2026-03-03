@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { Link, useNavigate } from 'react-router-dom';
-import { useMutation, useQueryClient } from 'react-query';
+import { useMutation, useQueryClient, useQuery } from 'react-query';
 import { db } from '../../services/firebase';
 import { doc, runTransaction, updateDoc, deleteDoc, getDoc, collection, addDoc, serverTimestamp, increment } from 'firebase/firestore';
 import { useUserContext } from '../../contexts/UserContext';
@@ -15,8 +16,10 @@ import LexicalPostContent from '../lexical/LexicalPostContent';
 import PollAttachment from './PollAttachment';
 import PostEditor from './PostEditor';
 import './Post.css';
+import VerifiedBadge from '../common/VerifiedBadge';
 
-import { Heart, MessageCircle, Smile, Send, Repeat } from 'lucide-react';
+import { Heart, MessageCircle, Smile, Send, Repeat, Flag, Link2 } from 'lucide-react';
+import ReportModal from '../common/ReportModal';
 
 const OptionsIcon = () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="1"></circle><circle cx="19" cy="12" r="1"></circle><circle cx="5" cy="12" r="1"></circle></svg>;
 
@@ -38,26 +41,55 @@ const PostCard = ({ post, openBrowser, openShareModal, isDetailView = false }) =
     const { handlePlayPause } = usePlayerContext();
     const navigate = useNavigate();
     const queryClient = useQueryClient();
-    const menuRef = useRef(null);
+    const menuRef       = useRef(null);
+    const reportMenuRef = useRef(null);
 
     const [commentsVisible, setCommentsVisible] = useState(false);
     const [showFullPicker, setShowFullPicker] = useState(false);
-    const [showMenu, setShowMenu] = useState(false);
+    const [showMenu,         setShowMenu]         = useState(false);
+    const [showReportModal,  setShowReportModal]  = useState(false);
+    const [showReportMenu,   setShowReportMenu]   = useState(false);
     const [isEditing, setIsEditing] = useState(false);
     const [isPlayAttachmentLoading, setIsPlayAttachmentLoading] = useState(false);
     const [isAvatarLoaded, setAvatarLoaded] = useState(false);
 
     const isNewFormat = !!post.authors;
     const primaryAuthor = isNewFormat ? post.authors[0] : { uid: post.authorId, nickname: post.authorUsername, photoURL: post.authorAvatarUrl };
-    const allAuthors = isNewFormat ? post.authors : [primaryAuthor];
     const authorUids = isNewFormat ? post.authorUids : [post.authorId];
+    const rawAuthors  = isNewFormat ? post.authors : [primaryAuthor];
+
+    // Отримуємо roles для авторів, яких немає в currentUser.
+    // useQuery кешує результат — якщо той самий автор є у 20 постах,
+    // Firestore читається тільки 1 раз на сесію.
+    const otherAuthorUids = rawAuthors
+        .map(a => a.uid)
+        .filter(uid => uid && uid !== currentUser?.uid);
+
+    const { data: fetchedRoles = {} } = useQuery(
+        ['authorRoles', ...otherAuthorUids.sort()],
+        () => Promise.all(otherAuthorUids.map(uid => getDoc(doc(db, 'users', uid))))
+            .then(snaps => {
+                const map = {};
+                snaps.forEach(snap => { if (snap.exists()) map[snap.id] = snap.data().roles || []; });
+                return map;
+            }),
+        { enabled: otherAuthorUids.length > 0, staleTime: 5 * 60 * 1000 }
+    );
+
+    // Збагачуємо authors ролями: своїми — з контексту, чужими — з Firestore (кеш)
+    const allAuthors = rawAuthors.map(author => {
+        if (author.uid === currentUser?.uid) return { ...author, roles: currentUser?.roles };
+        if (fetchedRoles[author.uid])        return { ...author, roles: fetchedRoles[author.uid] };
+        return author;
+    });
 
     const canManagePost = currentUser?.uid && authorUids?.includes(currentUser.uid);
     const isLiked = currentUser && post.reactions?.['unicode_❤️']?.uids.includes(currentUser.uid);
 
     useEffect(() => {
         const handleClickOutside = (event) => {
-            if (menuRef.current && !menuRef.current.contains(event.target)) setShowMenu(false);
+            if (menuRef.current       && !menuRef.current.contains(event.target))       setShowMenu(false);
+            if (reportMenuRef.current && !reportMenuRef.current.contains(event.target)) setShowReportMenu(false);
         };
         document.addEventListener("mousedown", handleClickOutside);
         return () => document.removeEventListener("mousedown", handleClickOutside);
@@ -168,6 +200,14 @@ const PostCard = ({ post, openBrowser, openShareModal, isDetailView = false }) =
 
     const handleDeletePost = () => { if (window.confirm('Ви впевнені, що хочете видалити цей допис?')) deletePostMutation.mutate(); };
 
+    const handleCopyPostUrl = () => {
+        const url = `${window.location.origin}/${primaryAuthor.nickname}/status/${post.id}`;
+        navigator.clipboard.writeText(url)
+            .then(()  => toast.success('URL допису скопійовано!'))
+            .catch(()  => toast.error('Не вдалося скопіювати URL'));
+        setShowReportMenu(false);
+    };
+
     const handleCardClick = (e) => {
         if (isDetailView) return;
         if (e.target.closest('button, a, input, [role="button"], .reaction-badge, .post-options-container')) return;
@@ -180,7 +220,11 @@ const PostCard = ({ post, openBrowser, openShareModal, isDetailView = false }) =
             <div className="post-author-links">
                 {authors.map((author, index) => (
                     <React.Fragment key={author.uid}>
-                        <Link to={`/${author.nickname}`} className="post-author-name"> @{author.nickname} </Link>
+                        <Link to={`/${author.nickname}`} className="post-author-name">
+                            @{author.nickname}
+                            {/* 🔮 кастомні емоджі тут у майбутньому */}
+                            {author.roles?.includes('verified') && <VerifiedBadge size="xs" />}
+                        </Link>
                         {index < authors.length - 2 && ', '}
                         {index === authors.length - 2 && ' та '}
                     </React.Fragment>
@@ -264,6 +308,28 @@ const PostCard = ({ post, openBrowser, openShareModal, isDetailView = false }) =
                                         )}
                                     </div>
                                 )}
+                                {!canManagePost && currentUser && (
+                                    <div className="post-options-container" ref={reportMenuRef}>
+                                        <button className="options-button" onClick={() => setShowReportMenu(!showReportMenu)}>
+                                            <OptionsIcon />
+                                        </button>
+                                        {showReportMenu && (
+                                            <div className="options-menu-small">
+                                                <button
+                                                    className="option-report"
+                                                    onClick={() => { setShowReportModal(true); setShowReportMenu(false); }}
+                                                >
+                                                    <Flag size={14} />
+                                                    Поскаржитись
+                                                </button>
+                                                <button onClick={handleCopyPostUrl}>
+                                                    <Link2 size={14} />
+                                                    Копіювати URL
+                                                </button>
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
                             </div>
                             {isEditing ? (
                                 <PostEditor
@@ -335,6 +401,20 @@ const PostCard = ({ post, openBrowser, openShareModal, isDetailView = false }) =
                 </div>
             </div>
             {showFullPicker && (<EmojiPickerPlus onClose={() => setShowFullPicker(false)} onEmojiSelect={handleReactionSelect} />)}
+            {showReportModal && createPortal(
+                <ReportModal
+                    isOpen={showReportModal}
+                    onClose={() => setShowReportModal(false)}
+                    targetType="post"
+                    targetId={post.id}
+                    targetData={{
+                        authorId:   primaryAuthor?.uid,
+                        authorNick: primaryAuthor?.nickname,
+                        preview:    post.editorState?.slice(0, 120) || '',
+                    }}
+                />,
+                document.body
+            )}
         </>
     );
 };

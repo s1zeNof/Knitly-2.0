@@ -365,12 +365,16 @@
     border-radius: 0.875rem;
     padding: 0.4rem;
     z-index: 10;
-    width: 155px;
+    width: max-content;
+    min-width: 155px;
+    max-width: 220px;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(255,255,255,0.04);
 }
 
 .options-menu-small button {
-    display: block;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
     width: 100%;
     background: none;
     border: none;
@@ -382,6 +386,7 @@
     font-size: 0.875rem;
     font-family: var(--font-main);
     transition: background 0.15s;
+    white-space: nowrap;
 }
 
 .options-menu-small button:hover {
@@ -396,6 +401,15 @@
 .options-menu-small button.option-delete:hover {
     background: rgba(239, 68, 68, 0.18);
     color: var(--color-error);
+}
+
+.options-menu-small button.option-report {
+    color: #f87171;
+}
+
+.options-menu-small button.option-report:hover {
+    background: rgba(239, 68, 68, 0.18);
+    color: #f87171;
 }
 
 /* --- "Нитка" та коментарі --- */

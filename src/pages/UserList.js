@@ -5,7 +5,7 @@ import { Link } from 'react-router-dom';
 import { db } from '../services/firebase';
 import { useUserContext } from '../contexts/UserContext'; // Ensure this is correctly imported
 import default_picture from '../img/Default-Images/default-picture.svg';
-import verifiedIcon from '../img/Profile-Settings/verified_icon-lg-bl.svg';
+import VerifiedBadge from '../components/common/VerifiedBadge';
 import './UserList.css'; // Assuming you have a CSS file for UserList
 import '../styles/Global.css';
 
@@ -50,7 +50,7 @@ const UserList = () => {
                                 <Link to={`/${user.nickname || user.id}`}>
                                 <p>
                                     @{user.nickname || user.id}
-                                    {user.isVerified && <img src={verifiedIcon} className="verified-badge" alt="Verified" />}
+                                    {user.roles?.includes('verified') && <VerifiedBadge size="sm" />}
                                 </p>
                                 </Link>
                             </div>
@@ -74,10 +74,10 @@ const UserList = () => {
                         <h3>
                             {currentUser && user.id === currentUser.uid ? 
                                 <Link to="/profile">
-                                    <>{user.displayName || 'No Name'}{user.isVerified && <img src={verifiedIcon} className="verified-badge" alt="Verified" />}</>
+                                    <>{user.displayName || 'No Name'}{user.roles?.includes('verified') && <VerifiedBadge size="sm" />}</>
                                 </Link> : 
                                 <Link to={`/${user.nickname || user.id}`}>
-                                    <>{user.displayName || 'No Name'}{user.isVerified && <img src={verifiedIcon} className="verified-badge" alt="Verified" />}</>
+                                    <>{user.displayName || 'No Name'}{user.roles?.includes('verified') && <VerifiedBadge size="sm" />}</>
                                 </Link>
                             }
                         </h3>

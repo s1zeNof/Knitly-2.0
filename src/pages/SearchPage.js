@@ -6,6 +6,7 @@ import { useDebounce } from 'use-debounce';
 import TrackList from '../components/common/TrackList';
 import { Link } from 'react-router-dom';
 import default_picture from '../img/Default-Images/default-picture.svg';
+import VerifiedBadge from '../components/common/VerifiedBadge';
 import './SearchPage.css';
 
 const SearchIcon = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>;
@@ -99,7 +100,10 @@ const SearchPage = () => {
                                 {results.artists.map(artist => (
                                     <Link to={`/${artist.nickname}`} key={artist.id} className="artist-card">
                                         <img src={artist.photoURL || default_picture} alt={artist.displayName} />
-                                        <p>{artist.displayName}</p>
+                                        <p>
+                                            {artist.displayName}
+                                            {artist.roles?.includes('verified') && <VerifiedBadge size="xs" />}
+                                        </p>
                                         <span>@{artist.nickname}</span>
                                     </Link>
                                 ))}
@@ -113,7 +117,10 @@ const SearchPage = () => {
                                 {results.users.map(user => (
                                     <Link to={`/${user.nickname}`} key={user.id} className="artist-card">
                                         <img src={user.photoURL || default_picture} alt={user.displayName} />
-                                        <p>{user.displayName}</p>
+                                        <p>
+                                            {user.displayName}
+                                            {user.roles?.includes('verified') && <VerifiedBadge size="xs" />}
+                                        </p>
                                         <span>@{user.nickname}</span>
                                     </Link>
                                 ))}
