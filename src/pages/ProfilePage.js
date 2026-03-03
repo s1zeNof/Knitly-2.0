@@ -19,6 +19,8 @@ import default_picture from '../img/Default-Images/default-picture.svg';
 import VerifiedBadge from '../components/common/VerifiedBadge';
 import PageLoader from '../components/common/PageLoader';
 import CreateStoryModal from '../components/stories/CreateStoryModal';
+import StoryViewer from '../components/stories/StoryViewer';
+import { subscribeToUserStories } from '../services/storiesService';
 import NowPlayingBanner from '../components/profile/NowPlayingBanner';
 import './Profile.css';
 
@@ -45,6 +47,8 @@ const ProfilePage = ({ openBrowser, openShareModal }) => {
     const [isGiftModalOpen, setIsGiftModalOpen] = useState(false);
     const [nowPlayingData, setNowPlayingData] = useState(null);
     const [isCreateStoryOpen, setIsCreateStoryOpen] = useState(false);
+    const [isStoryViewerOpen, setIsStoryViewerOpen] = useState(false);
+    const [profileStories, setProfileStories] = useState([]);
 
     const isOwnProfile = !userNickname || (profileUser && currentUser && profileUser.uid === currentUser.uid);
     const targetUserId = profileUser?.uid;
@@ -124,6 +128,18 @@ const ProfilePage = ({ openBrowser, openShareModal }) => {
             } else {
                 setNowPlayingData(null);
             }
+        });
+        return () => unsubscribe();
+    }, [profileUser?.uid]);
+
+    // Real-time listener for this profile user's active stories
+    useEffect(() => {
+        if (!profileUser?.uid) {
+            setProfileStories([]);
+            return;
+        }
+        const unsubscribe = subscribeToUserStories(profileUser.uid, (stories) => {
+            setProfileStories(stories);
         });
         return () => unsubscribe();
     }, [profileUser?.uid]);
@@ -329,12 +345,22 @@ const ProfilePage = ({ openBrowser, openShareModal }) => {
                     </div>
                     <div className="page-profile-header-content">
                         <div className="page-profile-avatar-wrapper">
-                            <img src={profileUser.photoURL || default_picture} alt="Avatar" className="page-profile-avatar" onError={(e) => { e.target.onerror = null; e.target.src = default_picture; }} />
-                            {/* Сторіс: кнопка додавання на власному профілі */}
+                            {/* Gradient ring — visible when profile has active stories */}
+                            <div
+                                className={`profile-avatar-story-ring ${profileStories.length > 0 ? 'profile-avatar-story-ring--active' : ''}`}
+                                onClick={profileStories.length > 0 ? () => setIsStoryViewerOpen(true) : undefined}
+                                role={profileStories.length > 0 ? 'button' : undefined}
+                                tabIndex={profileStories.length > 0 ? 0 : undefined}
+                                onKeyDown={profileStories.length > 0 ? (e) => e.key === 'Enter' && setIsStoryViewerOpen(true) : undefined}
+                                aria-label={profileStories.length > 0 ? `Переглянути сторіс ${profileUser.displayName}` : undefined}
+                            >
+                                <img src={profileUser.photoURL || default_picture} alt="Avatar" className="page-profile-avatar" onError={(e) => { e.target.onerror = null; e.target.src = default_picture; }} />
+                            </div>
+                            {/* + button — always visible on own profile to add a new story */}
                             {isOwnProfile && (
                                 <button
                                     className="profile-add-story-btn"
-                                    onClick={() => setIsCreateStoryOpen(true)}
+                                    onClick={(e) => { e.stopPropagation(); setIsCreateStoryOpen(true); }}
                                     title="Додати сторіс"
                                     aria-label="Додати сторіс"
                                 >
@@ -422,6 +448,23 @@ const ProfilePage = ({ openBrowser, openShareModal }) => {
 
             {isCreateStoryOpen && (
                 <CreateStoryModal onClose={() => setIsCreateStoryOpen(false)} />
+            )}
+
+            {/* Story Viewer — opens when avatar ring is clicked and stories exist */}
+            {isStoryViewerOpen && profileStories.length > 0 && (
+                <StoryViewer
+                    groups={[{
+                        uid: profileUser.uid,
+                        userNickname: profileUser.nickname,
+                        userDisplayName: profileUser.displayName,
+                        userPhotoURL: profileUser.photoURL || null,
+                        stories: profileStories,
+                    }]}
+                    initialGroupIndex={0}
+                    currentUserUid={currentUser?.uid}
+                    onClose={() => setIsStoryViewerOpen(false)}
+                    onStoriesSeen={() => {}}
+                />
             )}
         </>
     );

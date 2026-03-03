@@ -19,7 +19,7 @@
 
 import {
     collection, addDoc, getDocs, query, where,
-    orderBy, serverTimestamp, Timestamp, doc, updateDoc, arrayUnion, onSnapshot
+    serverTimestamp, Timestamp, doc, updateDoc, arrayUnion, onSnapshot
 } from 'firebase/firestore';
 import { db } from './firebase';
 import { uploadFileWithProgress } from './supabase'; // uses Cloudinary under the hood
@@ -76,24 +76,27 @@ export const createStory = async (author, mediaType, mediaUrl, caption = '') => 
 export const fetchStoriesForFeed = async (uids) => {
     if (!uids || uids.length === 0) return [];
 
-    const now = Timestamp.now();
-    // Firestore `in` supports max 30 items; split if needed
+    // No orderBy/expiresAt filter in Firestore query — avoids composite index.
+    // Expiry + sort is handled client-side.
     const chunks = [];
     for (let i = 0; i < uids.length; i += 30) {
         chunks.push(uids.slice(i, i + 30));
     }
 
+    const now = Timestamp.now();
     const allDocs = [];
     for (const chunk of chunks) {
         const q = query(
             collection(db, STORIES_COLLECTION),
-            where('uid', 'in', chunk),
-            where('expiresAt', '>', now),
-            orderBy('expiresAt', 'asc'),
-            orderBy('createdAt', 'desc')
+            where('uid', 'in', chunk)
         );
         const snap = await getDocs(q);
-        snap.forEach(d => allDocs.push({ id: d.id, ...d.data() }));
+        snap.forEach(d => {
+            const data = { id: d.id, ...d.data() };
+            if (data.expiresAt && data.expiresAt.toMillis() > now.toMillis()) {
+                allDocs.push(data);
+            }
+        });
     }
 
     return allDocs;
@@ -107,13 +110,13 @@ export const fetchUserStories = async (uid) => {
     const now = Timestamp.now();
     const q = query(
         collection(db, STORIES_COLLECTION),
-        where('uid', '==', uid),
-        where('expiresAt', '>', now),
-        orderBy('expiresAt', 'asc'),
-        orderBy('createdAt', 'desc')
+        where('uid', '==', uid)
     );
     const snap = await getDocs(q);
-    return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    return snap.docs
+        .map(d => ({ id: d.id, ...d.data() }))
+        .filter(s => s.expiresAt && s.expiresAt.toMillis() > now.toMillis())
+        .sort((a, b) => (b.createdAt?.toMillis?.() ?? 0) - (a.createdAt?.toMillis?.() ?? 0));
 };
 
 /**
@@ -125,32 +128,58 @@ export const subscribeToFeedStories = (uids, onUpdate) => {
         onUpdate([]);
         return () => {};
     }
-    const now = Timestamp.now();
-    // Only listen to the first chunk (≤30) for real-time; larger lists use polling
+    // Simple query — no orderBy/inequality filter — avoids composite index entirely.
+    // Expiry filter and sort are done client-side.
     const chunk = uids.slice(0, 30);
     const q = query(
         collection(db, STORIES_COLLECTION),
-        where('uid', 'in', chunk),
-        where('expiresAt', '>', now),
-        orderBy('expiresAt', 'asc'),
-        orderBy('createdAt', 'desc')
+        where('uid', 'in', chunk)
     );
     return onSnapshot(
         q,
         (snap) => {
-            const stories = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+            const now = Timestamp.now();
+            const stories = snap.docs
+                .map(d => ({ id: d.id, ...d.data() }))
+                .filter(s => s.expiresAt && s.expiresAt.toMillis() > now.toMillis());
             onUpdate(stories);
         },
         (error) => {
-            // Graceful degradation: if Firestore rules haven't been deployed yet
-            // or the index is missing, show empty stories (don't crash the app)
             if (error.code === 'permission-denied') {
-                console.warn('[Stories] Firestore permission denied — check firestore.rules. Stories disabled until rules are deployed.');
-            } else if (error.code === 'failed-precondition') {
-                console.warn('[Stories] Firestore composite index missing. Create the index from the link in the console.');
+                console.warn('[Stories] Firestore permission denied — check firestore.rules.');
             } else {
                 console.warn('[Stories] Firestore error:', error.code, error.message);
             }
+            onUpdate([]);
+        }
+    );
+};
+
+/**
+ * Real-time listener for a single user's active stories.
+ * Used on profile pages to show story ring + open viewer.
+ */
+export const subscribeToUserStories = (uid, onUpdate) => {
+    if (!uid) {
+        onUpdate([]);
+        return () => {};
+    }
+    const q = query(
+        collection(db, STORIES_COLLECTION),
+        where('uid', '==', uid)
+    );
+    return onSnapshot(
+        q,
+        (snap) => {
+            const now = Timestamp.now();
+            const stories = snap.docs
+                .map(d => ({ id: d.id, ...d.data() }))
+                .filter(s => s.expiresAt && s.expiresAt.toMillis() > now.toMillis())
+                .sort((a, b) => (b.createdAt?.toMillis?.() ?? 0) - (a.createdAt?.toMillis?.() ?? 0));
+            onUpdate(stories);
+        },
+        (error) => {
+            console.warn('[Stories] subscribeToUserStories error:', error.code);
             onUpdate([]);
         }
     );
