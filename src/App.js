@@ -7,6 +7,13 @@ import { PlayerProvider, usePlayerContext } from './contexts/PlayerContext';
 
 import Header from './components/layout/Header';
 import LeftSidebar from './components/layout/LeftSidebar';
+
+// ── Legal pages (own layout — no app sidebar/player) ──────────────────────
+import LegalLayout    from './components/layout/LegalLayout';
+import TermsPage      from './pages/legal/TermsPage';
+import PrivacyPage    from './pages/legal/PrivacyPage';
+import CopyrightPage  from './pages/legal/CopyrightPage';
+import GuidelinesPage from './pages/legal/GuidelinesPage';
 import Home from './pages/Home';
 import Login from './pages/Login';
 import Register from './pages/Register';
@@ -206,9 +213,27 @@ const AppLayout = () => {
     );
 };
 
+// ── Legal paths bypass the app layout entirely ─────────────────────────────
+const LEGAL_PATHS = ['/terms', '/privacy', '/copyright', '/guidelines'];
+
+const AppRouter = () => {
+    const location = useLocation();
+    if (LEGAL_PATHS.includes(location.pathname)) {
+        return (
+            <Routes>
+                <Route path="/terms"      element={<LegalLayout><TermsPage /></LegalLayout>} />
+                <Route path="/privacy"    element={<LegalLayout><PrivacyPage /></LegalLayout>} />
+                <Route path="/copyright"  element={<LegalLayout><CopyrightPage /></LegalLayout>} />
+                <Route path="/guidelines" element={<LegalLayout><GuidelinesPage /></LegalLayout>} />
+            </Routes>
+        );
+    }
+    return <AppLayout />;
+};
+
 const AppContent = () => (
     <Router>
-        <AppLayout />
+        <AppRouter />
     </Router>
 );
 

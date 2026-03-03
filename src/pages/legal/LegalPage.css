@@ -1,0 +1,272 @@
+/* ============================================================
+   Shared styles for all legal pages
+   ============================================================ */
+
+/* ── Page hero ── */
+.lp-hero {
+    padding: 2.5rem 0 2rem;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    margin-bottom: 2.5rem;
+}
+
+.lp-breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.8rem;
+    color: #52525b;
+    margin-bottom: 1rem;
+}
+
+.lp-breadcrumb a {
+    color: #71717a;
+    text-decoration: none;
+    transition: color 0.2s;
+}
+
+.lp-breadcrumb a:hover { color: #a855f7; }
+
+.lp-breadcrumb-sep { color: #3f3f46; }
+
+.lp-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #a855f7;
+    background: rgba(168,85,247,0.1);
+    border: 1px solid rgba(168,85,247,0.2);
+    border-radius: 4px;
+    padding: 3px 8px;
+    margin-bottom: 0.875rem;
+}
+
+.lp-title {
+    font-family: 'Urbanist', sans-serif;
+    font-size: 2.2rem;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    color: #f4f4f5;
+    margin: 0 0 0.625rem 0;
+    line-height: 1.2;
+}
+
+.lp-meta {
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+    flex-wrap: wrap;
+}
+
+.lp-meta-item {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    font-size: 0.82rem;
+    color: #71717a;
+}
+
+/* ── Table of contents ── */
+.lp-toc {
+    background: rgba(255,255,255,0.025);
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 1rem;
+    padding: 1.25rem 1.5rem;
+    margin-bottom: 2.5rem;
+}
+
+.lp-toc-title {
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: #71717a;
+    margin: 0 0 0.875rem 0;
+}
+
+.lp-toc-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.375rem;
+    columns: 2;
+}
+
+.lp-toc-list li { break-inside: avoid; }
+
+.lp-toc-link {
+    display: flex;
+    align-items: baseline;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+    color: #71717a;
+    text-decoration: none;
+    padding: 0.25rem 0.375rem;
+    border-radius: 0.375rem;
+    transition: color 0.2s, background 0.2s;
+}
+
+.lp-toc-link:hover {
+    color: #a855f7;
+    background: rgba(168,85,247,0.07);
+}
+
+.lp-toc-num {
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: #a855f7;
+    opacity: 0.7;
+    min-width: 18px;
+}
+
+/* ── Content sections ── */
+.lp-content {
+    line-height: 1.75;
+    color: #a1a1aa;
+}
+
+.lp-section {
+    margin-bottom: 3rem;
+    scroll-margin-top: 100px;
+}
+
+.lp-section-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1.25rem;
+}
+
+.lp-section-num {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: rgba(168,85,247,0.12);
+    border: 1px solid rgba(168,85,247,0.25);
+    font-size: 0.78rem;
+    font-weight: 800;
+    color: #a855f7;
+    flex-shrink: 0;
+}
+
+.lp-section-title {
+    font-family: 'Urbanist', sans-serif;
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: #e5e7eb;
+    margin: 0;
+    letter-spacing: -0.015em;
+}
+
+.lp-section p {
+    margin: 0 0 1rem 0;
+    font-size: 0.9375rem;
+}
+
+.lp-section p:last-child { margin-bottom: 0; }
+
+.lp-section ul,
+.lp-section ol {
+    margin: 0 0 1rem 0;
+    padding-left: 1.5rem;
+}
+
+.lp-section li {
+    margin-bottom: 0.4rem;
+    font-size: 0.9375rem;
+}
+
+.lp-section a {
+    color: #a855f7;
+    text-decoration: none;
+    border-bottom: 1px solid rgba(168,85,247,0.3);
+    transition: border-color 0.2s, color 0.2s;
+}
+
+.lp-section a:hover {
+    color: #c084fc;
+    border-color: rgba(192,132,252,0.5);
+}
+
+/* ── Highlight boxes ── */
+.lp-highlight {
+    background: rgba(168,85,247,0.07);
+    border: 1px solid rgba(168,85,247,0.18);
+    border-left: 3px solid #a855f7;
+    border-radius: 0 0.75rem 0.75rem 0;
+    padding: 1rem 1.25rem;
+    margin: 1.25rem 0;
+    font-size: 0.9rem;
+    color: #c4b5fd;
+}
+
+.lp-highlight strong { color: #e5e7eb; }
+
+.lp-warning {
+    background: rgba(239,68,68,0.07);
+    border: 1px solid rgba(239,68,68,0.18);
+    border-left: 3px solid #ef4444;
+    border-radius: 0 0.75rem 0.75rem 0;
+    padding: 1rem 1.25rem;
+    margin: 1.25rem 0;
+    font-size: 0.9rem;
+    color: #fca5a5;
+}
+
+.lp-warning strong { color: #f4f4f5; }
+
+.lp-info {
+    background: rgba(34,197,94,0.07);
+    border: 1px solid rgba(34,197,94,0.18);
+    border-left: 3px solid #22c55e;
+    border-radius: 0 0.75rem 0.75rem 0;
+    padding: 1rem 1.25rem;
+    margin: 1.25rem 0;
+    font-size: 0.9rem;
+    color: #86efac;
+}
+
+/* ── Contact card ── */
+.lp-contact-card {
+    background: linear-gradient(145deg, rgba(28,26,34,0.9) 0%, rgba(20,18,26,0.95) 100%);
+    border: 1px solid rgba(168,85,247,0.2);
+    border-radius: 1.125rem;
+    padding: 1.5rem 1.75rem;
+    margin-top: 3rem;
+}
+
+.lp-contact-card h3 {
+    font-family: 'Urbanist', sans-serif;
+    font-size: 1rem;
+    font-weight: 700;
+    color: #e5e7eb;
+    margin: 0 0 0.5rem 0;
+}
+
+.lp-contact-card p {
+    font-size: 0.875rem;
+    color: #71717a;
+    margin: 0;
+}
+
+.lp-contact-card a {
+    color: #a855f7;
+    text-decoration: none;
+}
+
+/* ── Responsive ── */
+@media (max-width: 640px) {
+    .lp-title { font-size: 1.65rem; }
+
+    .lp-toc-list { columns: 1; }
+
+    .lp-section-title { font-size: 1.05rem; }
+}
