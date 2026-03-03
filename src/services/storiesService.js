@@ -135,10 +135,25 @@ export const subscribeToFeedStories = (uids, onUpdate) => {
         orderBy('expiresAt', 'asc'),
         orderBy('createdAt', 'desc')
     );
-    return onSnapshot(q, (snap) => {
-        const stories = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-        onUpdate(stories);
-    });
+    return onSnapshot(
+        q,
+        (snap) => {
+            const stories = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+            onUpdate(stories);
+        },
+        (error) => {
+            // Graceful degradation: if Firestore rules haven't been deployed yet
+            // or the index is missing, show empty stories (don't crash the app)
+            if (error.code === 'permission-denied') {
+                console.warn('[Stories] Firestore permission denied — check firestore.rules. Stories disabled until rules are deployed.');
+            } else if (error.code === 'failed-precondition') {
+                console.warn('[Stories] Firestore composite index missing. Create the index from the link in the console.');
+            } else {
+                console.warn('[Stories] Firestore error:', error.code, error.message);
+            }
+            onUpdate([]);
+        }
+    );
 };
 
 // ─── Mark as viewed ───────────────────────────────────────────────────────────

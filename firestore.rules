@@ -1,0 +1,231 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // ── Helpers ──────────────────────────────────────────────────────────
+    function isSignedIn() {
+      return request.auth != null;
+    }
+    function isOwner(uid) {
+      return isSignedIn() && request.auth.uid == uid;
+    }
+    // 🆕 Перевірка ролі admin через Firestore (для адмін-панелі)
+    function isAdmin() {
+      return isSignedIn() &&
+             get(/databases/$(database)/documents/users/$(request.auth.uid))
+               .data.roles.hasAny(['admin']);
+    }
+    function onlyPublicCountersChanged() {
+      return request.resource.data.diff(resource.data)
+        .affectedKeys()
+        .hasOnly(['reactions', 'likesCount', 'commentsCount', 'attachmentClicks']);
+    }
+    function hasNoPrivilegedFields() {
+      return !request.resource.data.keys().hasAny([
+        'role', 'verified', 'isAdmin', 'isBanned', 'isModerator'
+      ]);
+    }
+    // =======================================================
+    // users
+    // =======================================================
+    match /users/{userId} {
+      allow read: if true;
+      allow create: if isOwner(userId) && hasNoPrivilegedFields();
+      // 🆕 Адмін може оновлювати будь-якого юзера (roles, blockedUsers тощо)
+      allow update: if (isOwner(userId) &&
+                        !request.resource.data.diff(resource.data)
+                          .affectedKeys()
+                          .hasAny(['role', 'verified', 'isAdmin', 'isBanned'])) ||
+                    (isSignedIn() &&
+                      request.resource.data.diff(resource.data)
+                        .affectedKeys().hasOnly(['followers'])) ||
+                    isAdmin();
+      allow delete: if false;
+      match /following/{followedId} {
+        allow read, write: if isOwner(userId);
+      }
+      match /followers/{followerId} {
+        allow read: if isSignedIn();
+        allow write: if isSignedIn() && request.auth.uid == followerId;
+      }
+      match /savedMessages/{messageId} {
+        allow read, write: if isOwner(userId);
+      }
+      match /notifications/{notificationId} {
+        allow read, update, delete: if isOwner(userId);
+        allow create: if isSignedIn() &&
+                      request.resource.data.toUserId == userId &&
+                      request.resource.data.get('fromUserId', request.auth.uid) == request.auth.uid;
+      }
+      match /receivedGifts/{giftId} {
+        allow read: if isOwner(userId);
+        allow create: if isSignedIn();
+        allow update, delete: if false;
+      }
+    }
+    // =======================================================
+    // chats + messages (вкладені)
+    // =======================================================
+    match /chats/{chatId} {
+      allow read: if isSignedIn() &&
+                  request.auth.uid in resource.data.participants;
+      allow update: if isSignedIn() &&
+                    request.auth.uid in resource.data.participants &&
+                    request.resource.data.participants == resource.data.participants;
+      allow create: if isSignedIn() &&
+                    request.auth.uid in request.resource.data.participants;
+      allow delete: if false;
+      match /messages/{messageId} {
+        allow read: if isSignedIn() &&
+                    request.auth.uid in
+                      get(/databases/$(database)/documents/chats/$(chatId)).data.participants;
+        allow create: if isSignedIn() &&
+                      request.resource.data.senderId == request.auth.uid &&
+                      request.auth.uid in
+                        get(/databases/$(database)/documents/chats/$(chatId)).data.participants;
+        allow update, delete: if isSignedIn() &&
+                              request.auth.uid == resource.data.senderId;
+      }
+    }
+    match /messages/{messageId} {
+      allow read: if isSignedIn() &&
+                  (request.auth.uid == resource.data.senderId ||
+                   request.auth.uid == resource.data.toUserId);
+      allow create: if isSignedIn() &&
+                    request.resource.data.senderId == request.auth.uid;
+      allow update, delete: if isSignedIn() &&
+                            request.auth.uid == resource.data.senderId;
+    }
+    // =======================================================
+    // posts
+    // =======================================================
+    match /posts/{postId} {
+      allow read: if true;
+      allow create: if isSignedIn() &&
+                    request.auth.uid in request.resource.data.authorUids;
+      allow update: if (isSignedIn() && request.auth.uid in resource.data.authorUids) ||
+                    (isSignedIn() && onlyPublicCountersChanged()) ||
+                    isAdmin();
+      allow delete: if (isSignedIn() && request.auth.uid in resource.data.authorUids) ||
+                    isAdmin();
+      match /comments/{commentId} {
+        allow read: if true;
+        allow create: if isSignedIn();
+        allow update, delete: if isSignedIn() &&
+                              (request.auth.uid == resource.data.authorId ||
+                               request.auth.uid in
+                                 get(/databases/$(database)/documents/posts/$(postId)).data.authorUids) ||
+                              isAdmin();
+      }
+    }
+    // =======================================================
+    // tracks / playlists / albums
+    // =======================================================
+    match /tracks/{trackId} {
+      allow read: if true;
+      allow create: if isSignedIn();
+      allow update: if (isSignedIn() && request.auth.uid == resource.data.authorId) ||
+                    (isSignedIn() && onlyPublicCountersChanged()) ||
+                    isAdmin();
+      allow delete: if (isSignedIn() && request.auth.uid == resource.data.authorId) ||
+                    isAdmin();
+    }
+    match /playlists/{playlistId} {
+      allow read: if true;
+      allow create: if isSignedIn();
+      allow update: if (isSignedIn() && request.auth.uid == resource.data.creatorId) ||
+                    (isSignedIn() && onlyPublicCountersChanged()) ||
+                    isAdmin();
+      allow delete: if (isSignedIn() && request.auth.uid == resource.data.creatorId) ||
+                    isAdmin();
+    }
+    match /albums/{albumId} {
+      allow read: if true;
+      allow create: if isSignedIn();
+      allow update: if (isSignedIn() && request.auth.uid == resource.data.artistId) ||
+                    (isSignedIn() && onlyPublicCountersChanged()) ||
+                    isAdmin();
+      allow delete: if (isSignedIn() && request.auth.uid == resource.data.artistId) ||
+                    isAdmin();
+    }
+    // =======================================================
+    // gifts / giftHistory / apps
+    // =======================================================
+    match /gifts/{giftId} {
+      allow read: if true;
+      allow write: if false;
+    }
+    match /giftHistory/{historyId} {
+      allow read: if isSignedIn() &&
+                  (request.auth.uid == resource.data.fromUserId ||
+                   request.auth.uid == resource.data.toUserId);
+      allow create: if isSignedIn() &&
+                    request.auth.uid == request.resource.data.fromUserId;
+      allow update, delete: if false;
+    }
+    match /apps/{appId} {
+      allow read: if true;
+      allow write: if false;
+    }
+    // =======================================================
+    // emoji_packs
+    // =======================================================
+    match /emoji_packs/{packId} {
+      allow read: if true;
+      allow create: if isSignedIn() &&
+                    request.resource.data.authorUid == request.auth.uid &&
+                    request.resource.data.get('type', 'user') == 'user' &&
+                    request.resource.data.get('verified', false) == false &&
+                    request.resource.data.get('protected_name', false) == false;
+      allow update: if isSignedIn() &&
+                    resource.data.authorUid == request.auth.uid &&
+                    request.resource.data.get('type', 'user') == 'user' &&
+                    request.resource.data.get('verified', false) == false;
+      allow delete: if isSignedIn() &&
+                    resource.data.authorUid == request.auth.uid;
+      match /emojis/{emojiId} {
+        allow read: if true;
+        allow create: if isSignedIn() &&
+                      request.auth.uid ==
+                        get(/databases/$(database)/documents/emoji_packs/$(packId)).data.authorUid;
+        allow update, delete: if isSignedIn() &&
+                              request.auth.uid ==
+                                get(/databases/$(database)/documents/emoji_packs/$(packId)).data.authorUid;
+      }
+    }
+    // =======================================================
+    // reports — система скарг
+    // =======================================================
+    match /reports/{reportId} {
+      allow read: if isAdmin();
+      allow create: if isSignedIn() &&
+                    request.resource.data.reportedBy == request.auth.uid &&
+                    request.resource.data.keys().hasAll(['reportedBy', 'targetType', 'targetId', 'reason']);
+      allow update: if isAdmin();
+      allow delete: if false;
+    }
+    // =======================================================
+    // audit_log
+    // =======================================================
+    match /audit_log/{logId} {
+      allow read, write: if false;
+    }
+    // =======================================================
+    // stories — сторіси (24 год)
+    // =======================================================
+    match /stories/{storyId} {
+      // Будь-який авторизований юзер може читати (для стрічки)
+      allow read: if isSignedIn();
+      // Створювати може тільки автор (uid збігається з auth.uid)
+      allow create: if isSignedIn() &&
+                    request.resource.data.uid == request.auth.uid;
+      // Оновлювати може будь-який авторизований (для відстеження переглядів — arrayUnion views[])
+      // але зміна uid/mediaUrl заборонена
+      allow update: if isSignedIn() &&
+                    !request.resource.data.diff(resource.data)
+                      .affectedKeys()
+                      .hasAny(['uid', 'mediaUrl', 'mediaType', 'createdAt', 'expiresAt']);
+      // Видаляти може тільки автор або адмін
+      allow delete: if isOwner(resource.data.uid) || isAdmin();
+    }
+  }
+}
