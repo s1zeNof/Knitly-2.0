@@ -1,355 +1,413 @@
-/* ─── Backdrop ────────────────────────────────────────────────────────────── */
+/* ─── Full-screen story creator (Instagram style) ─────────────────────────── */
 
-.csm-backdrop {
+.csm-screen {
     position: fixed;
     inset: 0;
-    background: rgba(0, 0, 0, 0.75);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-    z-index: 1100;
+    z-index: 1200;
+    background: #000;
     display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 16px;
-    animation: csm-fade-in 0.2s ease;
+    flex-direction: column;
+    /* Prevent scroll-bounce on iOS */
+    overscroll-behavior: none;
+    touch-action: none;
+    animation: csm-fadein 0.18s ease;
 }
 
-@keyframes csm-fade-in {
+@keyframes csm-fadein {
     from { opacity: 0; }
     to   { opacity: 1; }
 }
 
-/* ─── Modal ───────────────────────────────────────────────────────────────── */
+/* ─── Top bar (transparent overlay) ──────────────────────────────────────── */
 
-.csm-modal {
-    background: var(--dark-800);
-    border: 1px solid var(--color-border);
-    border-radius: 20px;
-    width: 100%;
-    max-width: 440px;
-    max-height: 92vh;
-    overflow-y: auto;
-    display: flex;
-    flex-direction: column;
-    animation: csm-slide-up 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
-    scrollbar-width: thin;
-    scrollbar-color: var(--dark-600) transparent;
-}
-
-@keyframes csm-slide-up {
-    from { opacity: 0; transform: translateY(24px) scale(0.97); }
-    to   { opacity: 1; transform: translateY(0) scale(1); }
-}
-
-/* ─── Header ──────────────────────────────────────────────────────────────── */
-
-.csm-header {
+.csm-topbar {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 10;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 20px 24px 0;
-    flex-shrink: 0;
+    padding: env(safe-area-inset-top, 12px) 16px 12px;
+    padding-top: max(env(safe-area-inset-top, 0px), 12px);
+    background: linear-gradient(to bottom, rgba(0,0,0,0.55) 0%, transparent 100%);
+    pointer-events: none;
 }
 
-.csm-title {
-    font-size: 18px;
-    font-weight: 700;
-    margin: 0;
-    color: var(--color-text-primary);
-}
-
-.csm-close-btn {
-    background: none;
+.csm-topbar-btn {
+    pointer-events: all;
+    background: rgba(0,0,0,0.35);
     border: none;
-    color: var(--color-text-secondary);
-    cursor: pointer;
-    padding: 4px;
-    border-radius: 8px;
+    border-radius: 50%;
+    width: 38px;
+    height: 38px;
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: color 0.15s, background 0.15s;
-}
-
-.csm-close-btn:hover {
-    color: var(--color-text-primary);
-    background: var(--white-alpha-10);
-}
-
-/* ─── Tabs ────────────────────────────────────────────────────────────────── */
-
-.csm-tabs {
-    display: flex;
-    gap: 4px;
-    padding: 16px 24px 0;
+    cursor: pointer;
+    color: #fff;
+    transition: background 0.15s;
+    padding: 0;
     flex-shrink: 0;
-    border-bottom: 1px solid var(--color-border);
-    margin-bottom: 0;
 }
 
-.csm-tab {
+.csm-topbar-btn:hover { background: rgba(0,0,0,0.6); }
+.csm-topbar-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+.csm-topbar-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: rgba(255,255,255,0.9);
+    letter-spacing: 0.3px;
+    pointer-events: none;
+}
+
+.csm-topbar-right {
+    pointer-events: all;
     display: flex;
     align-items: center;
-    gap: 7px;
-    padding: 8px 18px;
-    border: none;
-    border-radius: 10px 10px 0 0;
-    background: transparent;
-    color: var(--color-text-secondary);
-    font-size: 14px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: color 0.15s, background 0.15s;
-    position: relative;
-    bottom: -1px;
-    border-bottom: 2px solid transparent;
+    min-width: 38px;
+    justify-content: flex-end;
 }
 
-.csm-tab:hover {
-    color: var(--color-text-primary);
-    background: var(--white-alpha-5);
-}
-
-.csm-tab--active {
-    color: var(--purple-400);
-    border-bottom-color: var(--purple-500);
-}
-
-/* ─── Body ────────────────────────────────────────────────────────────────── */
-
-.csm-body {
-    padding: 20px 24px;
+.csm-share-btn {
     display: flex;
-    flex-direction: column;
-    gap: 16px;
+    align-items: center;
+    gap: 4px;
+    background: #fff;
+    color: #000;
+    border: none;
+    border-radius: 20px;
+    padding: 7px 14px;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: opacity 0.15s;
+    white-space: nowrap;
+}
+
+.csm-share-btn:hover { opacity: 0.88; }
+
+.csm-uploading-pct {
+    font-size: 14px;
+    font-weight: 600;
+    color: #fff;
+}
+
+/* ─── Main content ────────────────────────────────────────────────────────── */
+
+.csm-main {
+    flex: 1;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 0;
+}
+
+/* Photo editor fills the main area */
+.csm-main .photo-editor {
+    width: 100%;
+    height: 100%;
+    gap: 0;
+}
+
+.csm-main .photo-editor-canvas {
+    max-width: 100%;
+    width: 100%;
+    height: 100%;
+    aspect-ratio: unset;
+    border-radius: 0;
+    border: none;
     flex: 1;
 }
 
-/* ─── Drop zone ───────────────────────────────────────────────────────────── */
-
-.csm-dropzone {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-    border: 2px dashed var(--dark-600);
-    border-radius: 14px;
-    padding: 40px 20px;
-    cursor: pointer;
-    text-align: center;
-    color: var(--color-text-secondary);
-    transition: border-color 0.2s, background 0.2s;
-    position: relative;
+/* Push controls into the bottom panel overlay */
+.csm-main .photo-editor-controls,
+.csm-main .photo-editor-hint {
+    display: none;
 }
 
-.csm-dropzone:hover,
-.csm-dropzone:focus-visible {
-    border-color: var(--purple-500);
-    background: rgba(168, 85, 247, 0.05);
-    color: var(--color-text-primary);
-    outline: none;
-}
-
-.csm-dropzone svg {
-    opacity: 0.5;
-    transition: opacity 0.15s;
-}
-
-.csm-dropzone:hover svg { opacity: 0.8; }
-
-.csm-dropzone-label {
-    font-size: 15px;
-    font-weight: 500;
-    margin: 0;
-}
-
-.csm-dropzone-hint {
-    font-size: 12px;
-    color: var(--color-text-tertiary);
-    margin: 0;
-}
-
-.csm-file-input {
-    position: absolute;
-    inset: 0;
-    opacity: 0;
+/* Video recorder fills main area */
+.csm-main .video-recorder {
     width: 100%;
     height: 100%;
-    cursor: pointer;
-    font-size: 0;
+    gap: 0;
 }
 
-/* ─── Change / retake button ─────────────────────────────────────────────── */
-
-.csm-change-btn {
-    align-self: center;
-    background: none;
-    border: 1px solid var(--color-border-light);
-    border-radius: 8px;
-    color: var(--color-text-secondary);
-    font-size: 13px;
-    padding: 6px 16px;
-    cursor: pointer;
-    transition: background 0.15s, color 0.15s;
+.csm-main .video-recorder-viewport {
+    flex: 1;
+    max-width: 100%;
+    aspect-ratio: unset;
+    height: 100%;
+    border-radius: 0;
+    border: none;
 }
 
-.csm-change-btn:hover {
-    background: var(--white-alpha-10);
-    color: var(--color-text-primary);
-}
+/* ─── Picker (no photo selected) ──────────────────────────────────────────── */
 
-/* ─── Video ready ─────────────────────────────────────────────────────────── */
-
-.csm-video-ready {
+.csm-picker {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 10px;
-    padding: 24px;
-    color: var(--color-text-secondary);
-    text-align: center;
+    justify-content: center;
+    gap: 12px;
+    color: rgba(255,255,255,0.4);
+    cursor: pointer;
+    width: 100%;
+    height: 100%;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
 }
 
-.csm-video-ready-icon {
-    width: 64px;
-    height: 64px;
+.csm-picker-icon {
+    width: 100px;
+    height: 100px;
     border-radius: 50%;
-    background: rgba(16, 185, 129, 0.15);
+    background: rgba(255,255,255,0.07);
     display: flex;
     align-items: center;
     justify-content: center;
-    color: var(--color-success);
+    transition: background 0.2s;
+}
+
+.csm-picker:hover .csm-picker-icon,
+.csm-picker:focus-visible .csm-picker-icon {
+    background: rgba(255,255,255,0.13);
+}
+
+.csm-picker-label {
+    font-size: 16px;
+    font-weight: 500;
+    color: rgba(255,255,255,0.55);
+    margin: 0;
+}
+
+/* ─── Video done placeholder ──────────────────────────────────────────────── */
+
+.csm-video-done {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    color: rgba(255,255,255,0.7);
+    width: 100%;
+    height: 100%;
+}
+
+.csm-video-done-check {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: rgba(16,185,129,0.18);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #10b981;
+}
+
+.csm-video-done p {
+    font-size: 16px;
+    font-weight: 500;
+    margin: 0;
+    color: rgba(255,255,255,0.8);
+}
+
+.csm-retake-btn {
+    background: rgba(255,255,255,0.12);
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 20px;
+    color: #fff;
+    font-size: 14px;
+    padding: 8px 22px;
+    cursor: pointer;
+    transition: background 0.15s;
+}
+
+.csm-retake-btn:hover { background: rgba(255,255,255,0.2); }
+
+/* ─── Hidden file input ───────────────────────────────────────────────────── */
+
+.csm-file-input-hidden {
+    position: absolute;
+    width: 0;
+    height: 0;
+    opacity: 0;
+    pointer-events: none;
+}
+
+/* ─── Bottom panel ────────────────────────────────────────────────────────── */
+
+.csm-bottom-panel {
+    flex-shrink: 0;
+    background: rgba(0,0,0,0.75);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    padding-bottom: env(safe-area-inset-bottom, 0px);
 }
 
 /* ─── Caption ─────────────────────────────────────────────────────────────── */
 
 .csm-caption-row {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-}
-
-.csm-caption-label {
-    font-size: 12px;
-    color: var(--color-text-secondary);
+    padding: 10px 16px 8px;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
 }
 
 .csm-caption-input {
     width: 100%;
-    background: var(--dark-700);
-    border: 1px solid var(--color-border);
-    border-radius: 10px;
-    padding: 10px 14px;
-    font-size: 14px;
-    color: var(--color-text-primary);
+    background: transparent;
+    border: none;
     outline: none;
-    transition: border-color 0.2s;
+    color: #fff;
+    font-size: 15px;
     font-family: var(--font-body);
+    padding: 0;
 }
 
-.csm-caption-input:focus {
-    border-color: var(--purple-500);
-}
+.csm-caption-input::placeholder { color: rgba(255,255,255,0.35); }
 
-.csm-caption-input::placeholder {
-    color: var(--color-text-tertiary);
-}
+/* ─── Error bar ───────────────────────────────────────────────────────────── */
 
-/* ─── Error ───────────────────────────────────────────────────────────────── */
-
-.csm-error {
+.csm-error-bar {
     font-size: 13px;
-    color: var(--color-error);
-    background: rgba(239, 68, 68, 0.1);
-    border-radius: 8px;
-    padding: 8px 12px;
+    color: #ff6b6b;
+    background: rgba(239,68,68,0.15);
+    padding: 8px 16px;
     margin: 0;
 }
 
-/* ─── Upload progress ─────────────────────────────────────────────────────── */
+/* ─── Progress bar ────────────────────────────────────────────────────────── */
 
-.csm-upload-progress {
-    display: flex;
-    align-items: center;
-    gap: 10px;
+.csm-progress-track {
+    height: 3px;
+    background: rgba(255,255,255,0.15);
 }
 
-.csm-upload-bar {
-    flex: 1;
-    height: 5px;
-    border-radius: 3px;
-    background: linear-gradient(90deg, var(--purple-600), var(--purple-400));
+.csm-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--purple-600), var(--pink-500));
     transition: width 0.3s ease;
-    min-width: 0;
 }
 
-.csm-upload-progress span {
-    font-size: 12px;
-    color: var(--color-text-secondary);
-    min-width: 32px;
-    text-align: right;
+/* ─── Gallery strip (photo mode) ──────────────────────────────────────────── */
+
+.csm-gallery-strip {
+    padding: 10px 12px 4px;
 }
 
-/* ─── Footer ──────────────────────────────────────────────────────────────── */
+/* Thumbnails row */
+.csm-thumb-row {
+    display: flex;
+    gap: 6px;
+    overflow-x: auto;
+    scrollbar-width: none;
+    padding-bottom: 4px;
+}
 
-.csm-footer {
+.csm-thumb-row::-webkit-scrollbar { display: none; }
+
+.csm-thumb {
+    width: 56px;
+    height: 56px;
+    border-radius: 8px;
+    overflow: hidden;
+    flex-shrink: 0;
+    padding: 0;
+    border: 2px solid transparent;
+    cursor: pointer;
+    background: #222;
+    transition: border-color 0.15s, transform 0.12s;
+}
+
+.csm-thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.csm-thumb--active {
+    border-color: var(--purple-400);
+    transform: scale(1.05);
+}
+
+.csm-thumb--add {
+    background: rgba(255,255,255,0.08);
     display: flex;
     align-items: center;
-    justify-content: flex-end;
-    gap: 10px;
-    padding: 16px 24px 20px;
-    border-top: 1px solid var(--color-border);
-    flex-shrink: 0;
+    justify-content: center;
+    color: rgba(255,255,255,0.5);
+    border-color: transparent;
 }
 
-.csm-btn {
-    padding: 10px 20px;
-    border-radius: 10px;
+.csm-thumb--add:hover {
+    background: rgba(255,255,255,0.15);
+    color: #fff;
+}
+
+/* Pick buttons row (when no files yet) */
+.csm-pick-row {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    padding: 4px 0;
+}
+
+.csm-pick-btn {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 22px;
+    color: rgba(255,255,255,0.85);
     font-size: 14px;
     font-weight: 500;
+    padding: 9px 20px;
     cursor: pointer;
-    border: none;
-    transition: opacity 0.15s, background 0.15s;
+    transition: background 0.15s;
+    flex: 1;
+    max-width: 160px;
+    justify-content: center;
 }
 
-.csm-btn:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
+.csm-pick-btn:hover { background: rgba(255,255,255,0.18); }
+
+/* ─── Mode tabs (Фото / Відео) ────────────────────────────────────────────── */
+
+.csm-mode-tabs {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    padding: 10px 16px 12px;
 }
 
-.csm-btn--ghost {
+.csm-mode-tab {
     background: transparent;
-    color: var(--color-text-secondary);
-    border: 1px solid var(--color-border-light);
+    border: none;
+    color: rgba(255,255,255,0.4);
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 1.2px;
+    padding: 6px 18px;
+    cursor: pointer;
+    border-radius: 20px;
+    transition: color 0.15s, background 0.15s;
 }
 
-.csm-btn--ghost:hover:not(:disabled) {
-    background: var(--white-alpha-10);
-}
+.csm-mode-tab:disabled { opacity: 0.3; cursor: not-allowed; }
 
-.csm-btn--publish {
-    background: linear-gradient(135deg, var(--purple-600), var(--purple-500));
+.csm-mode-tab--active {
     color: #fff;
-    box-shadow: 0 4px 15px rgba(168, 85, 247, 0.35);
+    background: rgba(255,255,255,0.12);
 }
 
-.csm-btn--publish:hover:not(:disabled) {
-    opacity: 0.9;
-}
-
-/* ─── Mobile ──────────────────────────────────────────────────────────────── */
-
-@media (max-width: 480px) {
-    .csm-modal {
-        max-width: 100%;
-        border-radius: 20px 20px 0 0;
-        max-height: 95vh;
-        margin-top: auto;
-    }
-
-    .csm-backdrop {
-        align-items: flex-end;
-        padding: 0;
-    }
+.csm-mode-tab:hover:not(:disabled):not(.csm-mode-tab--active) {
+    color: rgba(255,255,255,0.7);
 }

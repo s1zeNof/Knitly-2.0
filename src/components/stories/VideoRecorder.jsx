@@ -30,6 +30,18 @@ const VideoRecorder = ({ onVideoReady, onCancel }) => {
     // ─── Camera init ─────────────────────────────────────────────────────────
     useEffect(() => {
         let cancelled = false;
+
+        // getUserMedia requires a secure context (HTTPS or localhost)
+        if (!navigator.mediaDevices?.getUserMedia) {
+            const isLocalhost = ['localhost', '127.0.0.1'].includes(window.location.hostname);
+            setCameraError(
+                isLocalhost
+                    ? 'Камера недоступна — перевірте дозволи браузера.'
+                    : 'Запис відео вимагає HTTPS-з\'єднання. Відкрийте сайт через https://'
+            );
+            return;
+        }
+
         (async () => {
             try {
                 const stream = await navigator.mediaDevices.getUserMedia({
@@ -42,7 +54,14 @@ const VideoRecorder = ({ onVideoReady, onCancel }) => {
                     videoRef.current.srcObject = stream;
                 }
             } catch (err) {
-                if (!cancelled) setCameraError(err.message || 'Камера недоступна');
+                if (!cancelled) {
+                    const msg = err.name === 'NotAllowedError'
+                        ? 'Доступ до камери заборонено. Дозвольте доступ у налаштуваннях браузера.'
+                        : err.name === 'NotFoundError'
+                            ? 'Камеру не знайдено на цьому пристрої.'
+                            : err.message || 'Камера недоступна';
+                    setCameraError(msg);
+                }
             }
         })();
         return () => {

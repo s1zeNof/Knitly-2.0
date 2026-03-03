@@ -7,13 +7,11 @@ import CreateStoryModal from './CreateStoryModal';
 import './StoriesRow.css';
 
 /**
- * StoriesRow — horizontal scrollable strip of story circles shown at the top
- * of the feed (Home page). Subscribes real-time to Firestore stories.
- *
- * Props:
- *   feedUids  string[]  — UIDs to show stories for (currentUser + following)
+ * StoriesRow — horizontal scrollable strip of story circles.
+ * Self-contained: reads feedUids from UserContext (following list).
+ * No props required — can be placed anywhere in the app.
  */
-const StoriesRow = ({ feedUids = [] }) => {
+const StoriesRow = () => {
     const { user: currentUser } = useUserContext();
 
     const [storyGroups, setStoryGroups] = useState([]);
@@ -30,8 +28,9 @@ const StoriesRow = ({ feedUids = [] }) => {
             return;
         }
 
-        // Include own uid
-        const uids = [...new Set([currentUser.uid, ...feedUids])];
+        // own uid + all following uids
+        const following = currentUser.following || [];
+        const uids = [...new Set([currentUser.uid, ...following])];
 
         const unsubscribe = subscribeToFeedStories(uids, (stories) => {
             const groups = groupStoriesByUser(stories, currentUser.uid);
@@ -39,7 +38,7 @@ const StoriesRow = ({ feedUids = [] }) => {
         });
 
         return () => unsubscribe();
-    }, [currentUser?.uid, feedUids.join(',')]); // eslint-disable-line react-hooks/exhaustive-deps
+    }, [currentUser?.uid, (currentUser?.following || []).length]); // eslint-disable-line react-hooks/exhaustive-deps
 
     // ─── Seen state (localStorage) ───────────────────────────────────────────
     const getSeenStoryIds = useCallback(() => {

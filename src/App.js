@@ -45,6 +45,7 @@ import GiftsMarketplace from './pages/GiftsMarketplace';
 import ShareModal from './components/common/ShareModal';
 import CloudinaryMigration from './pages/CloudinaryMigration';
 import GuestPrompt from './components/common/GuestPrompt';
+import StoriesRow from './components/stories/StoriesRow';
 
 import './styles/index.css';
 import './components/posts/Post.css';
@@ -155,6 +156,10 @@ const AppLayout = () => {
             {/* Global sidebar — all pages except /messages and mobile */}
             {user && !isMobile && !isMessagesPage && <LeftSidebar isOpen={true} />}
             <main className="app-main-content">
+                {/* StoriesRow — тільки на головній сторінці / */}
+                {user && !authLoading && location.pathname === '/' && (
+                    <StoriesRow />
+                )}
                 <Routes>
                     <Route path="/" element={<Home openBrowser={openBrowser} openShareModal={openShareModal} />} />
                     <Route path="/apps" element={<AppsMarketplace openBrowser={openBrowser} />} />

@@ -10,7 +10,6 @@ import './Home.css';
 import default_picture from '../img/Default-Images/default-picture.svg';
 
 import Feed from '../components/posts/Feed';
-import StoriesRow from '../components/stories/StoriesRow';
 
 
 const CreatePostForm = React.lazy(() => import('../components/posts/CreatePostForm'));
@@ -197,11 +196,6 @@ const Home = ({ openBrowser, openShareModal }) => {
                                     )}
                                 </div>
                             </div>
-
-                            {/* Stories Row — shown for logged-in users */}
-                            {!authLoading && currentUser && (
-                                <StoriesRow feedUids={feedIds || []} />
-                            )}
 
                             {/* Feed Section */}
                             {!authLoading && currentUser && showCreateForm && (
