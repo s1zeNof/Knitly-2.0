@@ -18,6 +18,7 @@ import toast from 'react-hot-toast';
 import default_picture from '../img/Default-Images/default-picture.svg';
 import VerifiedBadge from '../components/common/VerifiedBadge';
 import PageLoader from '../components/common/PageLoader';
+import CreateStoryModal from '../components/stories/CreateStoryModal';
 import NowPlayingBanner from '../components/profile/NowPlayingBanner';
 import './Profile.css';
 
@@ -43,6 +44,7 @@ const ProfilePage = ({ openBrowser, openShareModal }) => {
     const actionMenuRef = useRef(null);
     const [isGiftModalOpen, setIsGiftModalOpen] = useState(false);
     const [nowPlayingData, setNowPlayingData] = useState(null);
+    const [isCreateStoryOpen, setIsCreateStoryOpen] = useState(false);
 
     const isOwnProfile = !userNickname || (profileUser && currentUser && profileUser.uid === currentUser.uid);
     const targetUserId = profileUser?.uid;
@@ -328,6 +330,19 @@ const ProfilePage = ({ openBrowser, openShareModal }) => {
                     <div className="page-profile-header-content">
                         <div className="page-profile-avatar-wrapper">
                             <img src={profileUser.photoURL || default_picture} alt="Avatar" className="page-profile-avatar" onError={(e) => { e.target.onerror = null; e.target.src = default_picture; }} />
+                            {/* Сторіс: кнопка додавання на власному профілі */}
+                            {isOwnProfile && (
+                                <button
+                                    className="profile-add-story-btn"
+                                    onClick={() => setIsCreateStoryOpen(true)}
+                                    title="Додати сторіс"
+                                    aria-label="Додати сторіс"
+                                >
+                                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                                        <path d="M7 1v12M1 7h12" stroke="white" strokeWidth="2.2" strokeLinecap="round" />
+                                    </svg>
+                                </button>
+                            )}
                         </div>
                         {/* Desktop: actions sit beside avatar */}
                         <div className="page-profile-actions-group profile-actions-desktop-only">
@@ -403,6 +418,10 @@ const ProfilePage = ({ openBrowser, openShareModal }) => {
                     onClose={() => setIsGiftModalOpen(false)}
                     onGiftSendInitiated={handleSendGift}
                 />
+            )}
+
+            {isCreateStoryOpen && (
+                <CreateStoryModal onClose={() => setIsCreateStoryOpen(false)} />
             )}
         </>
     );

@@ -1,0 +1,208 @@
+/* ─── Video Recorder ──────────────────────────────────────────────────────── */
+
+.video-recorder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    width: 100%;
+}
+
+.video-recorder--error {
+    padding: 32px 16px;
+    text-align: center;
+    color: var(--color-text-secondary);
+    gap: 12px;
+}
+
+.video-recorder--error svg {
+    color: var(--color-error);
+    opacity: 0.7;
+}
+
+/* ─── Viewport ────────────────────────────────────────────────────────────── */
+
+.video-recorder-viewport {
+    position: relative;
+    width: 100%;
+    max-width: 340px;
+    aspect-ratio: 9 / 16;
+    background: #000;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid var(--color-border);
+}
+
+.video-recorder-live {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transform: scaleX(-1); /* Mirror front-cam feel; adjust if using rear */
+}
+
+.video-recorder-live--hidden {
+    display: none;
+}
+
+.video-recorder-preview {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    display: block;
+    background: #000;
+}
+
+/* ─── Recording badge ─────────────────────────────────────────────────────── */
+
+.video-recorder-badge {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(0, 0, 0, 0.55);
+    backdrop-filter: blur(6px);
+    border-radius: 20px;
+    padding: 4px 10px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #fff;
+    letter-spacing: 0.5px;
+}
+
+.vr-rec-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #ef4444;
+    animation: vr-blink 1s step-end infinite;
+    flex-shrink: 0;
+}
+
+@keyframes vr-blink {
+    0%, 100% { opacity: 1; }
+    50%       { opacity: 0; }
+}
+
+/* ─── Progress bar ────────────────────────────────────────────────────────── */
+
+.video-recorder-progress-bar {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.video-recorder-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--purple-500), var(--pink-500));
+    transition: width 0.9s linear;
+}
+
+/* ─── Controls row ────────────────────────────────────────────────────────── */
+
+.video-recorder-controls {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 24px;
+    width: 100%;
+}
+
+/* ─── Record button (big circle) ──────────────────────────────────────────── */
+
+.vr-record-btn {
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    border: 4px solid white;
+    background: transparent;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.15s, border-color 0.2s;
+    padding: 0;
+    flex-shrink: 0;
+}
+
+.vr-record-btn:hover {
+    transform: scale(1.06);
+}
+
+.vr-record-btn--stop {
+    border-color: #ef4444;
+}
+
+.vr-start-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: #ef4444;
+    display: block;
+    transition: border-radius 0.2s, width 0.2s, height 0.2s;
+}
+
+.vr-stop-icon {
+    width: 24px;
+    height: 24px;
+    border-radius: 4px;
+    background: #ef4444;
+    display: block;
+}
+
+/* ─── Text buttons ────────────────────────────────────────────────────────── */
+
+.vr-btn {
+    padding: 9px 20px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    border: none;
+    transition: background 0.15s, opacity 0.15s;
+}
+
+.vr-btn--ghost {
+    background: transparent;
+    color: var(--color-text-secondary);
+    border: 1px solid var(--color-border-light);
+}
+
+.vr-btn--ghost:hover { background: var(--white-alpha-10); }
+
+.vr-btn--secondary {
+    background: var(--dark-600);
+    color: var(--color-text-primary);
+}
+
+.vr-btn--secondary:hover { background: var(--dark-700); }
+
+.vr-btn--primary {
+    background: linear-gradient(135deg, var(--purple-600), var(--purple-500));
+    color: #fff;
+}
+
+.vr-btn--primary:hover { opacity: 0.9; }
+
+/* ─── Duration hint ───────────────────────────────────────────────────────── */
+
+.vr-duration-hint {
+    font-size: 13px;
+    color: var(--color-text-secondary);
+    min-width: 60px;
+    text-align: center;
+}
+
+/* ─── Bottom hint ─────────────────────────────────────────────────────────── */
+
+.video-recorder-hint {
+    font-size: 12px;
+    color: var(--color-text-tertiary);
+    margin: 0;
+    text-align: center;
+}

@@ -1,0 +1,103 @@
+/* ─── Story Circle ─────────────────────────────────────────────────────────── */
+
+.story-circle-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    flex-shrink: 0;
+    user-select: none;
+    position: relative;
+}
+
+.story-circle-wrapper:focus-visible {
+    outline: 2px solid var(--purple-500);
+    outline-offset: 4px;
+    border-radius: 50px;
+}
+
+/* ─── Gradient ring ──────────────────────────────────────────────────────── */
+.story-circle-ring {
+    width: 68px;
+    height: 68px;
+    border-radius: 50%;
+    padding: 3px;
+    position: relative;
+    flex-shrink: 0;
+    transition: transform 0.15s ease;
+}
+
+.story-circle-wrapper:hover .story-circle-ring {
+    transform: scale(1.05);
+}
+
+/* Unseen — vivid gradient ring */
+.story-circle-ring--unseen {
+    background: linear-gradient(135deg, #f093fb 0%, #a855f7 40%, #667eea 100%);
+    box-shadow: 0 0 16px rgba(168, 85, 247, 0.45);
+}
+
+/* Seen — muted ring */
+.story-circle-ring--seen {
+    background: var(--dark-600);
+}
+
+/* Own with no stories — subtle dashed ring */
+.story-circle-ring--empty {
+    background: none;
+    border: 2px dashed var(--dark-600);
+    padding: 4px;
+}
+
+.story-circle-avatar-wrap {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 3px solid var(--dark-900);
+    background: var(--dark-800);
+}
+
+.story-circle-avatar {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+/* ─── + Add button ────────────────────────────────────────────────────────── */
+.story-circle-add-btn {
+    position: absolute;
+    bottom: 22px; /* above label */
+    right: -2px;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: var(--purple-600);
+    border: 2px solid var(--dark-900);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background 0.15s, transform 0.15s;
+    z-index: 2;
+    padding: 0;
+}
+
+.story-circle-add-btn:hover {
+    background: var(--purple-500);
+    transform: scale(1.15);
+}
+
+/* ─── Label ───────────────────────────────────────────────────────────────── */
+.story-circle-label {
+    font-size: 11px;
+    color: var(--color-text-secondary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 70px;
+    text-align: center;
+    line-height: 1.2;
+}

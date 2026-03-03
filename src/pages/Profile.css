@@ -118,6 +118,31 @@
     0 16px 50px rgba(0, 0, 0, 0.8);
 }
 
+/* ─── Story add button on own profile avatar ─── */
+.profile-add-story-btn {
+  position: absolute;
+  bottom: 4px;
+  right: 4px;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--purple-600), var(--purple-500));
+  border: 2px solid var(--color-bg-primary, #0f0f0f);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(168, 85, 247, 0.5);
+  transition: transform 0.15s, box-shadow 0.15s;
+  padding: 0;
+  z-index: 2;
+}
+
+.profile-add-story-btn:hover {
+  transform: scale(1.12);
+  box-shadow: 0 4px 14px rgba(168, 85, 247, 0.7);
+}
+
 .page-profile-actions-group {
   display: flex;
   flex-direction: row;

@@ -1,0 +1,162 @@
+/* ─── Photo Editor ────────────────────────────────────────────────────────── */
+
+.photo-editor {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    width: 100%;
+}
+
+/* ─── Canvas ──────────────────────────────────────────────────────────────── */
+
+.photo-editor-canvas {
+    position: relative;
+    width: 100%;
+    max-width: 340px;
+    margin: 0 auto;
+    background: #000;
+    border-radius: 12px;
+    overflow: hidden;
+    cursor: grab;
+    touch-action: none;
+    user-select: none;
+    border: 1px solid var(--color-border);
+}
+
+.photo-editor-canvas:active {
+    cursor: grabbing;
+}
+
+.photo-editor-image {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform-origin: center center;
+    /* translate(-50%,-50%) is baked into JS transform */
+    translate: -50% -50%;
+    max-width: none;
+    will-change: transform;
+    pointer-events: none;
+    user-select: none;
+    -webkit-user-drag: none;
+}
+
+/* Rule-of-thirds grid */
+.photo-editor-grid-overlay {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0.15;
+}
+
+.grid-line {
+    position: absolute;
+    background: white;
+}
+
+.grid-line--v {
+    width: 1px;
+    top: 0;
+    bottom: 0;
+}
+
+.grid-line--h {
+    height: 1px;
+    left: 0;
+    right: 0;
+}
+
+/* ─── Controls ────────────────────────────────────────────────────────────── */
+
+.photo-editor-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 0 4px;
+}
+
+.photo-editor-control-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.photo-editor-control-label {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 12px;
+    color: var(--color-text-secondary);
+    min-width: 80px;
+    flex-shrink: 0;
+}
+
+.photo-editor-slider {
+    flex: 1;
+    -webkit-appearance: none;
+    appearance: none;
+    height: 4px;
+    border-radius: 2px;
+    background: var(--dark-600);
+    outline: none;
+    cursor: pointer;
+}
+
+.photo-editor-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: var(--purple-500);
+    cursor: pointer;
+    border: 2px solid var(--dark-900);
+    transition: background 0.15s, transform 0.1s;
+}
+
+.photo-editor-slider::-webkit-slider-thumb:hover {
+    background: var(--purple-400);
+    transform: scale(1.15);
+}
+
+.photo-editor-slider::-moz-range-thumb {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: var(--purple-500);
+    cursor: pointer;
+    border: 2px solid var(--dark-900);
+}
+
+.photo-editor-value {
+    font-size: 11px;
+    color: var(--color-text-tertiary);
+    min-width: 36px;
+    text-align: right;
+}
+
+.photo-editor-reset-btn {
+    align-self: flex-start;
+    background: none;
+    border: 1px solid var(--color-border-light);
+    border-radius: 8px;
+    color: var(--color-text-secondary);
+    font-size: 12px;
+    padding: 5px 12px;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+}
+
+.photo-editor-reset-btn:hover {
+    background: var(--white-alpha-10);
+    color: var(--color-text-primary);
+}
+
+/* ─── Hint ────────────────────────────────────────────────────────────────── */
+
+.photo-editor-hint {
+    font-size: 11px;
+    color: var(--color-text-tertiary);
+    text-align: center;
+    margin: 0;
+}
