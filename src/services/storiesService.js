@@ -19,7 +19,7 @@
 
 import {
     collection, addDoc, getDocs, query, where,
-    serverTimestamp, Timestamp, doc, updateDoc, arrayUnion, onSnapshot
+    serverTimestamp, Timestamp, doc, updateDoc, deleteDoc, arrayUnion, onSnapshot
 } from 'firebase/firestore';
 import { db } from './firebase';
 import { uploadFileWithProgress } from './supabase'; // uses Cloudinary under the hood
@@ -183,6 +183,12 @@ export const subscribeToUserStories = (uid, onUpdate) => {
             onUpdate([]);
         }
     );
+};
+
+// ─── Delete a story ───────────────────────────────────────────────────────────
+
+export const deleteStory = async (storyId) => {
+    await deleteDoc(doc(db, STORIES_COLLECTION, storyId));
 };
 
 // ─── Mark as viewed ───────────────────────────────────────────────────────────
