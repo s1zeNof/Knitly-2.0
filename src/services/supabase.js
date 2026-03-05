@@ -32,45 +32,73 @@ export const uploadFile = async (file, bucket, path) => {
 };
 
 export const uploadFileWithProgress = (file, bucket, path, onProgress) => {
-    return new Promise((resolve, reject) => {
-        const xhr = new XMLHttpRequest();
-
-        xhr.upload.addEventListener('progress', (event) => {
-            if (event.lengthComputable && onProgress) {
-                const progress = Math.round((event.loaded / event.total) * 100);
-                onProgress(progress);
-            }
-        });
-
-        xhr.addEventListener('load', () => {
-            if (xhr.status >= 200 && xhr.status < 300) {
-                try {
-                    const data = JSON.parse(xhr.responseText);
-                    resolve(data.secure_url);
-                } catch {
-                    resolve('');
-                }
-            } else {
-                try {
-                    const err = JSON.parse(xhr.responseText);
-                    reject(new Error(err.error?.message || `Помилка ${xhr.status}: ${xhr.statusText}`));
-                } catch {
-                    reject(new Error(`Помилка завантаження: HTTP ${xhr.status}`));
-                }
-            }
-        });
-
-        xhr.addEventListener('error', () => reject(new Error('Мережева помилка при завантаженні')));
-        xhr.addEventListener('abort', () => reject(new Error('Завантаження скасовано')));
-
+    return new Promise(async (resolve, reject) => {
         const formData = new FormData();
         formData.append("file", file);
         formData.append("upload_preset", UPLOAD_PRESET);
 
-        xhr.open('POST', CLOUDINARY_URL);
-        xhr.send(formData);
+        // Step 1: Try XHR — supports upload progress events on desktop
+        const xhrResult = await new Promise((xhrResolve) => {
+            const xhr = new XMLHttpRequest();
+
+            xhr.upload.addEventListener('progress', (event) => {
+                if (event.lengthComputable && onProgress) {
+                    onProgress(Math.round((event.loaded / event.total) * 100));
+                }
+            });
+
+            xhr.addEventListener('load', () => {
+                if (xhr.status >= 200 && xhr.status < 300) {
+                    try {
+                        xhrResolve({ ok: true, url: JSON.parse(xhr.responseText).secure_url });
+                    } catch {
+                        xhrResolve({ ok: true, url: '' });
+                    }
+                } else {
+                    try {
+                        const err = JSON.parse(xhr.responseText);
+                        xhrResolve({ ok: false, error: err.error?.message || `Помилка ${xhr.status}` });
+                    } catch {
+                        xhrResolve({ ok: false, error: `Помилка ${xhr.status}: ${xhr.statusText}` });
+                    }
+                }
+            });
+
+            // On mobile (iOS/Android) XHR sometimes fires 'error' instead of 'load'.
+            // We don't reject here — instead mark as failed so fetch fallback kicks in.
+            xhr.addEventListener('error', () => xhrResolve({ ok: false, needsFallback: true }));
+            xhr.addEventListener('abort', () => xhrResolve({ ok: false, error: 'Завантаження скасовано' }));
+
+            xhr.open('POST', CLOUDINARY_URL);
+            xhr.timeout = 90000; // 90-second safety timeout
+            xhr.addEventListener('timeout', () => xhrResolve({ ok: false, needsFallback: true }));
+            xhr.send(formData);
+        });
+
+        // XHR succeeded — return immediately
+        if (xhrResult.ok) return resolve(xhrResult.url);
+
+        // XHR had a hard HTTP error — no point retrying
+        if (xhrResult.error && !xhrResult.needsFallback) return reject(new Error(xhrResult.error));
+
+        // Step 2: Fallback to fetch (more reliable on mobile browsers)
+        console.warn('[Upload] XHR network error — retrying with fetch…');
+        if (onProgress) onProgress(30); // Show indeterminate progress
+        try {
+            const res = await fetch(CLOUDINARY_URL, { method: 'POST', body: formData });
+            if (!res.ok) {
+                const errData = await res.json().catch(() => ({}));
+                throw new Error(errData.error?.message || `Помилка ${res.status}`);
+            }
+            const data = await res.json();
+            if (onProgress) onProgress(100);
+            resolve(data.secure_url);
+        } catch (fetchErr) {
+            reject(new Error('Мережева помилка при завантаженні. Перевір з\'єднання та спробуй ще раз.'));
+        }
     });
 };
+
 
 export const deleteSupabaseFile = async (bucket, path) => {
     console.warn('[Cloudinary] Видалення з фронтенду не підтримується для Unsigned Presets. Пропущено.');
