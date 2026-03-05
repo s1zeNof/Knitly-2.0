@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { markStoryViewed, deleteStory } from '../../services/storiesService';
+import { markStoryViewed, deleteStory, likeStory, unlikeStory, sendStoryLikeNotification } from '../../services/storiesService';
 import { db } from '../../services/firebase';
 import { doc, getDoc } from 'firebase/firestore';
 import default_picture from '../../img/Default-Images/default-picture.svg';
@@ -37,6 +37,9 @@ const StoryViewer = ({
     const [showViewersSheet, setShowViewersSheet] = useState(false);
     const [viewerProfiles, setViewerProfiles] = useState([]);
     const [loadingViewers, setLoadingViewers] = useState(false);
+    // Local likes state for optimistic updates
+    const [storyLikes, setStoryLikes] = useState([]);
+    const [likePending, setLikePending] = useState(false);
 
     const timerRef = useRef(null);
     const startTimeRef = useRef(null);
@@ -56,6 +59,8 @@ const StoryViewer = ({
             markStoryViewed(currentStory.id, currentUserUid);
             onStoriesSeen?.([currentStory.id]);
         }
+        // Sync local likes state when story changes
+        setStoryLikes(currentStory?.likes || []);
     }, [currentStory?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
     // ─── Navigation helpers ───────────────────────────────────────────────────
@@ -135,7 +140,7 @@ const StoryViewer = ({
             if (currentStory?.mediaType !== 'video') {
                 if (mediaLoaded) startTimer();
             } else {
-                videoRef.current?.play().catch(() => {});
+                videoRef.current?.play().catch(() => { });
             }
         }
     }, [paused]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -154,7 +159,7 @@ const StoryViewer = ({
 
     const handleVideoLoaded = () => {
         setMediaLoaded(true);
-        if (!paused) videoRef.current?.play().catch(() => {});
+        if (!paused) videoRef.current?.play().catch(() => { });
     };
 
     // ─── Touch / click: left half = prev, right half = next ─────────────────
@@ -199,10 +204,52 @@ const StoryViewer = ({
             if (currentStory?.mediaType !== 'video') {
                 if (mediaLoaded) startTimer();
             } else {
-                videoRef.current?.play().catch(() => {});
+                videoRef.current?.play().catch(() => { });
             }
         }
     }, [showDeleteConfirm]); // eslint-disable-line react-hooks/exhaustive-deps
+
+    // ─── Like / Unlike ────────────────────────────────────────────────────────
+    const isLiked = storyLikes.includes(currentUserUid);
+
+    const handleLike = useCallback(async (e) => {
+        e.stopPropagation();
+        if (likePending || !currentStory?.id || !currentUserUid) return;
+        setLikePending(true);
+        const newLiked = !isLiked;
+        // Optimistic update
+        setStoryLikes(prev =>
+            newLiked
+                ? [...prev, currentUserUid]
+                : prev.filter(uid => uid !== currentUserUid)
+        );
+        try {
+            if (newLiked) {
+                await likeStory(currentStory.id, currentUserUid);
+                // Send notification to story author (not for own story)
+                if (currentGroup?.uid !== currentUserUid) {
+                    await sendStoryLikeNotification(
+                        currentGroup.uid,
+                        currentStory.id,
+                        { uid: currentUserUid }, // minimal fromUser — owner will fetch profile
+                        currentStory.mediaUrl
+                    );
+                }
+            } else {
+                await unlikeStory(currentStory.id, currentUserUid);
+            }
+        } catch (err) {
+            console.warn('[StoryViewer] like error, reverting', err);
+            // Revert
+            setStoryLikes(prev =>
+                newLiked
+                    ? prev.filter(uid => uid !== currentUserUid)
+                    : [...prev, currentUserUid]
+            );
+        } finally {
+            setLikePending(false);
+        }
+    }, [isLiked, likePending, currentStory?.id, currentUserUid, currentGroup?.uid]); // eslint-disable-line react-hooks/exhaustive-deps
 
     // ─── Delete story ─────────────────────────────────────────────────────────
     const isOwnStory = currentGroup?.uid === currentUserUid;
@@ -409,38 +456,58 @@ const StoryViewer = ({
                     </div>
                 </div>
 
-                {/* ─── Viewers bar — only for own stories ──────────────── */}
-                {isOwnStory && (
-                    <button
-                        className="sv-viewers-bar"
-                        onClick={(e) => { e.stopPropagation(); openViewersSheet(); }}
-                        aria-label="Хто переглянув"
-                    >
-                        <div className="sv-viewers-avatars">
-                            {(currentStory.views || []).slice(0, 3).map((uid, i) => {
-                                const p = viewerProfiles.find(x => x.uid === uid);
-                                return (
-                                    <img
-                                        key={uid}
-                                        src={p?.photoURL || default_picture}
-                                        alt=""
-                                        className="sv-viewers-avatar"
-                                        style={{ zIndex: 3 - i, marginLeft: i > 0 ? '-8px' : 0 }}
-                                        onError={(e) => { e.target.onerror = null; e.target.src = default_picture; }}
-                                    />
-                                );
-                            })}
-                        </div>
-                        <span className="sv-viewers-count">
-                            {(currentStory.views || []).length > 0
-                                ? `${(currentStory.views || []).length} ${(currentStory.views || []).length === 1 ? 'перегляд' : 'переглядів'}`
-                                : 'Ще немає переглядів'}
-                        </span>
-                        <svg className="sv-viewers-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
-                            <path d="M6 9l6 6 6-6" />
-                        </svg>
-                    </button>
-                )}
+                {/* ─── Bottom bar: viewers (owner) + like button (viewers) ── */}
+                <div className="sv-bottom-bar">
+                    {/* Viewers section — only for story owner */}
+                    {isOwnStory && (
+                        <button
+                            className="sv-viewers-btn"
+                            onClick={(e) => { e.stopPropagation(); openViewersSheet(); }}
+                            aria-label="Хто переглянув"
+                        >
+                            <div className="sv-viewers-avatars">
+                                {(currentStory.views || []).slice(0, 3).map((uid, i) => {
+                                    const p = viewerProfiles.find(x => x.uid === uid);
+                                    return (
+                                        <img
+                                            key={uid}
+                                            src={p?.photoURL || default_picture}
+                                            alt=""
+                                            className="sv-viewers-avatar"
+                                            style={{ zIndex: 3 - i, marginLeft: i > 0 ? '-8px' : 0 }}
+                                            onError={(e) => { e.target.onerror = null; e.target.src = default_picture; }}
+                                        />
+                                    );
+                                })}
+                                {(currentStory.views || []).length === 0 && (
+                                    <span className="sv-viewers-zero">
+                                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" /><circle cx="12" cy="12" r="3" /></svg>
+                                    </span>
+                                )}
+                            </div>
+                            <svg className="sv-viewers-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
+                                <path d="M6 9l6 6 6-6" />
+                            </svg>
+                        </button>
+                    )}
+
+                    {/* Spacer */}
+                    <div className="sv-bottom-spacer" />
+
+                    {/* Like button — for viewers (non-owners) */}
+                    {!isOwnStory && (
+                        <button
+                            className={`sv-like-btn${isLiked ? ' sv-like-btn--active' : ''}`}
+                            onClick={handleLike}
+                            disabled={likePending}
+                            aria-label={isLiked ? 'Прибрати вподобайку' : 'Вподобати'}
+                        >
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill={isLiked ? '#ef4444' : 'none'} stroke={isLiked ? '#ef4444' : 'currentColor'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+                            </svg>
+                        </button>
+                    )}
+                </div>
 
                 {/* ─── Group navigation arrows (outside viewport) ───────── */}
                 {groupIdx > 0 && (
@@ -520,6 +587,12 @@ const StoryViewer = ({
                                             <span className="sv-viewer-item-name">{profile.displayName || profile.nickname || 'Користувач'}</span>
                                             {profile.nickname && <span className="sv-viewer-item-nick">@{profile.nickname}</span>}
                                         </div>
+                                        {/* Like indicator (space-between pushes it right) */}
+                                        {storyLikes.includes(profile.uid) && (
+                                            <svg className="sv-viewer-liked-icon" width="16" height="16" viewBox="0 0 24 24" fill="#ef4444" stroke="none">
+                                                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+                                            </svg>
+                                        )}
                                     </button>
                                 ))}
                             </div>

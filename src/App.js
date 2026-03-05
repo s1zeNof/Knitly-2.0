@@ -9,10 +9,10 @@ import Header from './components/layout/Header';
 import LeftSidebar from './components/layout/LeftSidebar';
 
 // ── Legal pages (own layout — no app sidebar/player) ──────────────────────
-import LegalLayout    from './components/layout/LegalLayout';
-import TermsPage      from './pages/legal/TermsPage';
-import PrivacyPage    from './pages/legal/PrivacyPage';
-import CopyrightPage  from './pages/legal/CopyrightPage';
+import LegalLayout from './components/layout/LegalLayout';
+import TermsPage from './pages/legal/TermsPage';
+import PrivacyPage from './pages/legal/PrivacyPage';
+import CopyrightPage from './pages/legal/CopyrightPage';
 import GuidelinesPage from './pages/legal/GuidelinesPage';
 import Home from './pages/Home';
 import Login from './pages/Login';
@@ -35,7 +35,7 @@ import AdminRoute from './components/layout/AdminRoute';
 import AdminPage from './pages/AdminPage';
 import CreatorStudio from './pages/CreatorStudio';
 import NotificationsPage from './pages/NotificationsPage';
-import ReportResultPage  from './pages/ReportResultPage';
+import ReportResultPage from './pages/ReportResultPage';
 import PostPage from './pages/PostPage';
 import SearchPage from './pages/SearchPage';
 import FollowersPage from './pages/FollowersPage';
@@ -148,6 +148,15 @@ const AppLayout = () => {
 
     const isMessagesPage = location.pathname === '/messages';
 
+    // Messages page: sidebar is hidden — reset the global padding-left offset
+    useEffect(() => {
+        if (isMessagesPage) {
+            document.body.classList.add('no-sidebar-offset');
+        } else {
+            document.body.classList.remove('no-sidebar-offset');
+        }
+    }, [isMessagesPage]);
+
     return (
         <>
             <Header
@@ -180,8 +189,8 @@ const AppLayout = () => {
                     <Route path="/track/:trackId" element={<TrackPage />} />
                     <Route path="/tags/:tagName" element={<TagPage />} />
                     <Route path="/post/:postId" element={<PostPage />} />
-                    <Route path="/notifications"             element={<NotificationsPage />} />
-                    <Route path="/report-result/:reportId"  element={<ReportResultPage  />} />
+                    <Route path="/notifications" element={<NotificationsPage />} />
+                    <Route path="/report-result/:reportId" element={<ReportResultPage />} />
                     <Route path="/studio" element={<CreatorStudio />} />
                     <Route path="/migrate-cloudinary" element={<CloudinaryMigration />} />
                     <Route
@@ -228,9 +237,9 @@ const AppRouter = () => {
     if (LEGAL_PATHS.includes(location.pathname)) {
         return (
             <Routes>
-                <Route path="/terms"      element={<LegalLayout><TermsPage /></LegalLayout>} />
-                <Route path="/privacy"    element={<LegalLayout><PrivacyPage /></LegalLayout>} />
-                <Route path="/copyright"  element={<LegalLayout><CopyrightPage /></LegalLayout>} />
+                <Route path="/terms" element={<LegalLayout><TermsPage /></LegalLayout>} />
+                <Route path="/privacy" element={<LegalLayout><PrivacyPage /></LegalLayout>} />
+                <Route path="/copyright" element={<LegalLayout><CopyrightPage /></LegalLayout>} />
                 <Route path="/guidelines" element={<LegalLayout><GuidelinesPage /></LegalLayout>} />
             </Routes>
         );

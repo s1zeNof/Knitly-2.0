@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback } from 'react';
+import React, { useState, useMemo, useCallback, useRef, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from 'react-query';
 import { useNavigate } from 'react-router-dom';
 import { db } from '../services/firebase';
@@ -21,7 +21,7 @@ const TABS = [
     { id: 'mentions', label: 'Згадки', Icon: TabIconMention },
 ];
 
-const ACTIVITY_TYPES = ['post_like', 'post_comment', 'track_like', 'comment_like'];
+const ACTIVITY_TYPES = ['post_like', 'post_comment', 'track_like', 'comment_like', 'story_like'];
 const FOLLOWER_TYPES = ['new_follower'];
 const MENTION_TYPES = ['mention_post'];
 
@@ -84,6 +84,12 @@ const BellIcon = () => (
     </svg>
 );
 
+const BackIcon = () => (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M19 12H5M12 5l-7 7 7 7" />
+    </svg>
+);
+
 const getNavigationUrl = (notification) => {
     const { type, entityLink, postId, commentId, trackId, fromUser } = notification;
 
@@ -102,6 +108,9 @@ const getNavigationUrl = (notification) => {
         case 'track_like':
             if (trackId) return `/track/${trackId}`;
             return null;
+        case 'story_like':
+            // Open story author's profile where their active stories are visible
+            return fromUser?.nickname ? `/${fromUser.nickname}` : null;
         case 'new_follower':
             return fromUser?.nickname ? `/${fromUser.nickname}` : null;
         default:
@@ -114,6 +123,18 @@ const NotificationsPage = () => {
     const queryClient = useQueryClient();
     const navigate = useNavigate();
     const [activeTab, setActiveTab] = useState('all');
+    const headerRef = useRef(null);
+
+    // Scroll-triggered background: when sticky header is stuck, fade in blur bg
+    useEffect(() => {
+        const scrollEl = document.querySelector('.app-main-content');
+        if (!scrollEl) return;
+        const onScroll = () => {
+            headerRef.current?.classList.toggle('scrolled', scrollEl.scrollTop > 10);
+        };
+        scrollEl.addEventListener('scroll', onScroll, { passive: true });
+        return () => scrollEl.removeEventListener('scroll', onScroll);
+    }, []);
 
     const { data: notifications = [], isLoading } = useQuery(
         ['notifications', currentUser?.uid],
@@ -170,17 +191,25 @@ const NotificationsPage = () => {
     const isEmpty = !isLoading && filtered.length === 0;
 
     return (
-        <div className="home-container">
+        <div className="home-container notif-page-container">
             <LeftSidebar isOpen={true} />
             <main className="main-content notif-main">
                 <div className="notif-page">
                     {/* Sticky header */}
-                    <div className="notif-sticky-header">
+                    <div className="notif-sticky-header" ref={headerRef}>
+                        {/* Mobile-only back nav bar */}
+                        <div className="notif-mobile-nav">
+                            <button className="notif-back-btn" onClick={() => navigate(-1)} aria-label="Назад">
+                                <BackIcon />
+                            </button>
+                            <span className="notif-mobile-nav-title">Сповіщення</span>
+                        </div>
+
                         <div className="notif-title-row">
                             <div className="notif-title-left">
-                                <h1>Сповіщення</h1>
+                                <h1 className="notif-h1-desktop">Сповіщення</h1>
                                 {unreadCount > 0 && (
-                                    <span className="notif-unread-pill">{unreadCount} нових</span>
+                                    <span className="notif-unread-pill">{unreadCount > 999 ? '999+' : unreadCount} нових</span>
                                 )}
                             </div>
                             {unreadCount > 0 && (

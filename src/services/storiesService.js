@@ -19,7 +19,7 @@
 
 import {
     collection, addDoc, getDocs, query, where,
-    serverTimestamp, Timestamp, doc, updateDoc, deleteDoc, arrayUnion, onSnapshot
+    serverTimestamp, Timestamp, doc, updateDoc, deleteDoc, arrayUnion, arrayRemove, onSnapshot
 } from 'firebase/firestore';
 import { db } from './firebase';
 import { uploadFileWithProgress } from './supabase'; // uses Cloudinary under the hood
@@ -132,10 +132,44 @@ export const createStory = async (author, mediaType, mediaUrl, caption = '') => 
         createdAt: serverTimestamp(),
         expiresAt,
         views: [],
+        likes: [],
     };
 
     const docRef = await addDoc(collection(db, STORIES_COLLECTION), storyData);
     return { id: docRef.id, ...storyData };
+};
+
+// ─── Like / Unlike a story ───────────────────────────────────────────────────
+
+/**
+ * Toggle like on a story. Optimistic — returns new liked state.
+ */
+export const likeStory = (storyId, uid) =>
+    updateDoc(doc(db, STORIES_COLLECTION, storyId), { likes: arrayUnion(uid) });
+
+export const unlikeStory = (storyId, uid) =>
+    updateDoc(doc(db, STORIES_COLLECTION, storyId), { likes: arrayRemove(uid) });
+
+/**
+ * Send a notification to the story author when someone likes their story.
+ */
+export const sendStoryLikeNotification = async (storyAuthorUid, storyId, fromUser, mediaUrl) => {
+    if (storyAuthorUid === fromUser.uid) return; // don't notify yourself
+    const notifRef = collection(db, 'users', storyAuthorUid, 'notifications');
+    await addDoc(notifRef, {
+        type: 'story_like',
+        fromUser: {
+            uid: fromUser.uid,
+            displayName: fromUser.displayName || fromUser.userDisplayName || '',
+            nickname: fromUser.nickname || fromUser.userNickname || '',
+            photoURL: fromUser.photoURL || fromUser.userPhotoURL || null,
+        },
+        storyId,
+        mediaUrl: mediaUrl || null, // thumbnail for notification
+        entityLink: null, // viewer opens by storyId on author profile
+        read: false,
+        timestamp: serverTimestamp(),
+    });
 };
 
 // ─── Fetch active stories ─────────────────────────────────────────────────────
