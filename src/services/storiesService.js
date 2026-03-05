@@ -27,15 +27,86 @@ import { uploadFileWithProgress } from './supabase'; // uses Cloudinary under th
 const STORIES_COLLECTION = 'stories';
 const STORY_DURATION_MS = 24 * 60 * 60 * 1000; // 24 hours
 
-// ─── Upload media to Cloudinary ──────────────────────────────────────────────
+// ─── Compress image before upload ────────────────────────────────────────────
+
+/**
+ * Compress an image File using canvas.
+ * Resizes to max 1920px on the longest side, outputs JPEG at 85% quality.
+ * Keeps video/non-image files untouched.
+ * Target output: < 3 MB for a 1920px image.
+ */
+const compressImageFile = (file) => {
+    // Only compress images; leave videos/other files alone
+    if (!file.type.startsWith('image/')) return Promise.resolve(file);
+
+    // If already small enough (< 3 MB), skip compression
+    const MB3 = 3 * 1024 * 1024;
+    if (file.size <= MB3) {
+        console.log(`[Upload] File ${file.name}: ${(file.size / 1024 / 1024).toFixed(2)} MB — no compression needed`);
+        return Promise.resolve(file);
+    }
+
+    console.log(`[Upload] Compressing ${file.name}: ${(file.size / 1024 / 1024).toFixed(2)} MB → target < 3 MB`);
+
+    return new Promise((resolve) => {
+        const img = new Image();
+        const objectUrl = URL.createObjectURL(file);
+
+        img.onload = () => {
+            URL.revokeObjectURL(objectUrl);
+
+            const MAX_DIM = 1920;
+            let { width, height } = img;
+            if (width > MAX_DIM || height > MAX_DIM) {
+                if (width > height) {
+                    height = Math.round((height * MAX_DIM) / width);
+                    width = MAX_DIM;
+                } else {
+                    width = Math.round((width * MAX_DIM) / height);
+                    height = MAX_DIM;
+                }
+            }
+
+            const canvas = document.createElement('canvas');
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, width, height);
+
+            canvas.toBlob(
+                (blob) => {
+                    if (!blob) return resolve(file); // fallback to original if canvas fails
+                    const compressed = new File([blob], file.name.replace(/\.[^.]+$/, '.jpg'), {
+                        type: 'image/jpeg',
+                        lastModified: Date.now(),
+                    });
+                    console.log(`[Upload] Compressed: ${(compressed.size / 1024 / 1024).toFixed(2)} MB`);
+                    resolve(compressed);
+                },
+                'image/jpeg',
+                0.85
+            );
+        };
+
+        img.onerror = () => {
+            URL.revokeObjectURL(objectUrl);
+            resolve(file); // fallback to original on error
+        };
+
+        img.src = objectUrl;
+    });
+};
 
 /**
  * Upload a photo or video blob to Cloudinary.
+ * Automatically compresses large images before upload.
  * Returns the secure URL.
  */
-export const uploadStoryMedia = (file, onProgress) => {
-    return uploadFileWithProgress(file, 'stories', `stories/${Date.now()}_${file.name || 'story'}`, onProgress);
+export const uploadStoryMedia = async (file, onProgress) => {
+    const fileToUpload = await compressImageFile(file);
+    return uploadFileWithProgress(fileToUpload, 'stories', `stories/${Date.now()}_${fileToUpload.name || 'story'}`, onProgress);
 };
+
 
 // ─── Create a story ───────────────────────────────────────────────────────────
 
@@ -126,7 +197,7 @@ export const fetchUserStories = async (uid) => {
 export const subscribeToFeedStories = (uids, onUpdate) => {
     if (!uids || uids.length === 0) {
         onUpdate([]);
-        return () => {};
+        return () => { };
     }
     // Simple query — no orderBy/inequality filter — avoids composite index entirely.
     // Expiry filter and sort are done client-side.
@@ -162,7 +233,7 @@ export const subscribeToFeedStories = (uids, onUpdate) => {
 export const subscribeToUserStories = (uid, onUpdate) => {
     if (!uid) {
         onUpdate([]);
-        return () => {};
+        return () => { };
     }
     const q = query(
         collection(db, STORIES_COLLECTION),
