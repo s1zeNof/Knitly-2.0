@@ -5,12 +5,12 @@
 
 /* ── Container ───────────────────────────────────────────── */
 .studio-page-container {
-  max-width: 1440px;
+  max-width: 100%;
   margin: 0 auto;
   padding: 0 4rem;
   height: 100%;
-  overflow-x: hidden;
   overflow-y: auto;
+  /* overflow-x intentionally NOT hidden — sidebar needs its own scroll */
 }
 
 /* ============================================================
@@ -446,6 +446,8 @@
   display: flex;
   flex-direction: column;
   gap: 2.5rem;
+  min-width: 0;
+  max-width: 100%;
 }
 
 .dashboard-section {
@@ -834,13 +836,14 @@
     display: none;
   }
 
-  /* Compact pill buttons */
+  /* CRITICAL: override base width:100% so pills size to their text content */
   .studio-nav-btn {
+    width: auto;
     flex-shrink: 0;
     white-space: nowrap;
     padding: 0.45rem 0.85rem;
     font-size: 0.8rem;
-    gap: 0.45rem;
+    gap: 0.4rem;
   }
 
   .studio-nav-btn.active::before {
@@ -912,8 +915,9 @@
     padding: 1rem;
   }
 
-  /* Sidebar pills even more compact */
+  /* Sidebar pills even more compact — keep width:auto */
   .studio-nav-btn {
+    width: auto;
     padding: 0.4rem 0.7rem;
     font-size: 0.775rem;
   }
