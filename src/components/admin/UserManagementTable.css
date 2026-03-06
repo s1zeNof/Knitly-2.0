@@ -125,6 +125,17 @@
     color: white;
 }
 
+.action-buttons button.detail {
+    border-color: rgba(255, 255, 255, 0.12);
+    background: rgba(255,255,255,0.04);
+    color: var(--color-text-primary);
+    font-weight: 600;
+}
+.action-buttons button.detail:hover {
+    background-color: rgba(255, 255, 255, 0.09);
+    border-color: rgba(255,255,255,0.2);
+}
+
 .action-buttons button.limits {
     border-color: rgba(168, 85, 247, 0.3);
     color: var(--color-accent);

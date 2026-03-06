@@ -33,6 +33,7 @@ import EmojiPacksSettings from './components/chat/EmojiPacksSettings';
 import EditEmojiPack from './pages/EditEmojiPack';
 import AdminRoute from './components/layout/AdminRoute';
 import AdminPage from './pages/AdminPage';
+import AdminUserPage from './pages/AdminUserPage';
 import CreatorStudio from './pages/CreatorStudio';
 import NotificationsPage from './pages/NotificationsPage';
 import ReportResultPage from './pages/ReportResultPage';
@@ -206,6 +207,14 @@ const AppLayout = () => {
                         element={
                             <AdminRoute>
                                 <AdminPage />
+                            </AdminRoute>
+                        }
+                    />
+                    <Route
+                        path="/admin/users/:uid"
+                        element={
+                            <AdminRoute>
+                                <AdminUserPage />
                             </AdminRoute>
                         }
                     />

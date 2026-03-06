@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { doc, updateDoc, deleteDoc } from "firebase/firestore";
+import { useNavigate } from 'react-router-dom';
 import { db } from '../../services/firebase';
 import { getEffectiveLimit, getCurrentMonthUsage } from '../upload/UploadLimitBanner';
 import UserLimitsModal from './UserLimitsModal';
@@ -23,6 +24,7 @@ const UsageChip = ({ user }) => {
 };
 
 const UserManagementTable = ({ users, onActionSuccess, onEditRoles }) => {
+    const navigate = useNavigate();
     const [limitsTarget, setLimitsTarget] = useState(null);
 
     const toggleBanStatus = async (user) => {
@@ -114,6 +116,7 @@ const UserManagementTable = ({ users, onActionSuccess, onEditRoles }) => {
                                 </td>
                                 <td data-label="Дії">
                                     <div className="action-buttons">
+                                        <button className="detail" onClick={() => navigate(`/admin/users/${user.id}`)}>Детально</button>
                                         <button className="edit" onClick={() => onEditRoles(user)}>Ролі</button>
                                         <button className="limits" onClick={() => setLimitsTarget(user)}>Ліміти</button>
                                         <button onClick={() => toggleBanStatus(user)}>
