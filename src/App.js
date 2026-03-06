@@ -46,6 +46,10 @@ import ShareModal from './components/common/ShareModal';
 import CloudinaryMigration from './pages/CloudinaryMigration';
 import GuestPrompt from './components/common/GuestPrompt';
 import StoriesRow from './components/stories/StoriesRow';
+import ForgotPassword from './pages/ForgotPassword';
+import NotFoundPage from './pages/NotFoundPage';
+import EmailVerifiedPage from './pages/EmailVerifiedPage';
+import EmailVerificationBanner from './components/common/EmailVerificationBanner';
 
 import './styles/index.css';
 import './components/posts/Post.css';
@@ -165,6 +169,8 @@ const AppLayout = () => {
             {/* Global sidebar — all pages except /messages and mobile */}
             {user && !isMobile && !isMessagesPage && <LeftSidebar isOpen={true} />}
             <main className="app-main-content">
+                {/* Email verification banner — inside main so it never overlaps header or content */}
+                {user && <EmailVerificationBanner user={user} />}
                 {/* StoriesRow — тільки на головній сторінці / */}
                 {user && !authLoading && location.pathname === '/' && (
                     <StoriesRow />
@@ -192,7 +198,9 @@ const AppLayout = () => {
                     <Route path="/notifications" element={<NotificationsPage />} />
                     <Route path="/report-result/:reportId" element={<ReportResultPage />} />
                     <Route path="/studio" element={<CreatorStudio />} />
-                    <Route path="/migrate-cloudinary" element={<CloudinaryMigration />} />
+                    <Route path="/forgot-password" element={<ForgotPassword />} />
+                    <Route path="/email-verified" element={<EmailVerifiedPage />} />
+                    <Route path="/migrate-cloudinary" element={<AdminRoute><CloudinaryMigration /></AdminRoute>} />
                     <Route
                         path="/admin"
                         element={
@@ -206,6 +214,8 @@ const AppLayout = () => {
                     <Route path="/:nickname/followers" element={<FollowersPage />} />
                     <Route path="/:nickname/following" element={<FollowersPage />} />
                     <Route path="/:userNickname" element={<ProfilePage openShareModal={openShareModal} />} />
+                    {/* True 404 — multi-segment unknown paths */}
+                    <Route path="*" element={<NotFoundPage />} />
                 </Routes>
             </main>
             <BottomNavBar isPlayerVisible={isPlayerVisible} />

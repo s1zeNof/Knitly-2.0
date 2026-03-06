@@ -1,6 +1,6 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import { auth, db } from '../services/firebase';
-import { onAuthStateChanged } from 'firebase/auth';
+import { onAuthStateChanged, reload } from 'firebase/auth';
 import { doc, getDoc, setDoc, serverTimestamp, collection, query, where, onSnapshot, getDocs } from 'firebase/firestore';
 import { cacheAnimatedPackId } from '../utils/emojiPackCache';
 import { diag } from '../utils/diagnostics';
@@ -35,16 +35,31 @@ export const UserProvider = ({ children }) => {
             const userDoc = await getDoc(userRef);
             if (userDoc.exists()) {
                 const userData = userDoc.data();
-                setUser({
+                setUser(prev => ({
                     uid: auth.currentUser.uid,
+                    emailVerified: auth.currentUser.emailVerified,
                     ...userData,
                     chatFolders: userData.chatFolders || [],
                     subscribedPackIds: userData.subscribedPackIds || []
-                });
+                }));
                 await fetchAndCacheUserEmojiPacks(auth.currentUser.uid);
             }
         } catch (error) {
             console.error("Error refreshing user:", error);
+        }
+    };
+
+    // Reload Firebase Auth token and update emailVerified in context.
+    // Called by EmailVerificationBanner when user returns to the tab.
+    const refreshEmailVerified = async () => {
+        if (!auth?.currentUser) return;
+        try {
+            await reload(auth.currentUser);
+            if (auth.currentUser.emailVerified) {
+                setUser(prev => prev ? { ...prev, emailVerified: true } : prev);
+            }
+        } catch (e) {
+            // non-critical
         }
     };
 
@@ -68,6 +83,8 @@ export const UserProvider = ({ children }) => {
                         const userData = userDoc.data();
                         setUser({
                             uid: authUser.uid,
+                            // emailVerified comes from Firebase Auth, NOT Firestore
+                            emailVerified: authUser.emailVerified,
                             ...userData,
                             chatFolders: userData.chatFolders || [],
                             subscribedPackIds: userData.subscribedPackIds || []
@@ -166,9 +183,9 @@ export const UserProvider = ({ children }) => {
     }, [user?.uid]);
 
     const value = React.useMemo(() => ({
-        user, setUser, authLoading, refreshUser,
+        user, setUser, authLoading, refreshUser, refreshEmailVerified,
         totalUnreadMessages, unreadNotificationsCount
-    }), [user, authLoading, totalUnreadMessages, unreadNotificationsCount]);
+    }), [user, authLoading, totalUnreadMessages, unreadNotificationsCount]); // eslint-disable-line react-hooks/exhaustive-deps
 
     return (
         <UserContext.Provider value={value}>
