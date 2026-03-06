@@ -1,0 +1,137 @@
+/* ─── Upload Limit Banner ──────────────────────────────────────────────────── */
+
+.ulb-root {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 10px 16px;
+    border-radius: 10px;
+    font-size: 13px;
+    line-height: 1.4;
+    flex-wrap: wrap;
+    margin-bottom: 6px;
+    border: 1px solid transparent;
+    transition: background 0.2s;
+}
+
+/* Variants */
+.ulb--normal {
+    background: rgba(168, 85, 247, 0.07);
+    border-color: rgba(168, 85, 247, 0.15);
+    color: var(--color-text-secondary);
+}
+.ulb--normal .ulb-icon { color: #a855f7; }
+.ulb--normal .ulb-progress-fill { background: #a855f7; }
+
+.ulb--warning {
+    background: rgba(245, 158, 11, 0.08);
+    border-color: rgba(245, 158, 11, 0.25);
+    color: #d97706;
+}
+.ulb--warning .ulb-icon { color: #f59e0b; }
+.ulb--warning .ulb-progress-fill { background: #f59e0b; }
+.ulb--warning strong { color: #f59e0b; }
+
+.ulb--blocked {
+    background: rgba(239, 68, 68, 0.08);
+    border-color: rgba(239, 68, 68, 0.25);
+    color: #ef4444;
+}
+.ulb--blocked .ulb-icon { color: #ef4444; }
+.ulb--blocked .ulb-progress-fill { background: #ef4444; }
+.ulb--blocked strong { color: #ef4444; }
+
+.ulb--override {
+    background: rgba(59, 130, 246, 0.08);
+    border-color: rgba(59, 130, 246, 0.2);
+    color: var(--color-text-secondary);
+}
+.ulb--override .ulb-icon { color: #3b82f6; }
+.ulb--override .ulb-progress-fill { background: #3b82f6; }
+.ulb--override strong { color: #3b82f6; }
+
+/* Left */
+.ulb-left {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
+    min-width: 0;
+}
+.ulb-icon { flex-shrink: 0; }
+.ulb-text { line-height: 1.45; }
+.ulb-text strong { font-weight: 600; }
+
+/* Right */
+.ulb-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+/* Badges */
+.ulb-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 8px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    white-space: nowrap;
+}
+.ulb-badge--early-adopter {
+    background: rgba(251, 191, 36, 0.15);
+    color: #fbbf24;
+    border: 1px solid rgba(251, 191, 36, 0.3);
+}
+.ulb-badge--beta-tester {
+    background: rgba(59, 130, 246, 0.15);
+    color: #60a5fa;
+    border: 1px solid rgba(59, 130, 246, 0.3);
+}
+.ulb-badge--creator-plus {
+    background: rgba(168, 85, 247, 0.15);
+    color: #c084fc;
+    border: 1px solid rgba(168, 85, 247, 0.3);
+}
+.ulb-badge--vip {
+    background: rgba(244, 63, 94, 0.15);
+    color: #fb7185;
+    border: 1px solid rgba(244, 63, 94, 0.3);
+}
+
+/* Progress */
+.ulb-progress-wrap {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+}
+.ulb-progress-track {
+    width: 80px;
+    height: 4px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 99px;
+    overflow: hidden;
+}
+.ulb-progress-fill {
+    height: 100%;
+    border-radius: 99px;
+    transition: width 0.4s ease;
+}
+.ulb-count {
+    font-size: 12px;
+    font-weight: 600;
+    white-space: nowrap;
+    color: inherit;
+    opacity: 0.85;
+}
+
+/* Mobile */
+@media (max-width: 520px) {
+    .ulb-right { width: 100%; justify-content: flex-start; }
+    .ulb-progress-track { width: 100px; }
+}

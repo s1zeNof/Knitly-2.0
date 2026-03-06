@@ -24,17 +24,25 @@ service cloud.firestore {
         'role', 'verified', 'isAdmin', 'isBanned', 'isModerator'
       ]);
     }
+    // Protect admin-only limit fields on user docs
+    function noAdminLimitFields() {
+      return !request.resource.data.diff(resource.data)
+        .affectedKeys()
+        .hasAny(['uploadLimitOverride', 'uploadLimitOverrideExpiry', 'plan', 'badges']);
+    }
     // =======================================================
     // users
     // =======================================================
     match /users/{userId} {
       allow read: if true;
       allow create: if isOwner(userId) && hasNoPrivilegedFields();
-      // 🆕 Адмін може оновлювати будь-якого юзера (roles, blockedUsers тощо)
+      // User can update their own doc but NOT privileged or admin-limit fields
+      // Admin can update everything (roles, limits, badges, etc.)
       allow update: if (isOwner(userId) &&
                         !request.resource.data.diff(resource.data)
                           .affectedKeys()
-                          .hasAny(['role', 'verified', 'isAdmin', 'isBanned'])) ||
+                          .hasAny(['role', 'verified', 'isAdmin', 'isBanned']) &&
+                        noAdminLimitFields()) ||
                     (isSignedIn() &&
                       request.resource.data.diff(resource.data)
                         .affectedKeys().hasOnly(['followers'])) ||

@@ -125,6 +125,46 @@
     color: white;
 }
 
+.action-buttons button.limits {
+    border-color: rgba(168, 85, 247, 0.3);
+    color: var(--color-accent);
+}
+.action-buttons button.limits:hover {
+    background-color: rgba(168, 85, 247, 0.12);
+    border-color: var(--color-accent);
+    color: var(--color-accent);
+}
+
+/* Upload usage chip in table */
+.upload-usage-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 500;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--color-border);
+    color: var(--color-text-secondary);
+    white-space: nowrap;
+}
+.upload-usage-chip--warn {
+    background: rgba(245, 158, 11, 0.1);
+    border-color: rgba(245, 158, 11, 0.25);
+    color: #f59e0b;
+}
+.upload-usage-chip--full {
+    background: rgba(239, 68, 68, 0.1);
+    border-color: rgba(239, 68, 68, 0.25);
+    color: var(--color-error);
+}
+.upload-usage-chip--override {
+    background: rgba(59, 130, 246, 0.1);
+    border-color: rgba(59, 130, 246, 0.25);
+    color: #60a5fa;
+}
+
 /* Адаптивність для таблиці */
 @media (max-width: 900px) {
     .user-table thead {
