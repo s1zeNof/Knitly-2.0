@@ -165,9 +165,18 @@ const Login = () => {
                                 disabled={isLoading}
                             />
                         </div>
+                        <div style={{ textAlign: 'right', marginTop: '-8px', marginBottom: '8px' }}>
+                            <Link to="/forgot-password" style={{ fontSize: '0.82rem', color: 'rgba(255,255,255,0.45)', textDecoration: 'none' }}
+                                onMouseEnter={e => e.target.style.color = 'rgba(255,255,255,0.75)'}
+                                onMouseLeave={e => e.target.style.color = 'rgba(255,255,255,0.45)'}
+                            >
+                                Забули пароль?
+                            </Link>
+                        </div>
                         <button type="submit" className="auth-submit-btn" disabled={isLoading}>
                             {isLoading ? 'Завантаження...' : 'Увійти'}
                         </button>
+
                     </form>
 
                     <p className="auth-switch">

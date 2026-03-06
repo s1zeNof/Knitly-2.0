@@ -1,0 +1,192 @@
+/* ─── 404 Not Found Page ─────────────────────────────────────────────────── */
+
+.nf-container {
+    min-height: calc(100vh - 64px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+    padding: 40px 20px;
+}
+
+/* Ambient blobs */
+.nf-blob {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(80px);
+    pointer-events: none;
+    z-index: 0;
+}
+
+.nf-blob-1 {
+    width: 400px;
+    height: 400px;
+    background: rgba(124, 58, 237, 0.15);
+    top: -100px;
+    left: -100px;
+    animation: nf-blob-drift 8s ease-in-out infinite alternate;
+}
+
+.nf-blob-2 {
+    width: 300px;
+    height: 300px;
+    background: rgba(236, 72, 153, 0.1);
+    bottom: -80px;
+    right: -80px;
+    animation: nf-blob-drift 10s ease-in-out infinite alternate-reverse;
+}
+
+@keyframes nf-blob-drift {
+    from {
+        transform: translate(0, 0) scale(1);
+    }
+
+    to {
+        transform: translate(30px, 20px) scale(1.1);
+    }
+}
+
+.nf-content {
+    position: relative;
+    z-index: 1;
+    text-align: center;
+    max-width: 480px;
+}
+
+/* ─── 404 code group ────────────────────────────────────────────────────── */
+
+.nf-code-group {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    margin-bottom: 32px;
+}
+
+.nf-4 {
+    font-size: clamp(80px, 18vw, 140px);
+    font-weight: 800;
+    line-height: 1;
+    background: linear-gradient(135deg, #7c3aed, #ec4899);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    letter-spacing: -4px;
+    user-select: none;
+}
+
+/* Vinyl disc — the "0" */
+.nf-vinyl {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.nf-vinyl-disc {
+    width: clamp(80px, 16vw, 130px);
+    height: clamp(80px, 16vw, 130px);
+    border-radius: 50%;
+    background:
+        radial-gradient(circle at center, #1a1a2e 28%, transparent 29%),
+        repeating-radial-gradient(circle at center, #1a1a26 0px, #0d0d1a 4px, #1a1a26 8px);
+    border: 3px solid rgba(124, 58, 237, 0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: nf-spin 4s linear infinite;
+    box-shadow:
+        0 0 0 2px rgba(124, 58, 237, 0.15),
+        0 8px 32px rgba(0, 0, 0, 0.5);
+}
+
+@keyframes nf-spin {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.nf-vinyl-label {
+    width: 36%;
+    height: 36%;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #7c3aed, #5b21b6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: clamp(18px, 4vw, 30px);
+    font-weight: 800;
+    color: rgba(255, 255, 255, 0.9);
+    /* Counter-rotate so label text stays readable */
+    animation: nf-counter-spin 4s linear infinite;
+    letter-spacing: -1px;
+}
+
+@keyframes nf-counter-spin {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(-360deg);
+    }
+}
+
+/* ─── Text ───────────────────────────────────────────────────────────────── */
+
+.nf-title {
+    font-size: clamp(1.3rem, 4vw, 1.8rem);
+    font-weight: 700;
+    color: #f0f0f0;
+    margin: 0 0 12px;
+}
+
+.nf-desc {
+    font-size: 0.95rem;
+    color: rgba(255, 255, 255, 0.5);
+    line-height: 1.6;
+    margin: 0 0 32px;
+}
+
+/* ─── Actions ────────────────────────────────────────────────────────────── */
+
+.nf-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.nf-btn {
+    padding: 12px 28px;
+    border-radius: 12px;
+    border: none;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity 0.18s, transform 0.15s;
+}
+
+.nf-btn:hover {
+    opacity: 0.85;
+}
+
+.nf-btn:active {
+    transform: scale(0.97);
+}
+
+.nf-btn-primary {
+    background: linear-gradient(135deg, #7c3aed, #5b21b6);
+    color: #fff;
+}
+
+.nf-btn-ghost {
+    background: rgba(255, 255, 255, 0.07);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    color: rgba(255, 255, 255, 0.7);
+}

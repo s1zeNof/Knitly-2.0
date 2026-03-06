@@ -158,8 +158,20 @@ const ShareModal = ({ post, onClose }) => {
         setSending(true);
         const toastId = toast.loading(`Надсилання до ${selectedUsers.length} ${selectedUsers.length === 1 ? 'отримувача' : 'отримувачів'}...`);
         try {
-            await sharePostToChats(currentUser.uid, selectedUsers.map(u => u.uid), post);
-            toast.success('Надіслано!', { id: toastId });
+            const { sent, blocked } = await sharePostToChats(currentUser.uid, selectedUsers.map(u => u.uid), post);
+
+            if (blocked.length > 0 && sent.length === 0) {
+                const names = blocked.map(b => b.displayName || `@${b.uid}`).join(', ');
+                toast.error(`Не доставлено: ${names} не приймають повідомлення від незнайомців.`, { id: toastId, duration: 5000 });
+                setSending(false);
+                return;
+            }
+            if (blocked.length > 0) {
+                const names = blocked.map(b => b.displayName || `@${b.uid}`).join(', ');
+                toast.success(`Надіслано! Але ${names} не отримали — обмежені налаштуваннями приватності.`, { id: toastId, duration: 5000 });
+            } else {
+                toast.success('Надіслано!', { id: toastId });
+            }
             onClose();
         } catch (err) {
             toast.error(`Помилка: ${err.message}`, { id: toastId });

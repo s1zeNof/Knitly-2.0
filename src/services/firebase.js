@@ -180,17 +180,48 @@ export const getUsersFromRecentChats = async (userId) => {
 };
 
 export const sharePostToChats = async (senderId, recipientIds, post) => {
-    if (!senderId || recipientIds.length === 0 || !post) return;
+    if (!senderId || recipientIds.length === 0 || !post) return { sent: [], blocked: [] };
 
     const batch = writeBatch(db);
     const senderDoc = await getDoc(doc(db, 'users', senderId));
-    if (!senderDoc.exists()) return;
+    if (!senderDoc.exists()) return { sent: [], blocked: [] };
     const senderData = senderDoc.data();
+
+    const sent = [];
+    const blocked = [];
 
     for (const recipientId of recipientIds) {
         const recipientDoc = await getDoc(doc(db, 'users', recipientId));
         if (!recipientDoc.exists()) continue;
         const recipientData = recipientDoc.data();
+
+        // ── DM Privacy check ──────────────────────────────────────────────
+        const privacy = recipientData.settings?.privacy?.messagePrivacy ?? 'everyone';
+        let isMessageRequest = false;
+
+        if (privacy === 'nobody') {
+            blocked.push({ uid: recipientId, displayName: recipientData.displayName, reason: 'nobody' });
+            continue;
+        }
+        if (privacy === 'following') {
+            // Check if sender is in recipient's followers sub-collection
+            const followerRef = doc(db, 'users', recipientId, 'followers', senderId);
+            const followerSnap = await getDoc(followerRef);
+            if (!followerSnap.exists()) {
+                blocked.push({ uid: recipientId, displayName: recipientData.displayName, reason: 'following' });
+                continue;
+            }
+        }
+        if (privacy === 'requests') {
+            // Check if sender is a follower — if not, mark as message request
+            const followerRef = doc(db, 'users', recipientId, 'followers', senderId);
+            const followerSnap = await getDoc(followerRef);
+            if (!followerSnap.exists()) {
+                isMessageRequest = true; // Send but flag as request
+            }
+        }
+        // ─────────────────────────────────────────────────────────────────
+
 
         const participants = [senderId, recipientId].sort();
         const chatId = participants.join('_');
@@ -209,6 +240,7 @@ export const sharePostToChats = async (senderId, recipientIds, post) => {
             batch.set(chatRef, {
                 participants,
                 isGroup: false,
+                ...(isMessageRequest ? { isMessageRequest: true, messageRequestFrom: senderId } : {}),
                 participantInfo: [
                     { uid: senderId, displayName: senderData.displayName, photoURL: senderData.photoURL, nickname: senderData.nickname },
                     { uid: recipientId, displayName: recipientData.displayName, photoURL: recipientData.photoURL, nickname: recipientData.nickname },
@@ -239,7 +271,10 @@ export const sharePostToChats = async (senderId, recipientIds, post) => {
             replyTo: null,
             deletedFor: [],
         });
+
+        sent.push(recipientId);
     }
 
-    await batch.commit();
+    if (sent.length > 0) await batch.commit();
+    return { sent, blocked };
 };

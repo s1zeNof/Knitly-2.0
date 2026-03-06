@@ -35,6 +35,7 @@ const CONTENT_TYPES = [
     { id: 'cover', label: 'Кавер' },
     { id: 'remix', label: 'Ремікс' },
     { id: 'mashup', label: 'Мешап' },
+    { id: 'fan_upload', label: 'Фан-завантаження' },
 ];
 
 const PREDEFINED_HASHTAGS = [
@@ -494,7 +495,7 @@ const UploadMusic = () => {
                             </div>
                         </div>
 
-                        {/* Original info — shown for cover/remix/mashup */}
+                        {/* Original info — shown for cover/remix/mashup/fan_upload */}
                         {needsOriginalInfo && (
                             <div className="up-original-info">
                                 <div className="up-two-col">
@@ -527,11 +528,19 @@ const UploadMusic = () => {
                                         />
                                     </div>
                                 </div>
-                                <p className="up-hint">
-                                    Вказуйте точні дані оригінального твору — це обов'язково для DMCA-відповідності.
-                                </p>
+                                {contentType === 'fan_upload' ? (
+                                    <p className="up-hint">
+                                        ⚠️ <strong>Фан-завантаження:</strong> ви не претендуєте на права та не монетизуєте цей контент.
+                                        Артист може в будь-який момент заклеймити трек та отримати авторство через Knitly Artist Claim.
+                                    </p>
+                                ) : (
+                                    <p className="up-hint">
+                                        Вказуйте точні дані оригінального твору — це обов'язково для DMCA-відповідності.
+                                    </p>
+                                )}
                             </div>
                         )}
+
 
                         {/* Explicit toggle */}
                         <div className="up-form-group">

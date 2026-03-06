@@ -111,19 +111,26 @@ const CommentSection = ({ postId, postAuthorId, inputOnly = false }) => {
                 queryClient.invalidateQueries(['post', postId]);
                 queryClient.invalidateQueries(['feedPosts', null]);
                 if (postAuthorId && postAuthorId !== currentUser.uid) {
+                    // Fire-and-forget — don't let a failed notification break the UX
                     addDoc(collection(db, 'users', postAuthorId, 'notifications'), {
                         type: 'post_comment',
-                        fromUser: { uid: currentUser.uid, nickname: currentUser.nickname, photoURL: currentUser.photoURL },
+                        fromUser: {
+                            uid: currentUser.uid,
+                            nickname: currentUser.nickname,
+                            photoURL: currentUser.photoURL,
+                        },
                         entityId: postId,
                         postId,
-                        entityLink: `/post/${postId}`,
+                        // Use the correct routing format — /:nickname/status/:postId
+                        entityLink: `/${currentUser.nickname}/status/${postId}`,
                         timestamp: serverTimestamp(),
                         read: false,
-                    });
+                    }).catch(err => console.warn('Notification failed (non-critical):', err.message));
                 }
             },
             onError: (err) => toast.error(`Не вдалося додати коментар: ${err.message}`),
         }
+
     );
 
     const handleSubmit = () => {

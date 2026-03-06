@@ -60,9 +60,9 @@ service cloud.firestore {
       }
       match /notifications/{notificationId} {
         allow read, update, delete: if isOwner(userId);
-        allow create: if isSignedIn() &&
-                      request.resource.data.toUserId == userId &&
-                      request.resource.data.get('fromUserId', request.auth.uid) == request.auth.uid;
+        // Any signed-in user can notify another user (likes, follows, comments, etc.)
+        // The path users/{userId}/notifications already scopes to the recipient
+        allow create: if isSignedIn();
       }
       match /receivedGifts/{giftId} {
         allow read: if isOwner(userId);
@@ -74,8 +74,9 @@ service cloud.firestore {
     // chats + messages (вкладені)
     // =======================================================
     match /chats/{chatId} {
+      // resource == null covers the case when checking if a chat exists before creating it
       allow read: if isSignedIn() &&
-                  request.auth.uid in resource.data.participants;
+                  (resource == null || request.auth.uid in resource.data.participants);
       allow update: if isSignedIn() &&
                     request.auth.uid in resource.data.participants &&
                     request.resource.data.participants == resource.data.participants;

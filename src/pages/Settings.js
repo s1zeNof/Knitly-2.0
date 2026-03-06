@@ -20,7 +20,7 @@ const ChatIcon = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor
 const EmojiIcon = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"></circle><path d="M8 14s1.5 2 4 2 4-2 4-2"></path><line x1="9" y1="9" x2="9.01" y2="9"></line><line x1="15" y1="9" x2="15.01" y2="9"></line></svg>;
 const WalletIcon = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 12V7a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h7"></path><path d="M16 12h4a2 2 0 1 1 0 4h-4v-4z"></path><path d="M18 10V8"></path><path d="M18 16v2"></path></svg>;
 const HistoryIcon = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M1 4v6h6" /><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10" /></svg>;
-const AppearanceIcon = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>;
+const AppearanceIcon = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="18" height="18" rx="2" /><path d="M3 9h18M9 21V9" /></svg>;
 
 // Clean SVG icons replacing emoji/text
 const SmileIcon = () => (
@@ -408,6 +408,13 @@ const Settings = () => {
                             <span>Лише ті, кого ви фоловите, зможуть написати</span>
                         </div>
                     </label>
+                    <label className={`privacy-option ${messagePrivacy === 'requests' ? 'selected' : ''}`} onClick={() => setMessagePrivacy('requests')}>
+                        <span className="privacy-radio" />
+                        <div>
+                            <strong>Запити повідомлень</strong>
+                            <span>Незнайомці потраплять до вкладки «Запити» — ви вирішуєте, прийняти чи відхилити</span>
+                        </div>
+                    </label>
                     <label className={`privacy-option ${messagePrivacy === 'nobody' ? 'selected' : ''}`} onClick={() => setMessagePrivacy('nobody')}>
                         <span className="privacy-radio" />
                         <div>
@@ -550,9 +557,9 @@ const Settings = () => {
                 <p className="form-section-description">Оберіть, як відображається бокова панель навігації на великих екранах.</p>
                 <div className="sidebar-mode-selector">
                     {[
-                        { value: 'full',  title: 'Завжди повністю',               desc: 'Іконки та підписи сторінок завжди видимі' },
-                        { value: 'hover', title: 'Іконки + розгортання',          desc: 'При наведенні панель розгортається і показує підписи' },
-                        { value: 'icons', title: 'Лише іконки',                   desc: 'Лише іконки, підказка при наведенні курсора' },
+                        { value: 'full', title: 'Завжди повністю', desc: 'Іконки та підписи сторінок завжди видимі' },
+                        { value: 'hover', title: 'Іконки + розгортання', desc: 'При наведенні панель розгортається і показує підписи' },
+                        { value: 'icons', title: 'Лише іконки', desc: 'Лише іконки, підказка при наведенні курсора' },
                     ].map(opt => (
                         <label
                             key={opt.value}
