@@ -22,8 +22,10 @@ import {
     orderBy,
     runTransaction,
     documentId,
-    writeBatch
+    writeBatch,
+    increment
 } from 'firebase/firestore';
+
 import { getStorage } from 'firebase/storage';
 
 const firebaseConfig = {
@@ -80,30 +82,33 @@ export const getFollowing = async (userId) => {
     }
 };
 
-// --- НАДІЙНА ФУНКЦІЯ ПОШУКУ ---
-export const searchUsers = async (searchTerm) => {
+// --- НАДІЙНА ФУНКЦІЯ ПОШУКУ (prefix-range на nickname / displayName) ---
+export const searchUsers = async (searchTerm, excludeUid = null) => {
     if (!searchTerm || searchTerm.trim() === '') return [];
     try {
-        const lowercasedTerm = searchTerm.toLowerCase();
+        const term = searchTerm.trim().toLowerCase();
+        const end = term + '\uf8ff';   // Unicode sentinel for prefix range
         const usersRef = collection(db, 'users');
 
-        // Новий, потужний запит, що використовує індексацію масивів
-        const q = query(
-            usersRef,
-            where('searchKeywords', 'array-contains', lowercasedTerm),
-            limit(10)
-        );
+        // Run both queries in parallel
+        const [byNick, byDisplay] = await Promise.all([
+            getDocs(query(usersRef, where('nickname', '>=', term), where('nickname', '<=', end), limit(15))),
+            getDocs(query(usersRef, where('displayNameLower', '>=', term), where('displayNameLower', '<=', end), limit(15))),
+        ]);
 
-        const snapshot = await getDocs(q);
-        return snapshot.docs.map(doc => ({ uid: doc.id, ...doc.data() }));
+        const map = new Map();
+        [...byNick.docs, ...byDisplay.docs].forEach(d => {
+            if (excludeUid && d.id === excludeUid) return;
+            if (!map.has(d.id)) map.set(d.id, { uid: d.id, ...d.data() });
+        });
 
+        return Array.from(map.values()).slice(0, 20);
     } catch (error) {
-        console.error("Error searching users:", error);
-        // УВАГА: Для цього запиту Firestore також попросить створити індекс.
-        // Перевірте консоль браузера на наявність посилання для його створення.
+        console.error('[searchUsers] error:', error);
         return [];
     }
 };
+
 
 // Ваша існуюча функція
 export const sharePostToChat = async (sender, recipient, post) => {
@@ -204,28 +209,35 @@ export const sharePostToChats = async (senderId, recipientIds, post) => {
             batch.set(chatRef, {
                 participants,
                 isGroup: false,
-                lastMessage: '📎 Поширено допис',
-                updatedAt: serverTimestamp(),
-                participantDetails: {
-                    [senderId]: { displayName: senderData.displayName, photoURL: senderData.photoURL, nickname: senderData.nickname },
-                    [recipientId]: { displayName: recipientData.displayName, photoURL: recipientData.photoURL, nickname: recipientData.nickname },
-                }
+                participantInfo: [
+                    { uid: senderId, displayName: senderData.displayName, photoURL: senderData.photoURL, nickname: senderData.nickname },
+                    { uid: recipientId, displayName: recipientData.displayName, photoURL: recipientData.photoURL, nickname: recipientData.nickname },
+                ],
+                lastMessage: { text: '📎 Поширено допис', senderId },
+                lastUpdatedAt: serverTimestamp(),
+                unreadCounts: { [recipientId]: 1, [senderId]: 0 },
+                createdAt: serverTimestamp(),
             });
         } else {
             batch.update(chatRef, {
-                lastMessage: '📎 Поширено допис',
-                updatedAt: serverTimestamp(),
+                lastMessage: { text: '📎 Поширено допис', senderId },
+                lastUpdatedAt: serverTimestamp(),
+                [`unreadCounts.${recipientId}`]: increment(1),
             });
         }
 
-        const messageRef = doc(collection(db, 'messages'));
+        // CRITICAL: MessagesPage reads from chats/{chatId}/messages subcollection
+        // ordered by 'timestamp' — must match exactly.
+        const messageRef = doc(collection(db, 'chats', chatId, 'messages'));
         batch.set(messageRef, {
-            chatId,
-            senderId: senderId,
-            isRead: false,
-            createdAt: serverTimestamp(),
-            content: messageContent,
+            senderId,
             type: 'shared_content',
+            content: messageContent,
+            timestamp: serverTimestamp(),
+            reactions: {},
+            isEdited: false,
+            replyTo: null,
+            deletedFor: [],
         });
     }
 

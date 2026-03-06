@@ -199,7 +199,7 @@ const MessageBubble = ({
                         </div>
                     )}
 
-                    {/* SHARED POST */}
+                    {/* SHARED POST — legacy (type='shared_post', message.postId) */}
                     {message.type === 'shared_post' && (
                         <>
                             {typeof content === 'string' && content && (
@@ -208,6 +208,19 @@ const MessageBubble = ({
                             <SharedPostAttachment postId={message.postId} />
                         </>
                     )}
+
+                    {/* SHARED POST — new (type='shared_content', content.type='forwarded_post') */}
+                    {message.type === 'shared_content' && content?.postId && (
+                        <SharedPostAttachment
+                            postId={content.postId}
+                            prefill={{
+                                postText: content.postText,
+                                postAuthorNickname: content.postAuthorNickname,
+                                postImageUrl: content.postImageUrl,
+                            }}
+                        />
+                    )}
+
 
                     {/* Metadata row */}
                     <div className="message-metadata">

@@ -1,26 +1,239 @@
-.shared-post-attachment {
-    margin-top: 8px;
-    border-left: 3px solid var(--accent-color);
-    padding-left: 10px;
-    border-radius: 4px;
-    background-color: rgba(0, 0, 0, 0.1);
+/* ─── Shared Post Attachment — compact preview card ──────────────────────── */
+
+.spa-card {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 6px;
+    padding: 12px 12px 10px;
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-left: 3px solid rgba(124, 58, 237, 0.7);
+    cursor: pointer;
+    text-align: left;
+    width: 100%;
+    max-width: 300px;
+    transition: background 0.18s, border-color 0.18s;
+    box-sizing: border-box;
+    font-family: inherit;
+    animation: spa-fade-in 0.22s ease;
 }
 
-.shared-post-attachment .post-card {
-    box-shadow: none;
-    border: 1px solid var(--border-color);
-    margin-bottom: 0;
+@keyframes spa-fade-in {
+    from {
+        opacity: 0;
+        transform: translateY(4px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
-.shared-post-attachment .post-actions {
-    display: none;
+.spa-card:hover {
+    background: rgba(255, 255, 255, 0.07);
+    border-color: rgba(124, 58, 237, 0.9);
 }
 
-.shared-post-loading, .shared-post-deleted {
-    padding: 20px;
-    background-color: var(--background-color-tertiary);
+.spa-card:active {
+    transform: scale(0.98);
+}
+
+/* ─── Label row ──────────────────────────────────────────────────────────── */
+
+.spa-label-row {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    color: rgba(124, 58, 237, 0.85);
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+}
+
+/* ─── Author ─────────────────────────────────────────────────────────────── */
+
+.spa-author-row {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+}
+
+.spa-author-avatar {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    object-fit: cover;
+    background: #2a2a2a;
+    flex-shrink: 0;
+}
+
+.spa-author-nick {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.8);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* ─── Body ───────────────────────────────────────────────────────────────── */
+
+.spa-body {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+}
+
+.spa-text {
+    margin: 0;
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.65);
+    line-height: 1.45;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    flex: 1;
+    min-width: 0;
+}
+
+.spa-thumb {
+    width: 60px;
+    height: 60px;
+    object-fit: cover;
     border-radius: 8px;
-    margin-top: 8px;
+    flex-shrink: 0;
+    background: #1e1e2a;
+}
+
+/* ─── Footer ─────────────────────────────────────────────────────────────── */
+
+.spa-footer {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 0.75rem;
+    color: rgba(124, 58, 237, 0.75);
+    font-weight: 500;
+    margin-top: 2px;
+    transition: color 0.15s;
+}
+
+.spa-card:hover .spa-footer {
+    color: rgba(124, 58, 237, 1);
+}
+
+/* ─── Skeleton ───────────────────────────────────────────────────────────── */
+
+.spa-card--skeleton {
+    cursor: default;
+    pointer-events: none;
+}
+
+.spa-skeleton-label,
+.spa-skeleton-avatar,
+.spa-skeleton-line,
+.spa-skeleton-text {
+    background: rgba(255, 255, 255, 0.07);
+    border-radius: 4px;
+    animation: spa-shimmer 1.4s ease-in-out infinite;
+}
+
+.spa-skeleton-label {
+    height: 10px;
+    width: 50px;
+    border-radius: 4px;
+}
+
+.spa-skeleton-avatar {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.spa-skeleton-lines {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    flex: 1;
+}
+
+.spa-skeleton-line.long {
+    height: 10px;
+    width: 70%;
+}
+
+.spa-skeleton-line.short {
+    height: 10px;
+    width: 40%;
+}
+
+.spa-skeleton-text {
+    height: 10px;
+    width: 85%;
+}
+
+.spa-skeleton-text.med {
+    width: 55%;
+}
+
+@keyframes spa-shimmer {
+
+    0%,
+    100% {
+        opacity: 0.45;
+    }
+
+    50% {
+        opacity: 0.9;
+    }
+}
+
+/* ─── Deleted ────────────────────────────────────────────────────────────── */
+
+.spa-card--deleted {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: default;
+    pointer-events: none;
+    color: rgba(255, 255, 255, 0.3);
+    font-size: 0.82rem;
     font-style: italic;
-    color: var(--text-color-secondary);
+    border-left-color: rgba(255, 255, 255, 0.12);
+}
+
+.spa-deleted-icon {
+    font-size: 1rem;
+}
+
+/* ─── Mobile tweaks ──────────────────────────────────────────────────────── */
+
+@media (max-width: 480px) {
+    .spa-card {
+        max-width: 100%;
+        padding: 10px 10px 8px;
+    }
+
+    .spa-text {
+        font-size: 0.8rem;
+    }
+
+    .spa-thumb {
+        width: 50px;
+        height: 50px;
+    }
+
+    .spa-author-nick {
+        font-size: 0.75rem;
+    }
+
+    .spa-footer {
+        font-size: 0.7rem;
+    }
 }
