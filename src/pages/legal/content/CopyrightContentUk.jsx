@@ -1,5 +1,4 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
 
 const SECTIONS = [
     'Авторські права на Платформі',

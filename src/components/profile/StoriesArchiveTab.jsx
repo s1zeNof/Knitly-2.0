@@ -40,7 +40,6 @@ export default function StoriesArchiveTab({ profileUser }) {
         // In the viewer, they play 0 -> n. If we pass the array as is, they will play newest -> oldest.
         // Let's pass the array reversed to the viewer, so it plays chronologically (oldest -> newest).
 
-        const chronologicalStories = [...stories].reverse();
         // The clicked index in the original array (newest first) 
         // needs to be mapped to the chronological array (oldest first)
         const reversedIndex = (stories.length - 1) - index;
