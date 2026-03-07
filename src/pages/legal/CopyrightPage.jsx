@@ -1,239 +1,39 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { useLanguage } from '../../contexts/LanguageContext';
+import CopyrightContentUk from './content/CopyrightContentUk';
+import CopyrightContentEn from './content/CopyrightContentEn';
 import './LegalPage.css';
 
-const SECTIONS = [
-    'Авторські права на Платформі',
-    'Що забороняється завантажувати',
-    'Система аудіо-розпізнавання',
-    'Процедура подачі скарги (DMCA)',
-    'Форма скарги',
-    'Зустрічне повідомлення',
-    'Повторні порушники',
-    'Верифікація артистів та "Claim Your Music"',
-];
-
 export default function CopyrightPage() {
+    const { language, t } = useLanguage();
+
     return (
         <div>
             {/* ── Hero ── */}
             <div className="lp-hero">
-                <nav className="lp-breadcrumb" aria-label="Хлібні крихти">
-                    <Link to="/">Knitly</Link>
+                <nav className="lp-breadcrumb" aria-label={language === 'uk' ? 'Хлібні крихти' : 'Breadcrumbs'}>
+                    <Link to="/">{t('nav.home')}</Link>
                     <span className="lp-breadcrumb-sep" aria-hidden="true">›</span>
-                    <span>Правові документи</span>
+                    <span>{t('nav.legal')}</span>
                     <span className="lp-breadcrumb-sep" aria-hidden="true">›</span>
-                    <span>Авторські права</span>
+                    <span>{t('nav.copyright')}</span>
                 </nav>
-                <p className="lp-badge">Авторські права та DMCA</p>
-                <h1 className="lp-title">Авторські права & DMCA</h1>
+                <p className="lp-badge">{language === 'uk' ? 'Авторські права та DMCA' : 'Copyright & DMCA'}</p>
+                <h1 className="lp-title">{t('nav.copyright')}</h1>
                 <div className="lp-meta">
-                    <span className="lp-meta-item">Набирає чинності: 1 березня 2025 р.</span>
-                    <span className="lp-meta-item">Оновлено: 1 березня 2025 р.</span>
-                    <span className="lp-meta-item">DMCA + Закон України про авторське право</span>
+                    <span className="lp-meta-item">
+                        {language === 'uk' ? 'Набирає чинності: 1 березня 2025 р.' : 'Effective Date: March 1, 2025'}
+                    </span>
+                    <span className="lp-meta-item">
+                        {language === 'uk' ? 'Оновлено: 1 березня 2025 р.' : 'Last Updated: March 1, 2025'}
+                    </span>
+                    <span className="lp-meta-item">DMCA / Safe Harbor</span>
                 </div>
             </div>
 
-            {/* ── Table of contents ── */}
-            <nav className="lp-toc" aria-label="Зміст">
-                <p className="lp-toc-title">Зміст</p>
-                <ol className="lp-toc-list">
-                    {SECTIONS.map((title, i) => (
-                        <li key={i}>
-                            <a href={`#s${i + 1}`} className="lp-toc-link">
-                                <span className="lp-toc-num">{i + 1}.</span>
-                                {title}
-                            </a>
-                        </li>
-                    ))}
-                </ol>
-            </nav>
-
-            {/* ── Content ── */}
-            <div className="lp-content">
-
-                <div className="lp-highlight">
-                    <strong>Важливо:</strong> Knitly поважає інтелектуальну власність і очікує того самого від своїх користувачів. Ми активно боремось з піратством та маємо прозору процедуру подачі скарг на порушення авторських прав.
-                </div>
-
-                {/* 1 */}
-                <section id="s1" className="lp-section">
-                    <div className="lp-section-header">
-                        <span className="lp-section-num">1</span>
-                        <h2 className="lp-section-title">Авторські права на Платформі</h2>
-                    </div>
-                    <p>
-                        Весь контент, опублікований користувачами на Knitly, залишається власністю відповідних авторів та правовласників. Knitly не претендує на права власності на контент, завантажений користувачами.
-                    </p>
-                    <p>
-                        Дизайн, логотип, назва «Knitly», інтерфейс та інші елементи Платформи є інтелектуальною власністю Knitly та захищені законодавством України.
-                    </p>
-                    <p>
-                        Knitly виступає як «хостинг-провайдер» відповідно до Закону України «Про авторське право і суміжні права». Ми не несемо відповідальності за контент, завантажений третіми особами, за умови оперативного реагування на законні скарги.
-                    </p>
-                </section>
-
-                {/* 2 */}
-                <section id="s2" className="lp-section">
-                    <div className="lp-section-header">
-                        <span className="lp-section-num">2</span>
-                        <h2 className="lp-section-title">Що забороняється завантажувати</h2>
-                    </div>
-                    <p>Без дозволу правовласника суворо забороняється завантажувати:</p>
-                    <ul>
-                        <li>Пісні, альбоми або їх частини, права на які належать іншим особам.</li>
-                        <li>Ремікси, кавер-версії без відповідної ліцензії.</li>
-                        <li>Музичні відео або аудіовізуальні твори без прав на дистрибуцію.</li>
-                        <li>Будь-який контент із видаленими або зміненими відомостями про авторство.</li>
-                    </ul>
-                    <div className="lp-warning">
-                        <strong>Зверніть увагу:</strong> Зміна назви треку, модифікація висоти тону (pitch shifting), додавання тиші або шуму на початку/кінці — не знімає обмежень авторського права. Системи розпізнавання виявляють такий контент.
-                    </div>
-                </section>
-
-                {/* 3 */}
-                <section id="s3" className="lp-section">
-                    <div className="lp-section-header">
-                        <span className="lp-section-num">3</span>
-                        <h2 className="lp-section-title">Система аудіо-розпізнавання</h2>
-                    </div>
-                    <p>
-                        Knitly використовує технологію аудіо-фінгерпринтингу для автоматичного виявлення контенту, що потенційно порушує авторські права. Ця система:
-                    </p>
-                    <ul>
-                        <li>Аналізує аудіосигнал завантаженого треку незалежно від його назви чи метаданих.</li>
-                        <li>Порівнює з базою даних із мільйонами захищених творів.</li>
-                        <li>При виявленні збігу автоматично позначає трек для перевірки модератором.</li>
-                        <li>Не видаляє контент автоматично — рішення приймає модератор.</li>
-                    </ul>
-                    <p>
-                        Якщо ваш оригінальний трек помилково позначено системою, ви можете оскаржити це рішення через <a href="mailto:copyright@knitly.app">copyright@knitly.app</a>.
-                    </p>
-                </section>
-
-                {/* 4 */}
-                <section id="s4" className="lp-section">
-                    <div className="lp-section-header">
-                        <span className="lp-section-num">4</span>
-                        <h2 className="lp-section-title">Процедура подачі скарги (DMCA)</h2>
-                    </div>
-                    <p>
-                        Якщо ви є правовласником або уповноваженим представником та вважаєте, що ваш контент опубліковано без дозволу, ви можете подати офіційне повідомлення про порушення авторських прав.
-                    </p>
-                    <p><strong>Ваше повідомлення повинно містити:</strong></p>
-                    <ol>
-                        <li>Ваше ім'я та контактну інформацію (email, телефон або адреса).</li>
-                        <li>Ідентифікацію захищеного твору, права на який порушено.</li>
-                        <li>Посилання на конкретний матеріал, що порушує права, на Knitly.</li>
-                        <li>Заяву про те, що ви є правовласником або уповноваженою особою.</li>
-                        <li>Заяву про добросовісність: «Я добросовісно вважаю, що використання зазначеного матеріалу не є дозволеним правовласником».</li>
-                        <li>Підпис (електронний або фізичний) уповноваженої особи.</li>
-                    </ol>
-                    <div className="lp-info">
-                        Після отримання повного повідомлення ми розглянемо скаргу протягом <strong>5 робочих днів</strong> та повідомимо вас про прийняте рішення.
-                    </div>
-                </section>
-
-                {/* 5 */}
-                <section id="s5" className="lp-section">
-                    <div className="lp-section-header">
-                        <span className="lp-section-num">5</span>
-                        <h2 className="lp-section-title">Форма скарги</h2>
-                    </div>
-                    <p>
-                        Скарги щодо авторських прав надсилайте на:{' '}
-                        <a href="mailto:copyright@knitly.app">copyright@knitly.app</a>
-                    </p>
-                    <p>
-                        Також ви можете скористатись кнопкою <strong>«⚠️ Поскаржитись»</strong>, яка знаходиться під кожним треком або постом на Платформі.
-                    </p>
-                    <div className="lp-highlight">
-                        <strong>Шаблон повідомлення:</strong><br /><br />
-                        Я, [ваше ім'я], правовласник / уповноважений представник [назва організації/виконавця], цим повідомляю, що трек за посиланням [URL] порушує авторські права на твір [назва твору]. Прошу видалити зазначений матеріал. Я добросовісно вважаю, що це використання не дозволено правовласником.
-                    </div>
-                    <div className="lp-warning">
-                        <strong>Увага:</strong> Свідомо неправдиве повідомлення про порушення авторських прав може призвести до юридичної відповідальності згідно з чинним законодавством.
-                    </div>
-                </section>
-
-                {/* 6 */}
-                <section id="s6" className="lp-section">
-                    <div className="lp-section-header">
-                        <span className="lp-section-num">6</span>
-                        <h2 className="lp-section-title">Зустрічне повідомлення</h2>
-                    </div>
-                    <p>
-                        Якщо ваш контент було видалено внаслідок скарги, яку ви вважаєте помилковою, ви можете подати зустрічне повідомлення. Воно повинно містити:
-                    </p>
-                    <ol>
-                        <li>Ваші контактні дані.</li>
-                        <li>Ідентифікацію видаленого матеріалу та його попереднє місцезнаходження.</li>
-                        <li>Заяву під присягою про добросовісність видалення та про те, що матеріал було видалено помилково.</li>
-                        <li>Вашу згоду на розгляд справи відповідним судом.</li>
-                        <li>Підпис.</li>
-                    </ol>
-                    <p>
-                        Після отримання зустрічного повідомлення ми проінформуємо особу, яка подала початкову скаргу. Якщо протягом 14 днів вона не підтвердить намір звернутися до суду, видалений контент може бути відновлений.
-                    </p>
-                </section>
-
-                {/* 7 */}
-                <section id="s7" className="lp-section">
-                    <div className="lp-section-header">
-                        <span className="lp-section-num">7</span>
-                        <h2 className="lp-section-title">Повторні порушники</h2>
-                    </div>
-                    <p>
-                        Knitly має суворі заходи щодо систематичних порушників авторських прав:
-                    </p>
-                    <ul>
-                        <li><strong>1-е порушення:</strong> видалення контенту + письмове попередження.</li>
-                        <li><strong>2-е порушення:</strong> видалення контенту + тимчасове призупинення завантаження (30 днів).</li>
-                        <li><strong>3-є порушення:</strong> постійне блокування облікового запису без права відновлення.</li>
-                    </ul>
-                    <p>
-                        Knitly залишає за собою право заблокувати обліковий запис без попередження у разі масштабного або особливо грубого порушення авторських прав.
-                    </p>
-                </section>
-
-                {/* 8 */}
-                <section id="s8" className="lp-section">
-                    <div className="lp-section-header">
-                        <span className="lp-section-num">8</span>
-                        <h2 className="lp-section-title">Верифікація артистів та «Claim Your Music»</h2>
-                    </div>
-                    <p>
-                        Верифіковані артисти на Knitly мають доступ до розширених інструментів управління своїм контентом:
-                    </p>
-                    <ul>
-                        <li>
-                            <strong>«Заявити права на музику»</strong> — якщо ваші треки були завантажені іншими
-                            користувачами, ви можете заявити на них права, перенести під свій профіль або видалити.
-                        </li>
-                        <li>
-                            <strong>Пріоритетна модерація</strong> — скарги верифікованих артистів розглядаються
-                            в першу чергу.
-                        </li>
-                        <li>
-                            <strong>Бейдж верифікованого артиста (✓)</strong> — підтверджує автентичність профілю.
-                        </li>
-                    </ul>
-                    <p>
-                        Щоб пройти верифікацію, надішліть запит на <a href="mailto:verify@knitly.app">verify@knitly.app</a> з посиланнями на ваші офіційні соцмережі та музичні платформи (Spotify, Apple Music тощо).
-                    </p>
-                </section>
-
-                {/* Contact */}
-                <div className="lp-contact-card">
-                    <h3>Запити щодо авторських прав</h3>
-                    <p>
-                        Скарги на порушення: <a href="mailto:copyright@knitly.app">copyright@knitly.app</a><br />
-                        Верифікація артистів: <a href="mailto:verify@knitly.app">verify@knitly.app</a><br />
-                        Термін розгляду: до 5 робочих днів.
-                    </p>
-                </div>
-
-            </div>
+            {language === 'uk' ? <CopyrightContentUk /> : <CopyrightContentEn />}
         </div>
     );
 }
+

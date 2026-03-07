@@ -25,6 +25,7 @@ yarn-error.log*
 
 # --- FIREBASE KEYS (секретні!) ---
 src/firebaseSDK/
+*firebase-adminsdk*.json
 
 # --- NODE.JS MIGRATION SCRIPTS (не для production build) ---
 # Самі скрипти в git — ОК (не містять ключів).

@@ -8,7 +8,7 @@ import { db } from '../services/firebase';
 import {
     ChevronLeft, Shield, Upload, Music, Users, Heart,
     Star, Zap, Award, Calendar, Globe, MapPin, Mail,
-    CheckCircle, XCircle, Ban, ExternalLink, Save, AlertTriangle
+    CheckCircle, XCircle, Ban, ExternalLink, Save, AlertTriangle, Compass
 } from 'lucide-react';
 import { getEffectiveLimit, getCurrentMonthUsage } from '../components/upload/UploadLimitBanner';
 import default_picture from '../img/Default-Images/default-picture.svg';
@@ -21,16 +21,18 @@ const ALL_ROLES = ['user', 'moderator', 'creator', 'admin', 'verified'];
 
 const BADGES = [
     { id: 'early-adopter', label: 'Early Adopter', icon: Star },
-    { id: 'beta-tester',   label: 'Beta Tester',   icon: Shield },
-    { id: 'creator-plus',  label: 'Creator+',      icon: Zap },
-    { id: 'vip',           label: 'VIP',           icon: Award },
+    { id: 'beta-tester', label: 'Beta Tester', icon: Shield },
+    { id: 'creator-plus', label: 'Creator+', icon: Zap },
+    { id: 'vip', label: 'VIP', icon: Award },
+    { id: 'discoverer', label: 'Discoverer', icon: Compass },
 ];
 
 const BADGE_COLORS = {
     'early-adopter': '#fbbf24',
-    'beta-tester':   '#60a5fa',
-    'creator-plus':  '#c084fc',
-    'vip':           '#fb7185',
+    'beta-tester': '#60a5fa',
+    'creator-plus': '#c084fc',
+    'vip': '#fb7185',
+    'discoverer': '#10b981',
 };
 
 /* ─── Helpers ────────────────────────────────────────────────────────────── */
@@ -66,25 +68,29 @@ const AdminUserPage = () => {
     const { uid } = useParams();
     const navigate = useNavigate();
 
-    const [userData, setUserData]     = useState(null);
+    const [userData, setUserData] = useState(null);
     const [userTracks, setUserTracks] = useState([]);
-    const [loading, setLoading]       = useState(true);
-    const [error, setError]           = useState('');
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState('');
 
     /* Editable state */
-    const [roles, setRoles]               = useState([]);
-    const [badges, setBadges]             = useState([]);
-    const [limitValue, setLimitValue]     = useState('');
+    const [roles, setRoles] = useState([]);
+    const [badges, setBadges] = useState([]);
+    const [limitValue, setLimitValue] = useState('');
     const [neverExpires, setNeverExpires] = useState(true);
-    const [expiryDate, setExpiryDate]     = useState('');
-    const [isBanned, setIsBanned]         = useState(false);
+    const [expiryDate, setExpiryDate] = useState('');
+    const [isBanned, setIsBanned] = useState(false);
 
     /* Save states */
-    const [savingRoles, setSavingRoles]     = useState(false);
-    const [savingLimits, setSavingLimits]   = useState(false);
-    const [savingBan, setSavingBan]         = useState(false);
-    const [savedRoles, setSavedRoles]       = useState(false);
-    const [savedLimits, setSavedLimits]     = useState(false);
+    const [savingRoles, setSavingRoles] = useState(false);
+    const [savingLimits, setSavingLimits] = useState(false);
+    const [savingBan, setSavingBan] = useState(false);
+    const [savedRoles, setSavedRoles] = useState(false);
+    const [savedLimits, setSavedLimits] = useState(false);
+
+    /* Claim state */
+    const [claimTrackId, setClaimTrackId] = useState('');
+    const [claimingTrack, setClaimingTrack] = useState(false);
 
     /* ── Load user ── */
     useEffect(() => {
@@ -209,6 +215,61 @@ const AdminUserPage = () => {
         }
     };
 
+    const handleClaimTrack = async () => {
+        if (!claimTrackId.trim()) return;
+        if (!window.confirm(`Передати трек "${claimTrackId}" користувачу ${userData.displayName}?`)) return;
+
+        setClaimingTrack(true);
+        try {
+            const trackRef = doc(db, 'tracks', claimTrackId.trim());
+            const trackSnap = await getDoc(trackRef);
+
+            if (!trackSnap.exists()) {
+                alert('Трек з таким ID не знайдено.');
+                setClaimingTrack(false);
+                return;
+            }
+
+            const trackData = trackSnap.data();
+            const previousAuthorId = trackData.authorId;
+
+            if (previousAuthorId === uid) {
+                alert('Цей трек вже належить цьому артисту.');
+                setClaimingTrack(false);
+                return;
+            }
+
+            // Оновлюємо трек
+            await updateDoc(trackRef, {
+                authorId: uid,
+                contentType: 'original', // Змінюємо тип на оригінал
+            });
+
+            // Надаємо бейдж 'discoverer' попередньому розповсюджувачу
+            if (previousAuthorId) {
+                const prevAuthorRef = doc(db, 'users', previousAuthorId);
+                const prevAuthorSnap = await getDoc(prevAuthorRef);
+                if (prevAuthorSnap.exists()) {
+                    const prevAuthorData = prevAuthorSnap.data();
+                    const prevBadges = prevAuthorData.badges || [];
+                    if (!prevBadges.includes('discoverer')) {
+                        await updateDoc(prevAuthorRef, {
+                            badges: [...prevBadges, 'discoverer']
+                        });
+                    }
+                }
+            }
+
+            alert('Трек успішно передано!');
+            setClaimTrackId('');
+        } catch (error) {
+            console.error(error);
+            alert(`Помилка: ${error.message}`);
+        } finally {
+            setClaimingTrack(false);
+        }
+    };
+
     /* ── Render states ── */
     if (loading) {
         return (
@@ -233,9 +294,9 @@ const AdminUserPage = () => {
     }
 
     const effectiveLimit = getEffectiveLimit(userData);
-    const usedThisMonth  = getCurrentMonthUsage(userData);
-    const usagePct       = Math.min(100, (usedThisMonth / effectiveLimit) * 100);
-    const currentMonth   = new Date().toLocaleString('uk-UA', { month: 'long', year: 'numeric' });
+    const usedThisMonth = getCurrentMonthUsage(userData);
+    const usagePct = Math.min(100, (usedThisMonth / effectiveLimit) * 100);
+    const currentMonth = new Date().toLocaleString('uk-UA', { month: 'long', year: 'numeric' });
 
     return (
         <div className="aup-page">
@@ -353,10 +414,10 @@ const AdminUserPage = () => {
 
                         {/* Stats grid */}
                         <div className="aup-stats-grid">
-                            <StatCard icon={Music}  label="Треків"     value={userData.tracksCount ?? 0}               color="#a855f7" />
-                            <StatCard icon={Users}  label="Підписники" value={(userData.followers ?? []).length}        color="#3b82f6" />
-                            <StatCard icon={Users}  label="Підписки"   value={(userData.following ?? []).length}        color="#06b6d4" />
-                            <StatCard icon={Heart}  label="Уподобання" value={(userData.likedTracks ?? []).length}      color="#f43f5e" />
+                            <StatCard icon={Music} label="Треків" value={userData.tracksCount ?? 0} color="#a855f7" />
+                            <StatCard icon={Users} label="Підписники" value={(userData.followers ?? []).length} color="#3b82f6" />
+                            <StatCard icon={Users} label="Підписки" value={(userData.following ?? []).length} color="#06b6d4" />
+                            <StatCard icon={Heart} label="Уподобання" value={(userData.likedTracks ?? []).length} color="#f43f5e" />
                             <StatCard
                                 icon={Upload}
                                 label="Завантажено"
@@ -540,6 +601,37 @@ const AdminUserPage = () => {
                                 disabled={savingLimits}
                             >
                                 {savedLimits ? <><CheckCircle size={14} /> Збережено</> : <><Save size={14} /> Зберегти ліміт та значки</>}
+                            </button>
+                        </div>
+
+                        {/* Artist Claim System */}
+                        <div className="aup-card">
+                            <h3 className="aup-card-title">
+                                <Music size={15} />
+                                Artist Claim System
+                            </h3>
+                            <p className="aup-danger-desc" style={{ color: 'var(--text-secondary, #94a3b8)', marginBottom: '12px' }}>
+                                Передає права на трек цьому користувачу.
+                                Попередній автор отримає бейдж "Discoverer".
+                            </p>
+                            <div className="aup-field-group">
+                                <input
+                                    type="text"
+                                    className="aup-input"
+                                    placeholder="ID треку (напр. abc123def456)"
+                                    value={claimTrackId}
+                                    onChange={e => setClaimTrackId(e.target.value)}
+                                    disabled={claimingTrack}
+                                />
+                            </div>
+                            <button
+                                className="aup-btn aup-btn--primary aup-btn--full"
+                                onClick={handleClaimTrack}
+                                disabled={claimingTrack || !claimTrackId.trim()}
+                                style={{ marginTop: '10px' }}
+                            >
+                                <Compass size={14} />
+                                {claimingTrack ? 'Передача...' : 'Передати трек цьому артисту'}
                             </button>
                         </div>
 

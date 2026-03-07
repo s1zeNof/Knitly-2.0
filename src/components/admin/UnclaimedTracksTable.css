@@ -1,0 +1,102 @@
+.unclaimed-tracks-section {
+    margin-top: 3rem;
+    background: var(--surface-default, #1e293b);
+    border-radius: 12px;
+    padding: 1.5rem;
+    border: 1px solid var(--border-default, #334155);
+}
+
+.unclaimed-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.unclaimed-header h2 {
+    margin: 0;
+    font-size: 1.25rem;
+    color: var(--text-primary, #f8fafc);
+}
+
+.refresh-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: var(--surface-hover, #334155);
+    color: var(--text-primary, #f8fafc);
+    border: 1px solid var(--border-default, #475569);
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.refresh-btn:hover {
+    background: var(--surface-active, #475569);
+}
+
+.refresh-btn .spin {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+.track-title-cell {
+    display: flex;
+    flex-direction: column;
+}
+
+.track-id-cell {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-family: monospace;
+    background: var(--surface-hover, #1e293b);
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    border: 1px solid var(--border-default, #334155);
+    width: fit-content;
+}
+
+.icon-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-secondary, #94a3b8);
+    cursor: pointer;
+    padding: 2px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: color 0.2s;
+}
+
+.icon-btn:hover {
+    color: var(--text-primary, #f8fafc);
+}
+
+.detail-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    color: #a855f7;
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 0.875rem;
+    background: transparent;
+    padding: 6px 12px;
+    border-radius: 6px;
+    border: 1px solid rgba(168, 85, 247, 0.3);
+    transition: background 0.2s;
+}
+
+.detail-link:hover {
+    background: rgba(168, 85, 247, 0.1);
+}

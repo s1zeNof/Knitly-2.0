@@ -4,6 +4,7 @@ import { BrowserRouter as Router, Route, Routes, useLocation } from 'react-route
 import { QueryClient, QueryClientProvider } from 'react-query';
 import { UserProvider, useUserContext } from './contexts/UserContext';
 import { PlayerProvider, usePlayerContext } from './contexts/PlayerContext';
+import { LanguageProvider } from './contexts/LanguageContext';
 
 import Header from './components/layout/Header';
 import LeftSidebar from './components/layout/LeftSidebar';
@@ -280,12 +281,14 @@ const App = () => {
 
     return (
         <QueryClientProvider client={queryClient}>
-            <UserProvider>
-                <PlayerProvider>
-                    <AppContent />
-                    <Analytics />
-                </PlayerProvider>
-            </UserProvider>
+            <LanguageProvider>
+                <UserProvider>
+                    <PlayerProvider>
+                        <AppContent />
+                        <Analytics />
+                    </PlayerProvider>
+                </UserProvider>
+            </LanguageProvider>
         </QueryClientProvider>
     );
 };

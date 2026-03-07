@@ -1,0 +1,43 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm install:*)",
+      "Bash(node -e \"require\\(''./src/utils/diagnostics.js''\\)\")",
+      "Bash(npm ls its-fine)",
+      "Bash(npm ls react-konva its-fine react-filerobot-image-editor)",
+      "Bash(npm ls react-easy-crop)",
+      "Bash(npm ls its-fine react-konva)",
+      "Bash(python -c \"import sys,json; p=json.load\\(sys.stdin\\); print\\(''deps:'', list\\(p.get\\(''dependencies'',{}\\).keys\\(\\)\\)\\); print\\(''peers:'', list\\(p.get\\(''peerDependencies'',{}\\).keys\\(\\)\\)\\)\")",
+      "Bash(python3 -c \":*)",
+      "Bash(python3:*)",
+      "Bash(npx eslint src/components/common/TrackList.js src/components/layout/BottomNavBar.js src/components/layout/LeftSidebar.js src/components/player/NowPlayingPanel.js src/components/posts/Comment.jsx src/components/posts/CommentSection.jsx src/components/posts/CreatePostForm.jsx src/components/posts/PostCard.jsx src/components/search/HeaderSearch.jsx src/components/settings/WalletTab.js src/pages/CreatorStudio.js)",
+      "Bash(npx eslint src/ --max-warnings=0)",
+      "Bash(npm run build)",
+      "Bash(git add -u)",
+      "Bash(git commit:*)",
+      "Bash(git checkout main)",
+      "Bash(git merge:*)",
+      "Bash(git push origin main)",
+      "Bash(npx eslint src/services/supabase.js)",
+      "Bash(git add src/services/supabase.js)",
+      "Bash(npx eslint src/pages/NotificationsPage.jsx src/components/notifications/NotificationItem.jsx --max-warnings=0)",
+      "Bash(git add src/pages/NotificationsPage.jsx src/pages/NotificationsPage.css src/components/notifications/NotificationItem.jsx)",
+      "Bash(python -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\(d.get\\(''scripts'',{}\\)\\)\")",
+      "mcp__Claude_Preview__preview_start",
+      "Bash(where npm)",
+      "Bash(grep -r \"main-content\\\\|studio-page\\\\|profile-page\" src/App.css src/index.css src/pages/*.css)",
+      "Bash(python -c \":*)",
+      "Bash(python \"D:\\\\My IT Projects\\\\Knitly-2.0\\\\write_notif_css.py\")",
+      "Bash(printf '%s' \"content = r'''''':*)",
+      "Bash(python /tmp/write_notif_css.py)",
+      "Bash(echo \"exit: $?\")",
+      "Bash(python -c \"x = \"\"content: '''';\"\"; print\\(x\\)\")",
+      "Bash(cmd /c \"python -c \"\"print\\(''hello world''\\)\"\"\")",
+      "Bash(powershell -Command \"python -c \"\"print\\(''hello world''\\)\"\"\")",
+      "Bash(powershell -Command \":*)",
+      "Bash(powershell -Command \"Write-Host ''test single quotes: '''' and more''\")",
+      "Bash(powershell -Command \"$x = \"\"content: '''';\"\"; Write-Host $x\")",
+      "Bash(git add src/pages/NotificationsPage.css)"
+    ]
+  }
+}

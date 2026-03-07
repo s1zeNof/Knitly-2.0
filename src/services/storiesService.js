@@ -225,6 +225,21 @@ export const fetchUserStories = async (uid) => {
 };
 
 /**
+ * Fetch ALL stories for a single user (for Archive view), including expired ones.
+ */
+export const fetchAllUserStories = async (uid) => {
+    if (!uid) return [];
+    const q = query(
+        collection(db, STORIES_COLLECTION),
+        where('uid', '==', uid)
+    );
+    const snap = await getDocs(q);
+    return snap.docs
+        .map(d => ({ id: d.id, ...d.data() }))
+        .sort((a, b) => (b.createdAt?.toMillis?.() ?? 0) - (a.createdAt?.toMillis?.() ?? 0));
+};
+
+/**
  * Real-time listener for feed stories.
  * Calls onUpdate(stories[]) whenever data changes.
  */

@@ -5,6 +5,7 @@ import { db } from '../services/firebase';
 import UserManagementTable from '../components/admin/UserManagementTable';
 import EditUserRolesModal from '../components/common/EditUserRolesModal';
 import GiftManagement from '../components/admin/GiftManagement'; // <-- ІМПОРТ
+import UnclaimedTracksTable from '../components/admin/UnclaimedTracksTable';
 import './AdminPage.css';
 
 const fetchUsers = async () => {
@@ -50,7 +51,7 @@ const AdminPage = () => {
             handleCloseRolesModal();
         }
     };
-    
+
     if (isLoading) {
         return <div className="admin-page-loader">Завантаження користувачів...</div>;
     }
@@ -65,13 +66,15 @@ const AdminPage = () => {
                 <h1>Панель Адміністратора</h1>
                 <p>Керування користувачами та контентом платформи Knitly.</p>
             </header>
-            
+
             {/* Додаємо новий блок керування подарунками */}
             <GiftManagement />
-            
-            <h2 style={{marginTop: '3rem'}}>Керування користувачами</h2>
-            <UserManagementTable 
-                users={users} 
+
+            <UnclaimedTracksTable />
+
+            <h2 style={{ marginTop: '3rem' }}>Керування користувачами</h2>
+            <UserManagementTable
+                users={users}
                 onActionSuccess={refetchUsers}
                 onEditRoles={handleOpenRolesModal}
             />

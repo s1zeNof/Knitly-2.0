@@ -178,6 +178,12 @@ const UploadMusic = () => {
 
     /* ── Validation ── */
     const needsOriginalInfo = contentType !== 'original';
+    // For original/remix/mashup/cover it's mandatory. For fan_upload it's optional.
+    const isOriginalInfoValid =
+        !needsOriginalInfo ||
+        (contentType === 'fan_upload') ||
+        (originalArtist.trim() && originalTitle.trim());
+
     const isFormValid =
         trackFile &&
         trackTitle.trim() &&
@@ -185,7 +191,7 @@ const UploadMusic = () => {
         language &&
         copyrightOwnership &&
         copyrightDistribution &&
-        (!needsOriginalInfo || (originalArtist.trim() && originalTitle.trim()));
+        isOriginalInfoValid;
 
     /* ── Upload handler ── */
     const handleUpload = async (e) => {
@@ -501,7 +507,7 @@ const UploadMusic = () => {
                                 <div className="up-two-col">
                                     <div className="up-form-group">
                                         <label className="up-label" htmlFor="up-orig-artist">
-                                            Оригінальний виконавець <span className="up-required">*</span>
+                                            Оригінальний виконавець {contentType !== 'fan_upload' && <span className="up-required">*</span>}
                                         </label>
                                         <input
                                             id="up-orig-artist"
@@ -515,7 +521,7 @@ const UploadMusic = () => {
                                     </div>
                                     <div className="up-form-group">
                                         <label className="up-label" htmlFor="up-orig-title">
-                                            Назва оригіналу <span className="up-required">*</span>
+                                            Назва оригіналу {contentType !== 'fan_upload' && <span className="up-required">*</span>}
                                         </label>
                                         <input
                                             id="up-orig-title"
@@ -578,9 +584,15 @@ const UploadMusic = () => {
                                     onChange={e => setCopyrightOwnership(e.target.checked)}
                                     disabled={isUploading}
                                 />
-                                <span className="up-check-text">
-                                    Я підтверджую, що є автором або правовласником цього треку, або маю дозвіл правовласника на його публікацію.
-                                </span>
+                                {contentType === 'fan_upload' ? (
+                                    <span className="up-check-text">
+                                        Я розумію, що <strong>не є правовласником</strong> цього треку. Якщо справжній артист подасть запит на авторство (Artist Claim) або DMCA-скаргу, трек може бути переданий йому або видалений.
+                                    </span>
+                                ) : (
+                                    <span className="up-check-text">
+                                        Я підтверджую, що є автором або правовласником цього треку, або маю дозвіл правовласника на його публікацію.
+                                    </span>
+                                )}
                             </label>
                             <label className="up-check-row">
                                 <input
@@ -590,12 +602,21 @@ const UploadMusic = () => {
                                     onChange={e => setCopyrightDistribution(e.target.checked)}
                                     disabled={isUploading}
                                 />
-                                <span className="up-check-text">
-                                    Я підтверджую, що маю право на розповсюдження цього контенту та несу відповідальність за порушення авторських прав згідно з{' '}
-                                    <a href="/copyright" target="_blank" rel="noopener noreferrer" className="up-link">
-                                        Політикою авторських прав Knitly
-                                    </a>.
-                                </span>
+                                {contentType === 'fan_upload' ? (
+                                    <span className="up-check-text">
+                                        Я підтверджую, що завантажую цей контент <strong>лише з метою популяризації</strong>, не буду його монетизувати та погоджуюсь із{' '}
+                                        <a href="/copyright" target="_blank" rel="noopener noreferrer" className="up-link">
+                                            Політикою авторських прав Knitly
+                                        </a> щодо фан-контенту.
+                                    </span>
+                                ) : (
+                                    <span className="up-check-text">
+                                        Я підтверджую, що маю право на розповсюдження цього контенту та несу відповідальність за порушення авторських прав згідно з{' '}
+                                        <a href="/copyright" target="_blank" rel="noopener noreferrer" className="up-link">
+                                            Політикою авторських прав Knitly
+                                        </a>.
+                                    </span>
+                                )}
                             </label>
                         </div>
 

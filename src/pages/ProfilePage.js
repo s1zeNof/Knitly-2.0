@@ -7,6 +7,7 @@ import { useUserTracks } from '../hooks/useUserTracks';
 import TrackList from '../components/common/TrackList';
 import PlaylistTab from '../components/common/PlaylistTab';
 import LikedTracks from '../components/common/LikedTracks';
+import StoriesArchiveTab from '../components/profile/StoriesArchiveTab';
 import Feed from '../components/posts/Feed';
 import CreatePostForm from '../components/posts/CreatePostForm';
 import ReceivedGiftsTab from '../components/gifts/ReceivedGiftsTab';
@@ -17,6 +18,7 @@ import toast from 'react-hot-toast';
 
 import default_picture from '../img/Default-Images/default-picture.svg';
 import VerifiedBadge from '../components/common/VerifiedBadge';
+import DiscovererBadge from '../components/common/DiscovererBadge';
 import PageLoader from '../components/common/PageLoader';
 import CreateStoryModal from '../components/stories/CreateStoryModal';
 import StoryViewer from '../components/stories/StoryViewer';
@@ -39,6 +41,7 @@ const ProfilePage = ({ openBrowser, openShareModal }) => {
     const [profileUser, setProfileUser] = useState(null);
     const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState('music');
+    const [musicSubTab, setMusicSubTab] = useState('tracks');
     const [feedSubTab, setFeedSubTab] = useState('threads');
     const [isFollowing, setIsFollowing] = useState(false);
     const [isProcessingFollow, setIsProcessingFollow] = useState(false);
@@ -256,29 +259,43 @@ const ProfilePage = ({ openBrowser, openShareModal }) => {
             case 'music':
                 const hasTracks = (profileUser.tracksCount || 0) > 0;
                 return (
-                    <>
-                        {hasTracks && (
-                            <div className="profile-music-layout">
-                                <div className="profile-section">
-                                    <h3 className="profile-section-title">Топ треки</h3>
-                                    <TrackList initialTracks={topTracks} isLoading={loadingTop} />
-                                </div>
-                                <div className="profile-section">
-                                    <h3 className="profile-section-title">Останні треки</h3>
-                                    <TrackList initialTracks={latestTracks} isLoading={loadingLatest} />
-                                </div>
-                            </div>
-                        )}
-                        <div className="profile-section">
-                            <h3 className="profile-section-title">Вподобана музика</h3>
-                            <LikedTracks user={profileUser} />
+                    <div>
+                        <div className="profile-feed-subtabs" style={{ marginBottom: '1.5rem' }}>
+                            <button className={`profile-feed-subtab${musicSubTab === 'tracks' ? ' active' : ''}`} onClick={() => setMusicSubTab('tracks')}>Треки</button>
+                            <button className={`profile-feed-subtab${musicSubTab === 'albums' ? ' active' : ''}`} onClick={() => setMusicSubTab('albums')}>Альбоми</button>
+                            <button className={`profile-feed-subtab${musicSubTab === 'playlists' ? ' active' : ''}`} onClick={() => setMusicSubTab('playlists')}>Плейлисти</button>
                         </div>
-                    </>
+
+                        {musicSubTab === 'tracks' && (
+                            <>
+                                {hasTracks && (
+                                    <div className="profile-music-layout">
+                                        <div className="profile-section">
+                                            <h3 className="profile-section-title">Топ треки</h3>
+                                            <TrackList initialTracks={topTracks} isLoading={loadingTop} />
+                                        </div>
+                                        <div className="profile-section">
+                                            <h3 className="profile-section-title">Останні треки</h3>
+                                            <TrackList initialTracks={latestTracks} isLoading={loadingLatest} />
+                                        </div>
+                                    </div>
+                                )}
+                                <div className="profile-section">
+                                    <h3 className="profile-section-title">Вподобана музика</h3>
+                                    <LikedTracks user={profileUser} />
+                                </div>
+                            </>
+                        )}
+
+                        {musicSubTab === 'albums' && (
+                            <div className="page-profile-tab-placeholder">Альбоми цього користувача будуть відображатися тут.</div>
+                        )}
+
+                        {musicSubTab === 'playlists' && (
+                            <PlaylistTab userId={profileUser.uid} />
+                        )}
+                    </div>
                 );
-            case 'playlists':
-                return <PlaylistTab userId={profileUser.uid} />;
-            case 'albums':
-                return <div className="page-profile-tab-placeholder">Альбоми цього користувача будуть відображатися тут.</div>;
             case 'gifts':
                 return <ReceivedGiftsTab userId={profileUser.uid} />;
             case 'feed':
@@ -301,12 +318,14 @@ const ProfilePage = ({ openBrowser, openShareModal }) => {
                         )}
                         {(feedSubTab === 'replies' || feedSubTab === 'reposts') && (
                             <div className="feed-subtab-placeholder">
-                                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+                                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="12" cy="12" r="10" /><path d="M12 8v4l3 3" /></svg>
                                 <p>Цей розділ буде доступний найближчим часом</p>
                             </div>
                         )}
                     </div>
                 );
+            case 'stories':
+                return <StoriesArchiveTab profileUser={profileUser} />;
             default:
                 return null;
         }
@@ -395,6 +414,7 @@ const ProfilePage = ({ openBrowser, openShareModal }) => {
                             {/* [ім'я] [🔮 кастомні емоджі тут у майбутньому] [галочка] */}
                             {profileUser.displayName || 'No Name'}
                             {profileUser.roles?.includes('verified') && <VerifiedBadge size="lg" />}
+                            {profileUser.badges?.includes('discoverer') && <DiscovererBadge size="lg" />}
                         </h2>
                         <p className="page-profile-nickname">@{profileUser.nickname}</p>
                         <p className="page-profile-description">{profileUser.description || 'No description'}</p>
@@ -424,10 +444,13 @@ const ProfilePage = ({ openBrowser, openShareModal }) => {
 
                     <div className="page-profile-tabs">
                         <button className={`page-profile-tab-button ${activeTab === 'music' ? 'active' : ''}`} onClick={() => setActiveTab('music')}><MusicIcon /> Музика</button>
-                        <button className={`page-profile-tab-button ${activeTab === 'albums' ? 'active' : ''}`} onClick={() => setActiveTab('albums')}><AlbumsIcon /> Альбоми</button>
-                        <button className={`page-profile-tab-button ${activeTab === 'playlists' ? 'active' : ''}`} onClick={() => setActiveTab('playlists')}><PlaylistIcon /> Плейлисти</button>
                         <button className={`page-profile-tab-button ${activeTab === 'feed' ? 'active' : ''}`} onClick={() => setActiveTab('feed')}><FeedIcon /> Стрічка</button>
                         <button className={`page-profile-tab-button ${activeTab === 'gifts' ? 'active' : ''}`} onClick={() => setActiveTab('gifts')}><GiftIcon /> Подарунки</button>
+                        {isOwnProfile && (
+                            <button className={`page-profile-tab-button ${activeTab === 'stories' ? 'active' : ''}`} onClick={() => setActiveTab('stories')}>
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" /></svg> Історії
+                            </button>
+                        )}
                     </div>
                 </div>
 
@@ -463,7 +486,7 @@ const ProfilePage = ({ openBrowser, openShareModal }) => {
                     initialGroupIndex={0}
                     currentUserUid={currentUser?.uid}
                     onClose={() => setIsStoryViewerOpen(false)}
-                    onStoriesSeen={() => {}}
+                    onStoriesSeen={() => { }}
                 />
             )}
         </>

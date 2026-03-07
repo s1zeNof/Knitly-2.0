@@ -1,20 +1,23 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
+import { useLanguage } from '../../contexts/LanguageContext';
+import LanguageSwitcher from '../common/LanguageSwitcher';
 import './PublicHeader.css';
-
-const NAV_LINKS = [
-    { label: 'Стрічка',     to: '/' },
-    { label: 'Музика',      to: '/search' },
-    { label: 'Для артистів',to: '/upload' },
-    { label: 'Про нас',     to: '/about',   soon: true },
-];
 
 const LEGAL_PATHS = ['/terms', '/privacy', '/copyright', '/guidelines'];
 
 export default function PublicHeader() {
-    const [scrolled,   setScrolled]   = useState(false);
-    const [menuOpen,   setMenuOpen]   = useState(false);
+    const [scrolled, setScrolled] = useState(false);
+    const [menuOpen, setMenuOpen] = useState(false);
     const location = useLocation();
+    const { t } = useLanguage();
+
+    const NAV_LINKS = [
+        { label: t('nav.feed'), to: '/' },
+        { label: t('nav.music'), to: '/search' },
+        { label: t('nav.forArtists'), to: '/upload' },
+        { label: t('nav.about'), to: '/about', soon: true },
+    ];
 
     const isLegalPage = LEGAL_PATHS.includes(location.pathname);
 
@@ -32,7 +35,7 @@ export default function PublicHeader() {
             <div className="ph-inner">
 
                 {/* ── Logo ── */}
-                <Link to="/" className="ph-logo" aria-label="Knitly — головна">
+                <Link to="/" className="ph-logo" aria-label={t('nav.home')}>
                     <span className="ph-logo-icon" aria-hidden="true">🧶</span>
                     <span className="ph-logo-text">
                         <span className="ph-logo-k">K</span>nitly
@@ -41,7 +44,7 @@ export default function PublicHeader() {
                 </Link>
 
                 {/* ── Desktop nav ── */}
-                <nav className="ph-nav" aria-label="Основна навігація">
+                <nav className="ph-nav" aria-label="Main Navigation">
                     {NAV_LINKS.map(({ label, to, soon }) => (
                         <Link
                             key={to}
@@ -49,23 +52,24 @@ export default function PublicHeader() {
                             className={`ph-nav-link ${location.pathname === to ? 'ph-nav-active' : ''} ${soon ? 'ph-nav-soon' : ''}`}
                         >
                             {label}
-                            {soon && <span className="ph-nav-soon-tag">скоро</span>}
+                            {soon && <span className="ph-nav-soon-tag">{t('nav.soon')}</span>}
                         </Link>
                     ))}
                     {isLegalPage && (
                         <span className="ph-nav-link ph-nav-active ph-nav-legal-indicator">
-                            Правові документи
+                            {t('nav.legal')}
                         </span>
                     )}
                 </nav>
 
-                {/* ── CTA buttons ── */}
+                {/* ── CTA buttons & Language ── */}
                 <div className="ph-cta">
-                    <Link to="/login"    className="ph-btn-ghost">Увійти</Link>
+                    <LanguageSwitcher />
+                    <Link to="/login" className="ph-btn-ghost">{t('nav.login')}</Link>
                     <Link to="/register" className="ph-btn-primary">
-                        Приєднатись
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true">
-                            <path d="M5 12h14M12 5l7 7-7 7"/>
+                        {t('nav.register')}
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true" style={{ marginLeft: 6 }}>
+                            <path d="M5 12h14M12 5l7 7-7 7" />
                         </svg>
                     </Link>
                 </div>
@@ -74,7 +78,7 @@ export default function PublicHeader() {
                 <button
                     className={`ph-hamburger ${menuOpen ? 'ph-hamburger-open' : ''}`}
                     onClick={() => setMenuOpen(v => !v)}
-                    aria-label={menuOpen ? 'Закрити меню' : 'Відкрити меню'}
+                    aria-label={menuOpen ? 'Close Menu' : 'Open Menu'}
                     aria-expanded={menuOpen}
                 >
                     <span /><span /><span />
@@ -87,13 +91,16 @@ export default function PublicHeader() {
                     {NAV_LINKS.map(({ label, to, soon }) => (
                         <Link key={to} to={to} className="ph-mobile-link">
                             {label}
-                            {soon && <span className="ph-nav-soon-tag">скоро</span>}
+                            {soon && <span className="ph-nav-soon-tag">{t('nav.soon')}</span>}
                         </Link>
                     ))}
                 </nav>
                 <div className="ph-mobile-cta">
-                    <Link to="/login"    className="ph-btn-ghost ph-btn-full">Увійти</Link>
-                    <Link to="/register" className="ph-btn-primary ph-btn-full">Приєднатись →</Link>
+                    <div className="ph-mobile-lang">
+                        <LanguageSwitcher />
+                    </div>
+                    <Link to="/login" className="ph-btn-ghost ph-btn-full">{t('nav.login')}</Link>
+                    <Link to="/register" className="ph-btn-primary ph-btn-full">{t('nav.register')} →</Link>
                 </div>
             </div>
         </header>
