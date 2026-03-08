@@ -168,7 +168,10 @@ export default function TermsContentEn() {
                     <h2 className="lp-section-title">Applicable Law</h2>
                 </div>
                 <p>
-                    These Terms are governed by and construed in accordance with the laws of Ukraine. All disputes arising in connection with the use of the Platform shall be resolved in the courts of Ukraine.
+                    These Terms are governed by and construed in accordance with the laws of Ukraine. All disputes arising in connection with the use of the Platform shall be resolved in the courts of Ukraine, unless mandatory provisions of the laws of your country of residence require otherwise.
+                </p>
+                <p>
+                    If you are a consumer in the European Union, you may also benefit from the mandatory consumer protection provisions of the law in your country of residence, including the right to bring claims before your local courts.
                 </p>
             </section>
 

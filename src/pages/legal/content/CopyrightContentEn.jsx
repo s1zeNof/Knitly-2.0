@@ -3,7 +3,7 @@ import React from 'react';
 const SECTIONS = [
     'Copyright on the Platform',
     'What You Cannot Upload',
-    'Audio Recognition System',
+    'Content Moderation',
     'Filing a Complaint (DMCA)',
     'Complaint Form',
     'Counter-Notice',
@@ -72,18 +72,18 @@ export default function CopyrightContentEn() {
             <section id="s3" className="lp-section">
                 <div className="lp-section-header">
                     <span className="lp-section-num">3</span>
-                    <h2 className="lp-section-title">Audio Recognition System</h2>
+                    <h2 className="lp-section-title">Content Moderation</h2>
                 </div>
                 <p>
-                    Knitly utilizes audio fingerprinting technology to automatically detect potentially infringing content. This system:
+                    Knitly applies a multi-layered approach to identifying potentially infringing content:
                 </p>
                 <ul>
-                    <li>Analyzes the audio signal of uploaded tracks regardless of metadata.</li>
-                    <li>Compares it against a database of millions of copyrighted works.</li>
-                    <li>Flags matches for manual review by our moderation team.</li>
+                    <li><strong>Reporting System:</strong> rights holders and users can report violations via the "Report" button or by email.</li>
+                    <li><strong>Manual Review:</strong> the Knitly moderation team reviews flagged content and acts in accordance with this Policy.</li>
+                    <li><strong>Automated Tools:</strong> as the platform grows, we are implementing automated tools to detect protected content.</li>
                 </ul>
                 <p>
-                    If your original song was falsely flagged, you can appeal the decision by contacting <a href="mailto:copyright@knitly.app">copyright@knitly.app</a>.
+                    If your original content was flagged in error, you may appeal the decision by contacting <a href="mailto:copyright@knitly.app">copyright@knitly.app</a>.
                 </p>
             </section>
 

@@ -1020,3 +1020,90 @@ input:checked+.slider:before {
     font-size: 0.72rem;
     color: var(--color-text-placeholder);
 }
+/* ─── Delete Account / Danger Zone ─── */
+.account-danger-zone {
+    margin-top: 1.5rem;
+    border: 1px solid #7f1d1d;
+    border-radius: 0.75rem;
+    padding: 1.5rem;
+    background: rgba(127, 29, 29, 0.08);
+}
+
+.danger-zone-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #ef4444;
+    margin: 0 0 0.5rem;
+}
+
+.danger-zone-desc {
+    font-size: 0.875rem;
+    color: var(--color-text-secondary);
+    margin: 0 0 1rem;
+    line-height: 1.5;
+}
+
+.danger-zone-btn {
+    background: #dc2626;
+    color: #fff;
+    border: none;
+    border-radius: 0.5rem;
+    padding: 0.6rem 1.2rem;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+.danger-zone-btn:hover:not(:disabled) { background: #b91c1c; }
+.danger-zone-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* Delete modal overlay */
+.delete-account-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.75);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    backdrop-filter: blur(4px);
+}
+
+.delete-account-modal {
+    background: var(--color-bg-light);
+    border: 1px solid #7f1d1d;
+    border-radius: 1rem;
+    padding: 2rem;
+    width: 100%;
+    max-width: 420px;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.delete-account-modal h3 {
+    color: #ef4444;
+    font-size: 1.15rem;
+    font-weight: 700;
+    margin: 0;
+}
+
+.delete-account-modal p {
+    font-size: 0.875rem;
+    color: var(--color-text-secondary);
+    margin: 0;
+    line-height: 1.5;
+}
+
+.delete-account-modal-actions {
+    display: flex;
+    gap: 0.75rem;
+    justify-content: flex-end;
+    margin-top: 0.5rem;
+}
+
+/* Account tab btn — subtle red tint when active */
+.settings-account-tab-btn.active {
+    color: #ef4444 !important;
+    background: rgba(239, 68, 68, 0.08) !important;
+}

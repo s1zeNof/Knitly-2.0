@@ -7,6 +7,8 @@ import { db } from '../../services/firebase';
 import { doc, deleteDoc, updateDoc, arrayUnion, arrayRemove, increment, collection, query, where, getDocs, runTransaction, addDoc, serverTimestamp } from 'firebase/firestore';
 import './TrackList.css';
 import AnimatedCounter from './AnimatedCounter';
+import ReportModal from './ReportModal';
+import { createPortal } from 'react-dom';
 
 const DEFAULT_COVER_URL = 'https://placehold.co/256x256/181818/333333?text=K';
 
@@ -33,6 +35,7 @@ const TrackList = ({ userId, initialTracks = null, isLoading: isLoadingInitial =
     const [showAddToPlaylistModal, setShowAddToPlaylistModal] = useState(false);
     const [userPlaylists, setUserPlaylists] = useState([]);
     const [selectedTrack, setSelectedTrack] = useState(null);
+    const [trackToReport, setTrackToReport] = useState(null);
 
     const menuRefs = useRef({}); // Використовуємо об'єкт для рефів
     const [menuPosition, setMenuPosition] = useState({});
@@ -50,17 +53,16 @@ const TrackList = ({ userId, initialTracks = null, isLoading: isLoadingInitial =
     useEffect(() => {
         const handleClickOutside = (event) => {
             if (activeMenu && menuRefs.current[activeMenu] && !menuRefs.current[activeMenu].contains(event.target)) {
-                if (!event.target.closest('.options-button-list')) {
-                    setActiveMenu(null);
-                }
+                setActiveMenu(null);
             }
         };
 
-        document.addEventListener("mousedown", handleClickOutside);
-        return () => document.removeEventListener("mousedown", handleClickOutside);
+        document.addEventListener("click", handleClickOutside);
+        return () => document.removeEventListener("click", handleClickOutside);
     }, [activeMenu]);
 
     const handleMenuClick = (e, trackId) => {
+        e.stopPropagation();
         const currentlyActive = activeMenu === trackId;
         setActiveMenu(currentlyActive ? null : trackId);
 
@@ -198,7 +200,7 @@ const TrackList = ({ userId, initialTracks = null, isLoading: isLoadingInitial =
                         return (
                             <div
                                 key={track.id}
-                                className={`track-item-list${isPlaying && currentTrack?.id === track.id ? ' is-playing' : ''}`}
+                                className={`track-item-list${isPlaying && currentTrack?.id === track.id ? ' is-playing' : ''}${activeMenu === track.id ? ' menu-open' : ''}`}
                             >
                                 {/* Cover art with play overlay */}
                                 <div className="track-cover-wrapper" onClick={() => handlePlayPause(track)}>
@@ -252,11 +254,13 @@ const TrackList = ({ userId, initialTracks = null, isLoading: isLoadingInitial =
                                         >
                                             <button onClick={() => { addToQueue(track); setActiveMenu(null); }}>Додати в чергу</button>
                                             <button onClick={() => openAddToPlaylistModal(track)}>Додати в плейлист</button>
-                                            {track.authorId === currentUser?.uid && (
+                                            {track.authorId === currentUser?.uid ? (
                                                 <>
                                                     <button className="option-edit">Редагувати</button>
                                                     <button className="option-delete" onClick={() => { setShowDeleteModal(track); setActiveMenu(null); }}>Видалити</button>
                                                 </>
+                                            ) : (
+                                                <button className="option-report" style={{ color: '#ef4444' }} onClick={() => { setTrackToReport(track); setActiveMenu(null); }}>Поскаржитись</button>
                                             )}
                                         </div>
                                     )}
@@ -329,6 +333,17 @@ const TrackList = ({ userId, initialTracks = null, isLoading: isLoadingInitial =
                         </div>
                     </div>
                 </div>
+            )}
+
+            {trackToReport && createPortal(
+                <ReportModal
+                    isOpen={!!trackToReport}
+                    onClose={() => setTrackToReport(null)}
+                    targetType="track"
+                    targetId={trackToReport.id}
+                    targetData={{ title: trackToReport.title, authorName: trackToReport.authorName, authorId: trackToReport.authorId }}
+                />,
+                document.body
             )}
         </div>
     );

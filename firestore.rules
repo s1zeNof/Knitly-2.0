@@ -87,10 +87,17 @@ service cloud.firestore {
         allow read: if isSignedIn() &&
                     request.auth.uid in
                       get(/databases/$(database)/documents/chats/$(chatId)).data.participants;
+        // Allow create if:
+        // (a) chat exists and sender is a participant, OR
+        // (b) chat doesn't exist yet (being created in same writeBatch — sharePostToChats)
         allow create: if isSignedIn() &&
                       request.resource.data.senderId == request.auth.uid &&
-                      request.auth.uid in
-                        get(/databases/$(database)/documents/chats/$(chatId)).data.participants;
+                      (
+                        (exists(/databases/$(database)/documents/chats/$(chatId)) &&
+                         request.auth.uid in
+                           get(/databases/$(database)/documents/chats/$(chatId)).data.participants) ||
+                        !exists(/databases/$(database)/documents/chats/$(chatId))
+                      );
         allow update, delete: if isSignedIn() &&
                               request.auth.uid == resource.data.senderId;
       }

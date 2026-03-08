@@ -90,6 +90,8 @@ const ShareModal = ({ post, onClose }) => {
     const inputRef = useRef(null);
     const debounceRef = useRef(null);
 
+    const [followingUids, setFollowingUids] = useState(new Set());
+
     // ─── Load suggested users on mount ───────────────────────────────────
     useEffect(() => {
         if (!currentUser) return;
@@ -98,11 +100,18 @@ const ShareModal = ({ post, onClose }) => {
                 getFollowing(currentUser.uid),
                 getUsersFromRecentChats(currentUser.uid),
             ]);
+            const uids = new Set(following.map(u => u.uid));
+            setFollowingUids(uids);
             const map = new Map();
             recent.forEach(u => map.set(u.uid, u));
             following.forEach(u => map.set(u.uid, u));
             map.delete(currentUser.uid);
-            setSuggestedUsers(Array.from(map.values()));
+            // Hide users who blocked all messages
+            const filtered = Array.from(map.values()).filter(u => {
+                const p = u.settings?.privacy?.messagePrivacy ?? 'everyone';
+                return p !== 'nobody';
+            });
+            setSuggestedUsers(filtered);
             setInitialLoading(false);
         })();
     }, [currentUser]);
@@ -127,6 +136,14 @@ const ShareModal = ({ post, onClose }) => {
         }, 350);
     }, [currentUser?.uid]);
 
+    // ─── Privacy filter helper ────────────────────────────────────────────
+    const canReceiveFrom = useCallback((u) => {
+        const p = u.settings?.privacy?.messagePrivacy ?? 'everyone';
+        if (p === 'nobody') return false;
+        if (p === 'following' && !followingUids.has(u.uid)) return false;
+        return true;
+    }, [followingUids]);
+
     // ─── Displayed list ───────────────────────────────────────────────────
     // When there's a query: show search results merged with client-side filter of suggested
     const displayedUsers = useMemo(() => {
@@ -136,12 +153,17 @@ const ShareModal = ({ post, onClose }) => {
             u.nickname?.toLowerCase().startsWith(q) ||
             u.displayName?.toLowerCase().startsWith(q)
         );
-        // Merge: client filtered first, then server results (dedup)
+        // Merge: client filtered first, then server results (dedup + privacy filter)
         const seen = new Set(clientFiltered.map(u => u.uid));
         const merged = [...clientFiltered];
-        searchResults.forEach(u => { if (!seen.has(u.uid)) { seen.add(u.uid); merged.push(u); } });
+        searchResults.forEach(u => {
+            if (!seen.has(u.uid) && canReceiveFrom(u)) {
+                seen.add(u.uid);
+                merged.push(u);
+            }
+        });
         return merged;
-    }, [query, suggestedUsers, searchResults]);
+    }, [query, suggestedUsers, searchResults, canReceiveFrom]);
 
     // ─── Toggle selection ─────────────────────────────────────────────────
     const toggleUser = useCallback((user) => {

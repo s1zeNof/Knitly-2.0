@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { doc, updateDoc, collection, query, where, getDocs } from 'firebase/firestore';
+import { doc, updateDoc, collection, query, where, getDocs, deleteDoc } from 'firebase/firestore';
+import { deleteUser, reauthenticateWithCredential, EmailAuthProvider } from 'firebase/auth';
 import { uploadFile } from '../services/supabase';
 import { useUserContext } from '../contexts/UserContext';
 import { usePlayerContext } from '../contexts/PlayerContext';
-import { db } from '../services/firebase';
+import { db, auth } from '../services/firebase';
 import { Country, City } from 'country-state-city';
 import Select from 'react-select';
 import EmojiPicker from 'emoji-picker-react';
@@ -71,6 +72,11 @@ const Settings = () => {
     const [allowGroupRequests, setAllowGroupRequests] = useState(true);
     const [showNowPlaying, setShowNowPlaying] = useState(false);
     const previewRefs = useRef({});
+
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
+    const [deleteConfirmText, setDeleteConfirmText] = useState('');
+    const [deletePassword, setDeletePassword] = useState('');
+    const [isDeleting, setIsDeleting] = useState(false);
 
     const [isHeaderShrunk, setIsHeaderShrunk] = useState(false);
     const scrollContainerRef = useRef(null);
@@ -278,6 +284,34 @@ const Settings = () => {
             element.classList.remove(animationId);
             void element.offsetWidth;
             element.classList.add(animationId);
+        }
+    };
+
+    const handleDeleteAccount = async () => {
+        if (!user || deleteConfirmText !== 'ВИДАЛИТИ' || isDeleting) return;
+        setIsDeleting(true);
+        try {
+            const currentUser = auth.currentUser;
+            // Re-authenticate before deletion (Firebase requirement for sensitive ops)
+            if (deletePassword && currentUser.providerData?.[0]?.providerId === 'password') {
+                const credential = EmailAuthProvider.credential(currentUser.email, deletePassword);
+                await reauthenticateWithCredential(currentUser, credential);
+            }
+            // Delete Firestore user document
+            await deleteDoc(doc(db, 'users', user.uid));
+            // Delete Firebase Auth account
+            await deleteUser(currentUser);
+            // Auth state change will redirect to login automatically via UserContext
+        } catch (error) {
+            console.error('Error deleting account:', error);
+            if (error.code === 'auth/wrong-password') {
+                showNotification('Невірний пароль. Спробуйте знову.', 'error');
+            } else if (error.code === 'auth/requires-recent-login') {
+                showNotification('Будь ласка, введіть ваш пароль для підтвердження.', 'error');
+            } else {
+                showNotification('Помилка видалення акаунту. Спробуйте знову.', 'error');
+            }
+            setIsDeleting(false);
         }
     };
 
@@ -580,8 +614,61 @@ const Settings = () => {
         </div>
     );
 
+    const renderAccountTab = () => (
+        <div className="settings-tab-content">
+            <h3>Акаунт</h3>
+            <div className="account-danger-zone">
+                <h4 className="danger-zone-title">Небезпечна зона</h4>
+                <p className="danger-zone-desc">
+                    Видалення акаунту є незворотнім. Всі ваші дані, пости, треки та повідомлення будуть видалені назавжди.
+                    Відповідно до вимог GDPR, ви маєте право на повне видалення ваших персональних даних.
+                </p>
+                <button className="danger-zone-btn" onClick={() => setShowDeleteModal(true)}>
+                    Видалити мій акаунт
+                </button>
+            </div>
+        </div>
+    );
+
     return (
         <div ref={scrollContainerRef} className="settings-page-container">
+            {showDeleteModal && (
+                <div className="delete-account-overlay" onClick={() => { if (!isDeleting) { setShowDeleteModal(false); setDeleteConfirmText(''); setDeletePassword(''); } }}>
+                    <div className="delete-account-modal" onClick={e => e.stopPropagation()}>
+                        <h3>Видалити акаунт</h3>
+                        <p>Ця дія є <strong>незворотньою</strong>. Введіть <strong>ВИДАЛИТИ</strong>, щоб підтвердити.</p>
+                        <input
+                            type="text"
+                            className="form-input"
+                            placeholder="Введіть ВИДАЛИТИ"
+                            value={deleteConfirmText}
+                            onChange={e => setDeleteConfirmText(e.target.value)}
+                            disabled={isDeleting}
+                        />
+                        <input
+                            type="password"
+                            className="form-input"
+                            placeholder="Ваш пароль (для підтвердження)"
+                            value={deletePassword}
+                            onChange={e => setDeletePassword(e.target.value)}
+                            disabled={isDeleting}
+                            style={{ marginTop: '0.75rem' }}
+                        />
+                        <div className="delete-account-modal-actions">
+                            <button className="button-secondary" onClick={() => { setShowDeleteModal(false); setDeleteConfirmText(''); setDeletePassword(''); }} disabled={isDeleting}>
+                                Скасувати
+                            </button>
+                            <button
+                                className="danger-zone-btn"
+                                onClick={handleDeleteAccount}
+                                disabled={deleteConfirmText !== 'ВИДАЛИТИ' || !deletePassword || isDeleting}
+                            >
+                                {isDeleting ? 'Видалення...' : 'Видалити назавжди'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
             <div className={`settings-page-header ${isHeaderShrunk ? 'shrunk' : ''}`}>
                 <h1>Налаштування</h1>
             </div>
@@ -591,25 +678,29 @@ const Settings = () => {
                 <aside className="settings-sidebar">
                     <button className={activeTab === 'profile' ? 'active' : ''} onClick={() => setActiveTab('profile')}><UserIcon /> Профіль</button>
                     <button className={activeTab === 'wallet' ? 'active' : ''} onClick={() => setActiveTab('wallet')}><WalletIcon /> Гаманець</button>
-                    {/* 👇 ДОДАЄМО НОВУ КНОПКУ В САЙДБАР 👇 */}
                     <button className={activeTab === 'giftHistory' ? 'active' : ''} onClick={() => setActiveTab('giftHistory')}><HistoryIcon /> Історія подарунків</button>
                     <button className={activeTab === 'appearance' ? 'active' : ''} onClick={() => setActiveTab('appearance')}><AppearanceIcon /> Вигляд</button>
                     <button className={activeTab === 'chat' ? 'active' : ''} onClick={() => setActiveTab('chat')}><ChatIcon /> Чати</button>
                     <button className={activeTab === 'emoji' ? 'active' : ''} onClick={() => setActiveTab('emoji')}><EmojiIcon /> Емоджі-паки</button>
                     <button className={activeTab === 'privacy' ? 'active' : ''} onClick={() => setActiveTab('privacy')}><PrivacyIcon /> Приватність</button>
                     <button className={activeTab === 'folders' ? 'active' : ''} onClick={() => setActiveTab('folders')}><FolderIcon /> Папки чатів</button>
+                    <button className={`${activeTab === 'account' ? 'active' : ''} settings-account-tab-btn`} onClick={() => setActiveTab('account')}>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>
+                        Акаунт
+                    </button>
                 </aside>
                 <main className="settings-main-content">
                     {activeTab === 'profile' && renderProfileTab()}
                     {activeTab === 'appearance' && renderAppearanceTab()}
                     {activeTab === 'wallet' && <WalletTab />}
-                    {activeTab === 'giftHistory' && <GiftHistoryTab />} {/* <-- РЕНДЕРИМО НОВИЙ КОМПОНЕНТ */}
+                    {activeTab === 'giftHistory' && <GiftHistoryTab />}
                     {activeTab === 'chat' && renderChatTab()}
                     {activeTab === 'emoji' && <EmojiPacksSettings />}
                     {activeTab === 'privacy' && renderPrivacyTab()}
                     {activeTab === 'folders' && renderFoldersTab()}
+                    {activeTab === 'account' && renderAccountTab()}
 
-                    {activeTab !== 'folders' && activeTab !== 'emoji' && activeTab !== 'wallet' && activeTab !== 'giftHistory' && (
+                    {activeTab !== 'folders' && activeTab !== 'emoji' && activeTab !== 'wallet' && activeTab !== 'giftHistory' && activeTab !== 'account' && (
                         <div className="settings-actions">
                             <button className="button-primary" onClick={handleSaveChanges} disabled={isSaving || !!nicknameError}>
                                 {isSaving ? "Збереження..." : "Зберегти зміни"}

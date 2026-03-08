@@ -142,7 +142,10 @@ export default function PrivacyContentEn() {
                     <li><strong>Right to Object:</strong> to object to certain types of data processing.</li>
                 </ul>
                 <p>
-                    To exercise any of these rights, use your profile settings or send a request to <a href="mailto:privacy@knitly.app">privacy@knitly.app</a>. We will process your request within 30 days.
+                    To exercise any of these rights, use your profile settings or send a request to <a href="mailto:privacy@knitly.app">privacy@knitly.app</a>. We will process your request within <strong>30 calendar days</strong>.
+                </p>
+                <p>
+                    <strong>Right to Lodge a Complaint:</strong> Under GDPR, you have the right to lodge a complaint with the supervisory authority in your country. EU residents may contact their national Data Protection Authority (DPA). For a full list, visit <a href="https://edpb.europa.eu/about-edpb/about-edpb/members_en" target="_blank" rel="noopener noreferrer">edpb.europa.eu</a>.
                 </p>
             </section>
 
@@ -194,7 +197,7 @@ export default function PrivacyContentEn() {
                 <h3>Privacy Inquiries</h3>
                 <p>
                     For questions regarding personal data protection, contact: <a href="mailto:privacy@knitly.app">privacy@knitly.app</a><br />
-                    We respond within 30 business days.
+                    We respond within 30 calendar days.
                 </p>
             </div>
         </div>
