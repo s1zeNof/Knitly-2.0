@@ -36,6 +36,10 @@
   ],
   "rewrites": [
     {
+      "source": "/track/:id",
+      "destination": "/api/track"
+    },
+    {
       "source": "/((?!api/).*)",
       "destination": "/index.html"
     }
