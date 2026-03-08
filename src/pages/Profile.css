@@ -79,8 +79,13 @@
 /* ---- DESKTOP/MOBILE ACTION GROUP TOGGLE ---- */
 /* Use double-class selectors to beat .page-profile-actions-group { display:flex }
    which has the same specificity but appears later in the file */
-.page-profile-actions-group.profile-actions-mobile-only { display: none; }
-.page-profile-actions-group.profile-actions-desktop-only { display: flex; }
+.page-profile-actions-group.profile-actions-mobile-only {
+  display: none;
+}
+
+.page-profile-actions-group.profile-actions-desktop-only {
+  display: flex;
+}
 
 /* ---- AVATAR + ACTION ROW ---- */
 .page-profile-header-content {
@@ -540,11 +545,17 @@
   color: #fff;
 }
 
+
+
 /* ---- MOBILE ---- */
 @media (max-width: 900px) {
+
   /* Swap action group positions: desktop → hide, mobile → show below stats */
   /* Double-class selectors needed to beat the 0,2,0 specificity of desktop rules */
-  .page-profile-actions-group.profile-actions-desktop-only { display: none; }
+  .page-profile-actions-group.profile-actions-desktop-only {
+    display: none;
+  }
+
   .page-profile-actions-group.profile-actions-mobile-only {
     display: flex;
     flex-wrap: wrap;

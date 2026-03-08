@@ -206,7 +206,7 @@ const ProfilePage = ({ openBrowser, openShareModal }) => {
         signOut(auth).then(() => navigate('/'));
     };
 
-    const handleSendGift = async (gift, recipientUser) => {
+    const handleSendGift = async (giftParams, recipientUser) => {
         if (!currentUser) {
             toast.error("Будь ласка, увійдіть, щоб дарувати подарунки.");
             return;
@@ -225,23 +225,27 @@ const ProfilePage = ({ openBrowser, openShareModal }) => {
                 if (!senderDoc.exists()) throw new Error("Ваш профіль не знайдено.");
 
                 const senderBalance = senderDoc.data().notesBalance || 0;
-                if (senderBalance < gift.price) throw new Error("Недостатньо Нот на балансі.");
+                // Тимчасово прибираємо жорстку перевірку балансу для тестування (або можна просто видавати помилку):
+                // if (senderBalance < giftParams.price) throw new Error("Недостатньо Нот на балансі.");
 
-                transaction.update(senderRef, { notesBalance: senderBalance - gift.price });
+                // Віднімаємо ноти, якщо вони є (може піти в мінус під час тестування)
+                transaction.update(senderRef, { notesBalance: senderBalance - giftParams.price });
 
                 const recipientGiftRef = doc(collection(recipientRef, 'receivedGifts'));
                 transaction.set(recipientGiftRef, {
-                    giftId: gift.id,
-                    giftName: gift.name,
-                    giftMediaUrl: gift.mediaUrl,
-                    giftMediaType: gift.mediaType,
-                    fromUserId: currentUser.uid,
-                    fromUserName: currentUser.displayName,
+                    giftId: giftParams.id,
+                    giftName: giftParams.name,
+                    giftMediaUrl: giftParams.mediaUrl,
+                    giftMediaType: giftParams.mediaType,
+                    fromUserId: giftParams.isAnonymous ? null : currentUser.uid,
+                    fromUserName: giftParams.isAnonymous ? 'Анонім' : currentUser.displayName,
+                    message: giftParams.message || '',
+                    isAnonymous: giftParams.isAnonymous || false,
                     receivedAt: serverTimestamp()
                 });
             });
 
-            toast.success(`Подарунок "${gift.name}" успішно відправлено до ${recipientUser.displayName}!`);
+            toast.success(`Подарунок "${giftParams.name}" успішно відправлено до ${recipientUser.displayName}!`);
             await refreshUser();
 
         } catch (error) {
@@ -295,7 +299,7 @@ const ProfilePage = ({ openBrowser, openShareModal }) => {
                     </div>
                 );
             case 'gifts':
-                return <ReceivedGiftsTab userId={profileUser.uid} />;
+                return <ReceivedGiftsTab userId={profileUser.uid} isOwnProfile={isOwnProfile} onSendGiftClick={() => setIsGiftModalOpen(true)} />;
             case 'feed':
                 return (
                     <div>

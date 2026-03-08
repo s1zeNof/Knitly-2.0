@@ -21,7 +21,7 @@
 
 .received-gift-item:hover {
     transform: translateY(-5px);
-    box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
 }
 
 
@@ -39,4 +39,60 @@
 .received-gift-info small {
     font-size: 0.8rem;
     color: var(--color-text-secondary);
+}
+
+/* Empty State */
+.received-gifts-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 5rem 1rem;
+    color: var(--color-text-secondary);
+    text-align: center;
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 1rem;
+    margin-top: 1rem;
+}
+
+.received-gifts-empty-icon {
+    width: 64px;
+    height: 64px;
+    color: var(--color-text-secondary);
+    opacity: 0.6;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.received-gifts-empty h3 {
+    margin: 0 0 0.5rem 0;
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--color-text-primary);
+}
+
+.received-gifts-empty p {
+    margin: 0 0 1.5rem 0;
+    font-size: 0.95rem;
+}
+
+.received-gifts-empty-btn {
+    background: var(--color-accent, #a855f7);
+    color: #fff;
+    border: none;
+    padding: 0.8rem 2rem;
+    border-radius: 2rem;
+    font-weight: 600;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s, background 0.2s;
+    box-shadow: 0 4px 12px rgba(168, 85, 247, 0.3);
+}
+
+.received-gifts-empty-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(168, 85, 247, 0.4);
+    background: #9333ea;
 }

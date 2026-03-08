@@ -1,86 +1,587 @@
+/* ============================================================
+   SendGiftModal — Premium Redesign
+   ============================================================ */
+
 .send-gift-modal {
-    max-width: 650px;
+    max-width: 700px;
     width: 90vw;
-    height: 80vh;
-    padding: 0;
+    height: 70vh;
+    max-height: 85vh;
+    padding: 0px !important;
     display: flex;
     flex-direction: column;
+    background: rgba(22, 22, 28, 0.95);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 1.5rem;
+    box-shadow: 0 24px 64px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(168, 85, 247, 0.15);
+    overflow: hidden;
+    animation: modalFadeInUp 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+@keyframes modalFadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px) scale(0.98);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
 }
 
 .send-gift-header {
-    padding: 1.25rem 1.5rem;
-    border-bottom: 1px solid var(--color-border);
+    padding: 1.5rem 2rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
     text-align: center;
     position: relative;
     flex-shrink: 0;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.03) 0%, transparent 100%);
 }
-.send-gift-header h4 { margin: 0; font-size: 1.25rem; }
+
+.send-gift-header h4 {
+    margin: 0;
+    font-size: 1.35rem;
+    font-weight: 700;
+    background: linear-gradient(to right, #fff, #a8a8b0);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    letter-spacing: 0.02em;
+}
+
 .send-gift-header .modal-close-button {
     position: absolute;
     top: 50%;
-    right: 1rem;
+    right: 1.5rem;
     transform: translateY(-50%);
-    background: none;
+    background: rgba(255, 255, 255, 0.05);
     border: none;
-    font-size: 1.5rem;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    font-size: 1.25rem;
     color: var(--color-text-secondary);
     cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s, color 0.2s, transform 0.2s;
+}
+
+.send-gift-header .modal-close-button:hover {
+    background: rgba(255, 255, 255, 0.15);
+    color: #fff;
+    transform: translateY(-50%) scale(1.05);
 }
 
 .send-gift-body {
-    padding: 1.5rem;
+    padding: 0;
+    /* Removing padding from body to allow full-width hero */
     flex-grow: 1;
     overflow-y: auto;
     display: flex;
     flex-direction: column;
 }
 
-.gift-selection-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-    gap: 1.5rem;
+/* Скроллбар для сітки */
+.send-gift-body::-webkit-scrollbar {
+    width: 6px;
 }
 
-.gift-confirmation-view {
+.send-gift-body::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.send-gift-body::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+}
+
+.send-gift-main-layout {
+    display: flex;
+    flex-direction: column;
+}
+
+/* ============================================================
+   HERO A.K.A TELEGRAM STYLE HEADER
+   ============================================================ */
+.send-gift-hero {
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
     text-align: center;
-    height: 100%;
-    gap: 1rem;
+    padding: 2.5rem 2rem 1.5rem;
+    background: radial-gradient(circle at top, rgba(168, 85, 247, 0.08) 0%, transparent 80%);
+    position: relative;
 }
 
-.gift-confirmation-view h4 {
-    font-size: 1.5rem;
-    margin: 0;
+.send-gift-hero-avatar-container {
+    position: relative;
+    margin-bottom: 1.25rem;
 }
 
-.gift-confirmation-view p {
+.send-gift-hero-avatar {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid var(--color-bg-medium);
+    box-shadow: 0 0 0 2px rgba(168, 85, 247, 0.5), 0 8px 24px rgba(168, 85, 247, 0.3);
+    position: relative;
+    z-index: 2;
+}
+
+/* Плаваючі частинки (Зірочки/Ноти як в Telegram) */
+.floating-particle {
+    position: absolute;
+    font-size: 1.2rem;
+    opacity: 0.8;
+    z-index: 1;
+    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.5));
+    animation: float 3s ease-in-out infinite alternate;
+}
+
+.floating-particle.p-1 {
+    top: -10px;
+    left: -20px;
+    animation-delay: 0s;
+    font-size: 1.4rem;
+}
+
+.floating-particle.p-2 {
+    top: 20px;
+    right: -25px;
+    animation-delay: 1s;
     font-size: 1.1rem;
-    color: var(--color-text-secondary);
-    max-width: 80%;
 }
 
-.gift-confirmation-details {
-    margin-top: 1rem;
-    padding: 1rem;
-    background-color: var(--color-bg-light);
-    border-radius: 0.5rem;
+.floating-particle.p-3 {
+    bottom: -5px;
+    left: -10px;
+    animation-delay: 2s;
+    font-size: 1.3rem;
+}
+
+@keyframes float {
+    0% {
+        transform: translateY(0) rotate(0deg);
+    }
+
+    100% {
+        transform: translateY(-15px) rotate(15deg);
+    }
+}
+
+.send-gift-hero-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--color-text-primary);
+    margin: 0 0 0.5rem 0;
+}
+
+.send-gift-hero-desc {
+    font-size: 0.95rem;
+    color: var(--color-text-secondary);
+    line-height: 1.5;
+    margin: 0 0 1rem 0;
+    max-width: 480px;
+}
+
+.send-gift-hero-desc strong {
+    color: var(--color-text-primary);
+}
+
+.send-gift-learn-more {
+    background: none;
+    border: none;
+    color: var(--color-accent);
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity 0.2s;
+    padding: 0;
+}
+
+.send-gift-learn-more:hover {
+    opacity: 0.8;
+}
+
+/* ============================================================
+   TABS
+   ============================================================ */
+.send-gift-tabs {
+    display: flex;
+    justify-content: center;
+    gap: 1.5rem;
+    padding: 0 2rem 1.5rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    margin-bottom: 1.5rem;
+}
+
+.send-gift-tabs button {
+    background: none;
+    border: none;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--color-text-secondary);
+    padding: 0.5rem 0;
+    cursor: pointer;
+    position: relative;
+    transition: color 0.2s;
+}
+
+.send-gift-tabs button.active {
+    color: var(--color-text-primary);
+}
+
+.send-gift-tabs button.active::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: var(--color-accent);
+    border-radius: 2px;
+}
+
+.send-gift-tabs button.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.gift-selection-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+    gap: 1rem;
+    padding: 0 2.5rem 2rem;
+}
+
+/* Loading state */
+.gift-loading {
+    grid-column: 1 / -1;
+    text-align: center;
+    color: var(--color-text-secondary);
+    font-weight: 500;
+    padding: 3rem 0;
+}
+
+/* Close Button for Main Modal */
+.hero-close-button {
+    position: absolute;
+    top: 1rem;
+    right: 1.5rem;
+    background: rgba(255, 255, 255, 0.05);
+    border: none;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    font-size: 1.25rem;
+    color: var(--color-text-secondary);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    z-index: 10;
+}
+
+.hero-close-button:hover {
+    background: rgba(255, 255, 255, 0.15);
+    color: #fff;
+    transform: scale(1.05);
+}
+
+/* ============================================================
+   CONFIRMATION POPUP (Telegram Style)
+   ============================================================ */
+.gift-confirmation-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    z-index: 50;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1.5rem;
+    animation: popupFadeIn 0.2s ease-out forwards;
+}
+
+.gift-confirmation-popup {
+    background: #1c1c24;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 1.25rem;
+    width: 100%;
+    max-width: 420px;
+    padding: 1.5rem 1.25rem 1.25rem;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 24px 64px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(168, 85, 247, 0.2);
+    animation: popupSlideUp 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+@keyframes popupFadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes popupSlideUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px) scale(0.95);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.popup-close-btn {
+    position: absolute;
+    top: 1rem;
+    right: 1.25rem;
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    color: var(--color-text-secondary);
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+.popup-close-btn:hover {
+    color: #fff;
+}
+
+.popup-title {
+    margin: 0 0 1rem 0;
+    font-size: 1.1rem;
+    font-weight: 700;
+    text-align: center;
+    color: var(--color-text-primary);
+}
+
+.popup-info-banner {
+    background: rgba(255, 255, 255, 0.05);
+    padding: 0.5rem 0.85rem;
+    border-radius: 2rem;
+    text-align: center;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--color-text-secondary);
+    margin: 0 auto 1.25rem;
+    display: inline-block;
+}
+
+.popup-gift-preview-card {
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.03) 0%, rgba(255, 255, 255, 0) 100%);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 1rem;
+    padding: 1.25rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    margin-bottom: 1.25rem;
+}
+
+.popup-gift-media {
+    width: 80px;
+    height: 80px;
+    font-size: 3.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 0.85rem;
+    filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.4));
+}
+
+.popup-gift-name {
+    font-size: 1rem;
+    margin: 0 0 0.5rem 0;
+    font-weight: 700;
+}
+
+.popup-gift-desc {
+    font-size: 0.85rem;
+    color: var(--color-text-secondary);
+    margin: 0;
+    line-height: 1.4;
+}
+
+/* Form Styles */
+.popup-form-group {
+    margin-bottom: 1rem;
+}
+
+.popup-input {
+    width: 100%;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: var(--color-text-primary);
+    padding: 0.85rem 1rem;
+    border-radius: 0.75rem;
+    font-size: 0.9rem;
+    font-family: inherit;
+    transition: border-color 0.2s, background 0.2s;
+    outline: none;
+}
+
+.popup-input:focus {
+    border-color: rgba(168, 85, 247, 0.5);
+    background: rgba(168, 85, 247, 0.05);
+}
+
+.popup-input::placeholder {
+    color: rgba(255, 255, 255, 0.3);
+}
+
+/* Toggle Switch */
+.popup-form-toggle {
     display: flex;
     justify-content: space-between;
-    width: 80%;
-    font-size: 1.1rem;
-}
-.gift-confirmation-details .price {
-    font-weight: 700;
-    color: var(--color-accent);
+    align-items: center;
+    padding-top: 1rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    margin-bottom: 1.25rem;
 }
 
-.confirmation-actions {
-    margin-top: 2rem;
-    width: 100%;
+.toggle-info {
     display: flex;
-    justify-content: center;
-    gap: 1rem;
+    flex-direction: column;
+    gap: 0.25rem;
+    padding-right: 1rem;
+}
+
+.toggle-label {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--color-text-primary);
+}
+
+.toggle-desc {
+    font-size: 0.8rem;
+    color: var(--color-text-secondary);
+    line-height: 1.3;
+}
+
+.switch {
+    background-color: transparent;
+    position: relative;
+    display: inline-block;
+    width: 44px;
+    height: 24px;
+    flex-shrink: 0;
+}
+
+.switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(255, 255, 255, 0.15);
+    transition: .3s;
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 18px;
+    width: 18px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    transition: .3s;
+}
+
+input:checked+.slider {
+    background-color: var(--color-accent);
+}
+
+input:focus+.slider {
+    box-shadow: 0 0 1px var(--color-accent);
+}
+
+input:checked+.slider:before {
+    transform: translateX(20px);
+}
+
+.slider.round {
+    border-radius: 24px;
+}
+
+.slider.round:before {
+    border-radius: 50%;
+}
+
+.popup-submit-btn {
+    width: 100%;
+    background: linear-gradient(135deg, var(--color-accent) 0%, #9333ea 100%);
+    color: #fff;
+    border: none;
+    padding: 0.85rem;
+    border-radius: 0.75rem;
+    font-size: 0.95rem;
+    font-weight: 600;
+    font-family: inherit;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 4px 12px rgba(168, 85, 247, 0.3);
+}
+
+.popup-submit-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(168, 85, 247, 0.4);
+}
+
+.popup-submit-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* Mobile responsivness */
+@media (max-width: 600px) {
+    .send-gift-modal {
+        width: 100vw;
+        height: 100vh;
+        max-height: 100vh;
+        border-radius: 0;
+    }
+
+    .hero-close-button {
+        top: 1rem;
+        right: 1rem;
+    }
+
+    .gift-confirmation-popup {
+        margin-bottom: 2rem;
+    }
+
+    .gift-selection-grid {
+        grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+        gap: 1rem;
+    }
 }

@@ -5,12 +5,13 @@ import { db } from '../../services/firebase';
 import Lottie from 'lottie-react';
 import { useLottieData } from '../../hooks/useLottieData';
 import GiftViewerModal from './GiftViewerModal'; // Імпортуємо вьюер
+import PageLoader from '../common/PageLoader'; // Додаємо PageLoader
 import './ReceivedGiftsTab.css';
 
 // Маленький компонент для одного подарунка в списку
 const ReceivedGiftItem = ({ gift, onGiftClick }) => { // Додаємо пропс onGiftClick
     const { animationData } = useLottieData(gift.giftMediaType === 'lottie' ? gift.giftMediaUrl : null);
-    
+
     return (
         // Тепер весь елемент є кнопкою
         <button className="received-gift-item" onClick={() => onGiftClick(gift)}>
@@ -26,7 +27,7 @@ const ReceivedGiftItem = ({ gift, onGiftClick }) => { // Додаємо проп
 };
 
 // Основний компонент вкладки
-const ReceivedGiftsTab = ({ userId }) => {
+const ReceivedGiftsTab = ({ userId, isOwnProfile, onSendGiftClick }) => {
     // Стан для керування модальним вікном перегляду
     const [viewingGift, setViewingGift] = useState(null);
 
@@ -41,10 +42,21 @@ const ReceivedGiftsTab = ({ userId }) => {
         { enabled: !!userId }
     );
 
-    if (isLoading) return <p>Завантаження подарунків...</p>;
+    if (isLoading) return <PageLoader text="Завантаження подарунків..." />;
 
     if (!receivedGifts || receivedGifts.length === 0) {
-        return <div className="page-profile-tab-placeholder">Користувачу ще не дарували подарунків.</div>;
+        return (
+            <div className="received-gifts-empty">
+                <div className="received-gifts-empty-icon">
+                    <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><polyline points="20 12 20 22 4 22 4 12"></polyline><rect x="2" y="7" width="20" height="5"></rect><line x1="12" y1="22" x2="12" y2="7"></line><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"></path><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"></path></svg>
+                </div>
+                <h3>Подарунків ще немає</h3>
+                <p>{isOwnProfile ? 'Вам ще не дарували подарунків.' : 'Користувачу ще не дарували подарунків.'}</p>
+                <button className="received-gifts-empty-btn" onClick={onSendGiftClick}>
+                    Зробити подарунок
+                </button>
+            </div>
+        );
     }
 
     return (
@@ -58,14 +70,14 @@ const ReceivedGiftsTab = ({ userId }) => {
 
             {/* Рендеримо модальне вікно, якщо подарунок обрано для перегляду */}
             {viewingGift && (
-                <GiftViewerModal 
+                <GiftViewerModal
                     gift={{
                         name: viewingGift.giftName,
                         description: `Подарунок від ${viewingGift.fromUserName}`,
                         mediaUrl: viewingGift.giftMediaUrl,
                         mediaType: viewingGift.giftMediaType
-                    }} 
-                    onClose={() => setViewingGift(null)} 
+                    }}
+                    onClose={() => setViewingGift(null)}
                 />
             )}
         </>

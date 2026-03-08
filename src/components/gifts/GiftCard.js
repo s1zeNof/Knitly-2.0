@@ -18,7 +18,7 @@ const GiftCard = ({ gift, onGiftSelect, isSelectionMode = false }) => {
 
     return (
         <>
-            <button className="gift-card" onClick={handleCardClick}>
+            <button className="gift-card" onClick={handleCardClick} type="button">
                 <div className="gift-card-media">
                     {gift.mediaType === 'lottie' && !loading && animationData ? (
                         <Lottie animationData={animationData} loop={true} />
@@ -26,10 +26,8 @@ const GiftCard = ({ gift, onGiftSelect, isSelectionMode = false }) => {
                         <div className="gift-placeholder">🎁</div>
                     )}
                 </div>
-                <h4 className="gift-card-name">{gift.name}</h4>
-                <div className="gift-card-price">
-                    <span>{gift.price}</span>
-                    <small>Нот</small>
+                <div className="gift-card-price-pill">
+                    <span className="price-icon">⭐</span> {gift.price}
                 </div>
             </button>
 

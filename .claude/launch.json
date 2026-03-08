@@ -2,7 +2,7 @@
   "version": "0.0.1",
   "configurations": [
     {
-      "name": "knitly-dev",
+      "name": "knitly-main",
       "runtimeExecutable": "C:\\nvm4w\\nodejs\\npm.cmd",
       "runtimeArgs": ["start"],
       "port": 3000

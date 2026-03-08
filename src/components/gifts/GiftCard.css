@@ -3,56 +3,92 @@
     flex-direction: column;
     align-items: center;
     text-align: center;
-    background-color: var(--color-bg-medium);
-    border: 1px solid var(--color-border);
-    border-radius: 0.75rem;
-    padding: 1.5rem;
-    transition: transform 0.2s, box-shadow 0.2s;
+    background: linear-gradient(145deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.01));
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 1.15rem;
+    padding: 1.5rem 1rem;
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     cursor: pointer;
     width: 100%;
     font-family: inherit;
     color: inherit;
+    position: relative;
+    overflow: hidden;
+}
+
+.gift-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 40%;
+    background: radial-gradient(circle at top, rgba(168, 85, 247, 0.15) 0%, transparent 70%);
+    opacity: 0;
+    transition: opacity 0.3s;
 }
 
 .gift-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+    transform: translateY(-6px);
+    background: linear-gradient(145deg, rgba(168, 85, 247, 0.08), rgba(255, 255, 255, 0.02));
+    border-color: rgba(168, 85, 247, 0.3);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(168, 85, 247, 0.1);
+}
+
+.gift-card:hover::before {
+    opacity: 1;
 }
 
 .gift-card-media {
-    width: 120px;
-    height: 120px;
-    margin-bottom: 1rem;
+    width: 100px;
+    height: 100px;
+    margin-bottom: 1.25rem;
     display: flex;
     align-items: center;
     justify-content: center;
-    pointer-events: none; /* Щоб не перехоплювати клік */
+    pointer-events: none;
+    transition: transform 0.3s;
+    filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.3));
+}
+
+.gift-card:hover .gift-card-media {
+    transform: scale(1.1) translateY(-4px);
 }
 
 .gift-placeholder {
-    font-size: 4rem;
+    font-size: 4.5rem;
+    opacity: 0.9;
 }
 
 .gift-card-name {
-    font-size: 1.1rem;
-    font-weight: 600;
+    font-size: 1.05rem;
+    font-weight: 700;
     margin: 0 0 0.5rem 0;
     pointer-events: none;
+    color: var(--color-text-primary);
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
 }
 
 .gift-card-price {
-    margin-bottom: 0.5rem; /* Зменшено відступ, бо кнопка зникла */
+    margin-bottom: 0;
     pointer-events: none;
+    display: inline-flex;
+    align-items: baseline;
+    gap: 0.25rem;
+    background: rgba(0, 0, 0, 0.3);
+    padding: 0.3rem 0.8rem;
+    border-radius: 2rem;
+    border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .gift-card-price span {
-    font-size: 1.5rem;
-    font-weight: 700;
+    font-size: 1.15rem;
+    font-weight: 800;
     color: var(--color-accent);
 }
 
 .gift-card-price small {
-    font-size: 0.9rem;
+    font-size: 0.8rem;
     color: var(--color-text-secondary);
-    margin-left: 0.25rem;
+    font-weight: 600;
 }
