@@ -23,7 +23,7 @@ const EditTrackModal = ({ track, onClose, onSave }) => {
     const [isSaving, setIsSaving] = useState(false);
 
     // Optional genre if available
-    const [genre, setGenre] = useState(track.genre || '');
+    const [genre] = useState(track.genre || '');
     const tagsInputRef = useRef(null);
 
     /* ── Tags Logic ── */

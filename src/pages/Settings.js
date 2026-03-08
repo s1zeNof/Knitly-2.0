@@ -226,7 +226,6 @@ const Settings = () => {
                 'settings.privacy.groupInvitePrivacy': groupInvitePrivacy,
                 'settings.privacy.allowMessageRequests': allowMessageRequests,
                 'settings.privacy.allowGroupRequests': allowGroupRequests,
-                'settings.privacy.allowGroupRequests': allowGroupRequests,
                 'settings.privacy.showNowPlaying': showNowPlaying,
             };
 
