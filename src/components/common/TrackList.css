@@ -384,6 +384,63 @@
   bottom: calc(100% + 4px);
 }
 
+/* Submenu for Share */
+.options-submenu-container {
+  position: relative;
+  width: 100%;
+}
+
+.options-submenu-container .option-share {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  padding: 0.6rem 0.75rem;
+}
+
+.submenu-arrow-icon {
+  margin-left: auto;
+  color: var(--color-text-secondary);
+}
+
+.options-submenu {
+  position: absolute;
+  top: -4px;
+  right: calc(100% + 4px);
+  /* Opens to the left */
+  background: rgba(28, 28, 32, 0.95);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 0.75rem;
+  padding: 0.4rem;
+  width: 220px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(168, 85, 247, 0.08);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.2s, visibility 0.2s;
+  z-index: 1002;
+}
+
+.options-submenu-container:hover .options-submenu {
+  opacity: 1;
+  visibility: visible;
+}
+
+.options-submenu button {
+  width: 100%;
+  display: flex;
+  align-items: center;
+}
+
+@media (max-width: 600px) {
+
+  /* On mobile screens, submenu shouldn't strictly open to the left if it overflows */
+  .options-submenu {
+    right: 50%;
+    top: 100%;
+  }
+}
+
 /* ============================================================
    GRID VIEW
    ============================================================ */

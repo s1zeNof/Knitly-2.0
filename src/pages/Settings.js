@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { doc, updateDoc, collection, query, where, getDocs, deleteDoc } from 'firebase/firestore';
+import { doc, updateDoc, collection, query, where, getDocs, deleteDoc, writeBatch } from 'firebase/firestore';
 import { deleteUser, reauthenticateWithCredential, EmailAuthProvider } from 'firebase/auth';
 import { uploadFile } from '../services/supabase';
 import { useUserContext } from '../contexts/UserContext';
@@ -226,9 +226,30 @@ const Settings = () => {
                 'settings.privacy.groupInvitePrivacy': groupInvitePrivacy,
                 'settings.privacy.allowMessageRequests': allowMessageRequests,
                 'settings.privacy.allowGroupRequests': allowGroupRequests,
+                'settings.privacy.allowGroupRequests': allowGroupRequests,
                 'settings.privacy.showNowPlaying': showNowPlaying,
             };
-            await updateDoc(userRef, updatedData);
+
+            // Виконуємо пакетне оновлення ЗАВЖДИ, щоб підтягнути старі треки
+            const batch = writeBatch(db);
+
+            // 1. Оновлюємо сам профіль
+            batch.update(userRef, updatedData);
+
+            // 2. Оновлюємо треки автора
+            const tracksQuery = query(collection(db, 'tracks'), where('authorId', '==', user.uid));
+            const tracksSnapshot = await getDocs(tracksQuery);
+
+            tracksSnapshot.forEach((trackDoc) => {
+                batch.update(trackDoc.ref, {
+                    authorName: combinedDisplayName,
+                    authorNickname: nickname || ''
+                });
+            });
+
+            // Виконуємо батч
+            await batch.commit();
+
             await refreshUser();
             showNotification('Зміни успішно збережено!', 'info');
         } catch (error) {
@@ -685,7 +706,7 @@ const Settings = () => {
                     <button className={activeTab === 'privacy' ? 'active' : ''} onClick={() => setActiveTab('privacy')}><PrivacyIcon /> Приватність</button>
                     <button className={activeTab === 'folders' ? 'active' : ''} onClick={() => setActiveTab('folders')}><FolderIcon /> Папки чатів</button>
                     <button className={`${activeTab === 'account' ? 'active' : ''} settings-account-tab-btn`} onClick={() => setActiveTab('account')}>
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="3" /><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14" /></svg>
                         Акаунт
                     </button>
                 </aside>

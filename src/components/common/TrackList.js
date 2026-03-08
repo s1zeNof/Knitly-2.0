@@ -8,6 +8,7 @@ import { doc, deleteDoc, updateDoc, arrayUnion, arrayRemove, increment, collecti
 import './TrackList.css';
 import AnimatedCounter from './AnimatedCounter';
 import ReportModal from './ReportModal';
+import EditTrackModal from './EditTrackModal';
 import { createPortal } from 'react-dom';
 
 const DEFAULT_COVER_URL = 'https://placehold.co/256x256/181818/333333?text=K';
@@ -19,6 +20,10 @@ const GridIcon = () => <svg width="20" height="20" viewBox="0 0 24 24" fill="non
 const OptionsIcon = () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="1"></circle><circle cx="19" cy="12" r="1"></circle><circle cx="5" cy="12" r="1"></circle></svg>;
 const HeartIcon = () => <svg width="20" height="20" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor" fill="none"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>;
 const HeadsetIcon = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 1a9 9 0 0 0-9 9v7a3 3 0 0 0 3 3h1a1 1 0 0 0 1-1v-4a1 1 0 0 0-1-1H5V10a7 7 0 0 1 14 0v1h-2a1 1 0 0 0-1 1v4a1 1 0 0 0 1 1h1a3 3 0 0 0 3-3v-7a9 9 0 0 0-9-9z"></path></svg>;
+const ShareForwardIcon = () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 14 20 9 15 4"></polyline><path d="M4 20v-7a4 4 0 0 1 4-4h12"></path></svg>;
+const LinkIcon = () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>;
+const CodeIcon = () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>;
+const ChevronRightIcon = () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>;
 
 
 const TrackList = ({ userId, initialTracks = null, isLoading: isLoadingInitial = false }) => {
@@ -36,6 +41,7 @@ const TrackList = ({ userId, initialTracks = null, isLoading: isLoadingInitial =
     const [userPlaylists, setUserPlaylists] = useState([]);
     const [selectedTrack, setSelectedTrack] = useState(null);
     const [trackToReport, setTrackToReport] = useState(null);
+    const [trackToEdit, setTrackToEdit] = useState(null);
 
     const menuRefs = useRef({}); // Використовуємо об'єкт для рефів
     const [menuPosition, setMenuPosition] = useState({});
@@ -180,6 +186,26 @@ const TrackList = ({ userId, initialTracks = null, isLoading: isLoadingInitial =
         }
     };
 
+    const handleUpdateTrackStatus = (updatedTrackId, newValues) => {
+        setDisplayTracks(prevTracks =>
+            prevTracks.map(t => t.id === updatedTrackId ? { ...t, ...newValues } : t)
+        );
+    };
+
+    const handleCopyLink = (trackId) => {
+        const url = `${window.location.origin}/track/${trackId}`;
+        navigator.clipboard.writeText(url);
+        showNotification('Посилання скопійовано!', 'info');
+        setActiveMenu(null);
+    };
+
+    const handleCopyEmbed = (trackId) => {
+        const embedCode = `<iframe src="${window.location.origin}/embed/track/${trackId}" width="100%" height="152" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"></iframe>`;
+        navigator.clipboard.writeText(embedCode);
+        showNotification('HTML-код скопійовано!', 'info');
+        setActiveMenu(null);
+    };
+
     if (isDataLoading) return <div className="tracklist-placeholder">Завантаження треків...</div>;
     if (!displayTracks || displayTracks.length === 0) return <div className="tracklist-placeholder">Тут поки що немає треків.</div>;
 
@@ -254,9 +280,24 @@ const TrackList = ({ userId, initialTracks = null, isLoading: isLoadingInitial =
                                         >
                                             <button onClick={() => { addToQueue(track); setActiveMenu(null); }}>Додати в чергу</button>
                                             <button onClick={() => openAddToPlaylistModal(track)}>Додати в плейлист</button>
+                                            <div className="options-submenu-container">
+                                                <button className="option-share">
+                                                    <ShareForwardIcon style={{ marginRight: '6px' }} />
+                                                    Поділитися
+                                                    <ChevronRightIcon className="submenu-arrow-icon" />
+                                                </button>
+                                                <div className="options-submenu">
+                                                    <button onClick={() => handleCopyLink(track.id)}>
+                                                        <LinkIcon style={{ marginRight: '6px' }} /> Скопіювати посилання
+                                                    </button>
+                                                    <button onClick={() => handleCopyEmbed(track.id)}>
+                                                        <CodeIcon style={{ marginRight: '6px' }} /> Скопіювати HTML-код
+                                                    </button>
+                                                </div>
+                                            </div>
                                             {track.authorId === currentUser?.uid ? (
                                                 <>
-                                                    <button className="option-edit">Редагувати</button>
+                                                    <button className="option-edit" onClick={() => { setTrackToEdit(track); setActiveMenu(null); }}>Редагувати</button>
                                                     <button className="option-delete" onClick={() => { setShowDeleteModal(track); setActiveMenu(null); }}>Видалити</button>
                                                 </>
                                             ) : (
@@ -342,6 +383,15 @@ const TrackList = ({ userId, initialTracks = null, isLoading: isLoadingInitial =
                     targetType="track"
                     targetId={trackToReport.id}
                     targetData={{ title: trackToReport.title, authorName: trackToReport.authorName, authorId: trackToReport.authorId }}
+                />,
+                document.body
+            )}
+
+            {trackToEdit && createPortal(
+                <EditTrackModal
+                    track={trackToEdit}
+                    onClose={() => setTrackToEdit(null)}
+                    onSave={handleUpdateTrackStatus}
                 />,
                 document.body
             )}
