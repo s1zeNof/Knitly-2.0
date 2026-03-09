@@ -72,7 +72,28 @@ export const LanguageProvider = ({ children }) => {
             'footer.short.terms': 'Умови',
             'footer.short.privacy': 'Конфіденційність',
             'footer.short.copyright': 'Авторські права',
-            'lang.name': '🇺🇦 Українська'
+            'lang.name': '🇺🇦 Українська',
+
+            // Docs navigation
+            'docs.nav.aria':                 'Панель навігації',
+            'docs.nav.stable':               'СТАБІЛЬНО',
+            'docs.nav.group.gettingStarted': 'Початок роботи',
+            'docs.nav.group.reference':      'Довідник',
+            'docs.nav.group.policies':       'Правила',
+            'docs.nav.group.updates':        'Оновлення',
+            'docs.nav.overview':             'Огляд',
+            'docs.nav.auth':                 'Автентифікація',
+            'docs.nav.bots':                 'Боти',
+            'docs.nav.gifts':                'Подарунки',
+            'docs.nav.tracks':               'Треки',
+            'docs.nav.webhooks':             'Вебхуки',
+            'docs.nav.rateLimits':           'Ліміти запитів',
+            'docs.nav.changelog':            'Зміни',
+            'docs.nav.github':               'GitHub',
+            'docs.nav.reportIssue':          'Повідомити про помилку',
+            'docs.nav.legal':                'Правові документи',
+            'docs.nav.openMenu':             'Відкрити навігацію',
+            'docs.nav.closeMenu':            'Закрити навігацію',
         },
         en: {
             'nav.home': 'Knitly',
@@ -113,7 +134,28 @@ export const LanguageProvider = ({ children }) => {
             'footer.short.terms': 'Terms',
             'footer.short.privacy': 'Privacy',
             'footer.short.copyright': 'Copyright',
-            'lang.name': '🇬🇧 English'
+            'lang.name': '🇬🇧 English',
+
+            // Docs navigation
+            'docs.nav.aria':                 'Navigation sidebar',
+            'docs.nav.stable':               'STABLE',
+            'docs.nav.group.gettingStarted': 'Getting started',
+            'docs.nav.group.reference':      'Reference',
+            'docs.nav.group.policies':       'Policies',
+            'docs.nav.group.updates':        'Updates',
+            'docs.nav.overview':             'Overview',
+            'docs.nav.auth':                 'Authentication',
+            'docs.nav.bots':                 'Bots',
+            'docs.nav.gifts':                'Gifts',
+            'docs.nav.tracks':               'Tracks',
+            'docs.nav.webhooks':             'Webhooks',
+            'docs.nav.rateLimits':           'Rate Limits',
+            'docs.nav.changelog':            'Changelog',
+            'docs.nav.github':               'GitHub',
+            'docs.nav.reportIssue':          'Report an issue',
+            'docs.nav.legal':                'Legal',
+            'docs.nav.openMenu':             'Open navigation',
+            'docs.nav.closeMenu':            'Close navigation',
         }
     };
 

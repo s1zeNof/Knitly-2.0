@@ -15,6 +15,18 @@ import TermsPage from './pages/legal/TermsPage';
 import PrivacyPage from './pages/legal/PrivacyPage';
 import CopyrightPage from './pages/legal/CopyrightPage';
 import GuidelinesPage from './pages/legal/GuidelinesPage';
+
+// ── Developer docs (own layout — no app sidebar/player) ────────────────────
+import DocsLayout        from './components/layout/DocsLayout';
+import DocsOverviewPage  from './pages/developers/DocsOverviewPage';
+import DocsAuthPage      from './pages/developers/DocsAuthPage';
+import DocsBotsPage      from './pages/developers/DocsBotsPage';
+import DocsGiftsPage     from './pages/developers/DocsGiftsPage';
+import DocsTracksPage    from './pages/developers/DocsTracksPage';
+import DocsWebhooksPage  from './pages/developers/DocsWebhooksPage';
+import DocsRateLimitsPage from './pages/developers/DocsRateLimitsPage';
+import DocsChangelogPage from './pages/developers/DocsChangelogPage';
+
 import Home from './pages/Home';
 import Login from './pages/Login';
 import Register from './pages/Register';
@@ -261,6 +273,20 @@ const AppRouter = () => {
                 <Route path="/privacy" element={<LegalLayout><PrivacyPage /></LegalLayout>} />
                 <Route path="/copyright" element={<LegalLayout><CopyrightPage /></LegalLayout>} />
                 <Route path="/guidelines" element={<LegalLayout><GuidelinesPage /></LegalLayout>} />
+            </Routes>
+        );
+    }
+    if (location.pathname.startsWith('/developers')) {
+        return (
+            <Routes>
+                <Route path="/developers" element={<DocsLayout><DocsOverviewPage /></DocsLayout>} />
+                <Route path="/developers/authentication" element={<DocsLayout><DocsAuthPage /></DocsLayout>} />
+                <Route path="/developers/bots" element={<DocsLayout><DocsBotsPage /></DocsLayout>} />
+                <Route path="/developers/gifts" element={<DocsLayout><DocsGiftsPage /></DocsLayout>} />
+                <Route path="/developers/tracks" element={<DocsLayout><DocsTracksPage /></DocsLayout>} />
+                <Route path="/developers/webhooks" element={<DocsLayout><DocsWebhooksPage /></DocsLayout>} />
+                <Route path="/developers/rate-limits" element={<DocsLayout><DocsRateLimitsPage /></DocsLayout>} />
+                <Route path="/developers/changelog" element={<DocsLayout><DocsChangelogPage /></DocsLayout>} />
             </Routes>
         );
     }
