@@ -1,12 +1,13 @@
 import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
-import { useAdminAuth }  from './contexts/AdminAuthContext.jsx';
-import AdminLayout       from './components/AdminLayout.jsx';
-import LoginPage         from './pages/LoginPage.jsx';
-import DashboardPage     from './pages/DashboardPage.jsx';
-import ReportsPage       from './pages/ReportsPage.jsx';
-import UsersPage         from './pages/UsersPage.jsx';
-import UserDetailPage   from './pages/UserDetailPage.jsx';
+import { useAdminAuth } from './contexts/AdminAuthContext.jsx';
+import AdminLayout from './components/AdminLayout.jsx';
+import LoginPage from './pages/LoginPage.jsx';
+import DashboardPage from './pages/DashboardPage.jsx';
+import ReportsPage from './pages/ReportsPage.jsx';
+import UsersPage from './pages/UsersPage.jsx';
+import UserDetailPage from './pages/UserDetailPage.jsx';
+import GiftsPage from './pages/GiftsPage.jsx';
 
 // ── Guard: перенаправляє неадмінів на /login ──────────────────────────────
 const ProtectedRoute = ({ children }) => {
@@ -35,11 +36,12 @@ export default function App() {
                     <ProtectedRoute>
                         <AdminLayout>
                             <Routes>
-                                <Route index             element={<DashboardPage />} />
-                                <Route path="reports"    element={<ReportsPage />}   />
-                                <Route path="users"          element={<UsersPage />}       />
-                                <Route path="users/:uid"     element={<UserDetailPage />}  />
-                                <Route path="*"              element={<Navigate to="/" replace />} />
+                                <Route index element={<DashboardPage />} />
+                                <Route path="reports" element={<ReportsPage />} />
+                                <Route path="users" element={<UsersPage />} />
+                                <Route path="users/:uid" element={<UserDetailPage />} />
+                                <Route path="gifts" element={<GiftsPage />} />
+                                <Route path="*" element={<Navigate to="/" replace />} />
                             </Routes>
                         </AdminLayout>
                     </ProtectedRoute>
