@@ -1,5 +1,4 @@
 import React from 'react';
-import CodeBlock from '../../CodeBlock';
 
 export default function ChangelogContentEn() {
     return (
@@ -16,7 +15,7 @@ export default function ChangelogContentEn() {
             {/* v1.0.0 */}
             <section id="v1-0-0" className="dp-section">
                 <h2 className="dp-section-title">v1.0.0 — Initial release</h2>
-                <p className="dp-meta">Released 2026-03-09 · <span className="dp-badge" style={{display:'inline', padding:'0.1rem 0.5rem', fontSize:'0.7rem'}}>stable</span></p>
+                <p className="dp-meta">Released 2026-03-09 · <span className="dp-badge" style={{ display: 'inline', padding: '0.1rem 0.5rem', fontSize: '0.7rem' }}>stable</span></p>
 
                 <p className="dp-paragraph">
                     The first public release of the Knitly Bot API. This version establishes the

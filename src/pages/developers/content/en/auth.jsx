@@ -1,5 +1,4 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
 import CodeBlock from '../../CodeBlock';
 
 export default function AuthContentEn() {
