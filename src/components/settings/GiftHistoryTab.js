@@ -64,6 +64,10 @@ const GiftHistoryTab = () => {
                 {history && history.length > 0 ? (
                     history.map(item => {
                         const isSent = item.fromUserId === currentUser.uid;
+                        const finalGiftName = typeof item.giftName === 'object'
+                            ? (item.giftName?.uk || item.giftName?.en || 'Подарунок')
+                            : (item.giftName || 'Подарунок');
+
                         return (
                             <div key={item.id} className={`history-item ${isSent ? 'sent' : 'received'}`}>
                                 <div className="history-item-icon">
@@ -72,9 +76,9 @@ const GiftHistoryTab = () => {
                                 </div>
                                 <div className="history-item-details">
                                     <p>
-                                        {isSent 
-                                            ? `Ви подарували "${item.giftName}" користувачу ${item.toUserName}`
-                                            : `Ви отримали "${item.giftName}" від ${item.fromUserName}`
+                                        {isSent
+                                            ? `Ви подарували "${finalGiftName}" користувачу ${item.toUserName}`
+                                            : `Ви отримали "${finalGiftName}" від ${item.fromUserName}`
                                         }
                                     </p>
                                     <small>{formatHistoryTime(item.timestamp)}</small>

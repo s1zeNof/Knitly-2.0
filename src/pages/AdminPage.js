@@ -4,7 +4,6 @@ import { collection, getDocs, orderBy, query, doc, updateDoc } from 'firebase/fi
 import { db } from '../services/firebase';
 import UserManagementTable from '../components/admin/UserManagementTable';
 import EditUserRolesModal from '../components/common/EditUserRolesModal';
-import GiftManagement from '../components/admin/GiftManagement'; // <-- ІМПОРТ
 import UnclaimedTracksTable from '../components/admin/UnclaimedTracksTable';
 import './AdminPage.css';
 
@@ -66,9 +65,6 @@ const AdminPage = () => {
                 <h1>Панель Адміністратора</h1>
                 <p>Керування користувачами та контентом платформи Knitly.</p>
             </header>
-
-            {/* Додаємо новий блок керування подарунками */}
-            <GiftManagement />
 
             <UnclaimedTracksTable />
 
