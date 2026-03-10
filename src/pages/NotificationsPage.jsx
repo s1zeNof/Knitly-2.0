@@ -6,6 +6,7 @@ import { collection, query, orderBy, getDocs, writeBatch, doc, updateDoc, limit 
 import { useUserContext } from '../contexts/UserContext';
 import LeftSidebar from '../components/layout/LeftSidebar';
 import NotificationItem from '../components/notifications/NotificationItem';
+import GiftViewerModal from '../components/gifts/GiftViewerModal';
 import './NotificationsPage.css';
 
 /* ── Tab SVG icons ── */
@@ -123,6 +124,7 @@ const NotificationsPage = () => {
     const queryClient = useQueryClient();
     const navigate = useNavigate();
     const [activeTab, setActiveTab] = useState('all');
+    const [viewingGift, setViewingGift] = useState(null);
     const headerRef = useRef(null);
 
     // Scroll-triggered background: when sticky header is stuck, fade in blur bg
@@ -165,6 +167,16 @@ const NotificationsPage = () => {
             await updateDoc(doc(db, 'users', currentUser.uid, 'notifications', notification.id), { read: true });
             queryClient.invalidateQueries(['notifications', currentUser?.uid]);
         }
+
+        if (notification.type === 'gift_received') {
+            setViewingGift({
+                name: notification.entityTitle,
+                description: `Подарунок від ${notification.fromUser?.nickname || 'Аноніма'}`,
+                lottieUrl: notification.entityThumbnail
+            });
+            return;
+        }
+
         // navigate
         const url = getNavigationUrl(notification);
         if (url) navigate(url);
@@ -263,6 +275,13 @@ const NotificationsPage = () => {
                     </div>
                 </div>
             </main>
+
+            {viewingGift && (
+                <GiftViewerModal
+                    gift={viewingGift}
+                    onClose={() => setViewingGift(null)}
+                />
+            )}
         </div>
     );
 };

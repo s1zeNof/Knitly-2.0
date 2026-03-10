@@ -254,6 +254,18 @@ const ProfilePage = ({ openBrowser, openShareModal }) => {
                     isAnonymous: giftParams.isAnonymous || false,
                     receivedAt: serverTimestamp()
                 });
+
+                // Створення сповіщення для отримувача
+                const notificationRef = doc(collection(recipientRef, 'notifications'));
+                transaction.set(notificationRef, {
+                    type: 'gift_received',
+                    fromUser: giftParams.isAnonymous ? { uid: 'anonymous', nickname: 'Анонім', photoURL: null } : { uid: currentUser.uid, nickname: currentUser.nickname, photoURL: currentUser.photoURL },
+                    entityId: recipientGiftRef.id,
+                    entityTitle: giftParams.name, // об'єкт {uk, en}
+                    entityThumbnail: giftParams.lottieUrl || null,
+                    timestamp: serverTimestamp(),
+                    read: false
+                });
             });
 
             const giftDisplayName = giftParams.name?.uk || giftParams.name?.en || 'Подарунок';

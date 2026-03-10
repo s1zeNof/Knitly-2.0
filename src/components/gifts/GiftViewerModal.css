@@ -12,8 +12,13 @@
 }
 
 @keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
 }
 
 .glassmorphism-content {
@@ -22,7 +27,8 @@
     max-width: 500px;
     height: auto;
     aspect-ratio: 1 / 1.1;
-    background: rgba(23, 23, 35, 0.6); /* Напівпрозорий фон */
+    background: rgba(23, 23, 35, 0.6);
+    /* Напівпрозорий фон */
     border-radius: 20px;
     border: 1px solid rgba(255, 255, 255, 0.18);
     box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
@@ -33,8 +39,15 @@
 }
 
 @keyframes scaleUp {
-    from { transform: scale(0.8); opacity: 0; }
-    to { transform: scale(1); opacity: 1; }
+    from {
+        transform: scale(0.8);
+        opacity: 0;
+    }
+
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
 }
 
 .viewer-close-button {
@@ -83,4 +96,50 @@
 .viewer-info p {
     margin: 0;
     color: rgba(255, 255, 255, 0.8);
+}
+
+/* === Mobile Bottom Sheet === */
+@media (max-width: 640px) {
+    .gift-viewer-overlay {
+        align-items: flex-end;
+        /* Притискаємо до низу */
+        padding: 0;
+    }
+
+    .glassmorphism-content {
+        width: 100vw;
+        max-width: none;
+        height: auto;
+        min-height: 50vh;
+        max-height: 85vh;
+        border-radius: 24px 24px 0 0;
+        border: none;
+        border-top: 1px solid rgba(255, 255, 255, 0.2);
+        animation: slideUpBottom 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        aspect-ratio: unset;
+        padding: 2.5rem 1.5rem 2rem;
+    }
+
+    @keyframes slideUpBottom {
+        from {
+            transform: translateY(100%);
+            opacity: 0;
+        }
+
+        to {
+            transform: translateY(0);
+            opacity: 1;
+        }
+    }
+
+    .viewer-close-button {
+        top: 20px;
+        right: 20px;
+        background: rgba(255, 255, 255, 0.1);
+    }
+
+    .viewer-animation-container {
+        height: 250px;
+        margin-bottom: 1rem;
+    }
 }
