@@ -9,18 +9,20 @@ import PageLoader from '../common/PageLoader'; // Додаємо PageLoader
 import './ReceivedGiftsTab.css';
 
 // Маленький компонент для одного подарунка в списку
-const ReceivedGiftItem = ({ gift, onGiftClick }) => { // Додаємо пропс onGiftClick
-    const { animationData } = useLottieData(gift.giftMediaType === 'lottie' ? gift.giftMediaUrl : null);
+const ReceivedGiftItem = ({ gift, onGiftClick }) => {
+    const { animationData } = useLottieData(gift.giftLottieUrl || null);
+
+    // Support string name or {uk, en} object
+    const displayName = 'Подарунок';
 
     return (
-        // Тепер весь елемент є кнопкою
-        <button className="received-gift-item" onClick={() => onGiftClick(gift)}>
+        <button className="received-gift-item" onClick={() => onGiftClick({ ...gift, displayName })}>
             <div className="received-gift-media">
-                {animationData && <Lottie animationData={animationData} loop={true} />}
+                {animationData ? <Lottie animationData={animationData} loop={true} /> : <div className="gift-placeholder">🎁</div>}
             </div>
             <div className="received-gift-info">
-                <p className="received-gift-name">{gift.giftName}</p>
-                <small>від {gift.fromUserName}</small>
+                <p className="received-gift-name">{displayName}</p>
+                <small>від {gift.fromUserName || 'Анонім'}</small>
             </div>
         </button>
     );
@@ -72,10 +74,9 @@ const ReceivedGiftsTab = ({ userId, isOwnProfile, onSendGiftClick }) => {
             {viewingGift && (
                 <GiftViewerModal
                     gift={{
-                        name: viewingGift.giftName,
-                        description: `Подарунок від ${viewingGift.fromUserName}`,
-                        mediaUrl: viewingGift.giftMediaUrl,
-                        mediaType: viewingGift.giftMediaType
+                        name: viewingGift.displayName,
+                        description: `Подарунок від ${viewingGift.fromUserName || 'Аноніма'}`,
+                        lottieUrl: viewingGift.giftLottieUrl || null
                     }}
                     onClose={() => setViewingGift(null)}
                 />

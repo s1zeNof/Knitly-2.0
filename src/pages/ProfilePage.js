@@ -224,19 +224,30 @@ const ProfilePage = ({ openBrowser, openShareModal }) => {
                 const senderDoc = await transaction.get(senderRef);
                 if (!senderDoc.exists()) throw new Error("Ваш профіль не знайдено.");
 
-                const senderBalance = senderDoc.data().notesBalance || 0;
-                // Тимчасово прибираємо жорстку перевірку балансу для тестування (або можна просто видавати помилку):
-                // if (senderBalance < giftParams.price) throw new Error("Недостатньо Нот на балансі.");
+                // ЧИТАННЯ (Reads) повинні виконуватись ДО ЗАПИСУ (Writes)
+                const recipientDoc = await transaction.get(recipientRef);
 
-                // Віднімаємо ноти, якщо вони є (може піти в мінус під час тестування)
+                const senderBalance = senderDoc.data().notesBalance || 0;
+
+                // Перевірка балансу 
+                if (senderBalance < giftParams.price) throw new Error("Недостатньо Нот на балансі.");
+
+                // ЗАПИСИ (Writes)
+                // Віднімаємо ноти відправнику
                 transaction.update(senderRef, { notesBalance: senderBalance - giftParams.price });
+
+                // Нараховуємо ноти артисту (тимчасово 100%, потім зробимо 90/10)
+                const recipientBalance = recipientDoc.exists() ? (recipientDoc.data().notesBalance || 0) : 0;
+                if (recipientDoc.exists()) {
+                    transaction.update(recipientRef, { notesBalance: recipientBalance + giftParams.price });
+                }
 
                 const recipientGiftRef = doc(collection(recipientRef, 'receivedGifts'));
                 transaction.set(recipientGiftRef, {
                     giftId: giftParams.id,
-                    giftName: giftParams.name,
-                    giftMediaUrl: giftParams.mediaUrl,
-                    giftMediaType: giftParams.mediaType,
+                    giftName: giftParams.name, // object {uk, en}
+                    giftLottieUrl: giftParams.lottieUrl || null,
+                    giftType: giftParams.type || 'regular',
                     fromUserId: giftParams.isAnonymous ? null : currentUser.uid,
                     fromUserName: giftParams.isAnonymous ? 'Анонім' : currentUser.displayName,
                     message: giftParams.message || '',
@@ -245,7 +256,8 @@ const ProfilePage = ({ openBrowser, openShareModal }) => {
                 });
             });
 
-            toast.success(`Подарунок "${giftParams.name}" успішно відправлено до ${recipientUser.displayName}!`);
+            const giftDisplayName = giftParams.name?.uk || giftParams.name?.en || 'Подарунок';
+            toast.success(`Подарунок "${giftDisplayName}" успішно відправлено до ${recipientUser.displayName}!`);
             await refreshUser();
 
         } catch (error) {

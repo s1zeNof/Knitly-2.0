@@ -168,7 +168,7 @@ service cloud.firestore {
     // =======================================================
     match /gifts/{giftId} {
       allow read: if true;
-      allow write: if false;
+      allow write: if isAdmin();
     }
     match /giftHistory/{historyId} {
       allow read: if isSignedIn() &&

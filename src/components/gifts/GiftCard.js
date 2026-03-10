@@ -5,7 +5,7 @@ import GiftViewerModal from './GiftViewerModal';
 import './GiftCard.css';
 
 const GiftCard = ({ gift, onGiftSelect, isSelectionMode = false }) => {
-    const { animationData, loading } = useLottieData(gift.mediaType === 'lottie' ? gift.mediaUrl : null);
+    const { animationData, loading } = useLottieData(gift.lottieUrl || null);
     const [isViewerModalOpen, setIsViewerModalOpen] = React.useState(false);
 
     const handleCardClick = () => {
@@ -20,7 +20,7 @@ const GiftCard = ({ gift, onGiftSelect, isSelectionMode = false }) => {
         <>
             <button className="gift-card" onClick={handleCardClick} type="button">
                 <div className="gift-card-media">
-                    {gift.mediaType === 'lottie' && !loading && animationData ? (
+                    {gift.lottieUrl && !loading && animationData ? (
                         <Lottie animationData={animationData} loop={true} />
                     ) : (
                         <div className="gift-placeholder">🎁</div>

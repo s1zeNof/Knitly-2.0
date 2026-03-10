@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { collection, doc, addDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { db, storage } from '../../firebase';
+import Lottie from 'lottie-react';
 import './GiftEditor.css';
 
 const DEFAULT_GIFT = {
@@ -19,7 +20,8 @@ const DEFAULT_GIFT = {
 
 export default function GiftEditor({ existingGift, onClose }) {
     const [formData, setFormData] = useState(DEFAULT_GIFT);
-    const [file, setFile] = useState(null);
+    const [files, setFiles] = useState([]); // Тепер це масив файлів
+    const [previews, setPreviews] = useState([]); // Дані Lottie для відображення карток
     const [uploading, setUploading] = useState(false);
     const [saving, setSaving] = useState(false);
 
@@ -34,10 +36,31 @@ export default function GiftEditor({ existingGift, onClose }) {
         }
     }, [existingGift]);
 
-    const handleFileChange = (e) => {
-        if (e.target.files[0]) {
-            setFile(e.target.files[0]);
+    const handleFileChange = async (e) => {
+        const selectedFiles = Array.from(e.target.files);
+        if (selectedFiles.length === 0) return;
+
+        // В режимі редагування (якщо вже є existingGift) дозволяємо лише 1 файл
+        const filesToProcess = isEditMode ? [selectedFiles[0]] : selectedFiles;
+        setFiles(filesToProcess);
+
+        // Генеруємо прев'ю для кожного вибраного файлу
+        const previewsData = [];
+        for (const file of filesToProcess) {
+            try {
+                const text = await file.text();
+                const json = JSON.parse(text);
+                previewsData.push({ file, animationData: json, name: file.name.replace('.json', '') });
+            } catch (err) {
+                console.error("Помилка читання Lottie JSON:", err);
+            }
         }
+        setPreviews(previewsData);
+    };
+
+    const removeFile = (index) => {
+        setFiles(prev => prev.filter((_, i) => i !== index));
+        setPreviews(prev => prev.filter((_, i) => i !== index));
     };
 
     const handleInputChange = (field, value, isNested = false, nestedKey = null) => {
@@ -54,53 +77,67 @@ export default function GiftEditor({ existingGift, onClose }) {
         }
     };
 
-    const uploadLottie = async () => {
-        if (!file) return formData.lottieUrl;
-
-        setUploading(true);
+    const uploadLottie = async (fileObj) => {
         try {
-            // Зберігаємо файли в бакет "gifts" у Supabase/Firebase
-            const storageRef = ref(storage, `gifts/${Date.now()}_${file.name}`);
-            const snapshot = await uploadBytes(storageRef, file);
+            const storageRef = ref(storage, `gifts/${Date.now()}_${fileObj.name}`);
+            const snapshot = await uploadBytes(storageRef, fileObj);
             const downloadURL = await getDownloadURL(snapshot.ref);
             return downloadURL;
         } catch (error) {
             console.error("Upload error:", error);
-            alert("Помилка при завантаженні файлу.");
-            return null;
-        } finally {
-            setUploading(false);
+            throw new Error(`Помилка при завантаженні файлу ${fileObj.name}.`);
         }
     };
 
     const handleSave = async (e) => {
         e.preventDefault();
+
+        // В режимі створення вимагаємо хоча б один файл
+        if (!isEditMode && files.length === 0) {
+            alert("Оберіть хоча б один Lottie файл!");
+            return;
+        }
+
         setSaving(true);
+        setUploading(true);
 
         try {
-            let finalLottieUrl = formData.lottieUrl;
-
-            // Якщо вибрано новий файл, завантажуємо його
-            if (file) {
-                const uploadedUrl = await uploadLottie();
-                if (!uploadedUrl) {
-                    setSaving(false);
-                    return;
-                }
-                finalLottieUrl = uploadedUrl;
-            }
-
-            const giftData = {
-                ...formData,
-                lottieUrl: finalLottieUrl,
-                updatedAt: serverTimestamp()
-            };
-
             if (isEditMode) {
+                // Одиночне збереження для існуючого подарунка
+                let finalLottieUrl = formData.lottieUrl;
+                if (files.length > 0) {
+                    finalLottieUrl = await uploadLottie(files[0]);
+                }
+
+                const giftData = {
+                    ...formData,
+                    lottieUrl: finalLottieUrl,
+                    updatedAt: serverTimestamp()
+                };
                 await updateDoc(doc(db, 'gifts', existingGift.id), giftData);
             } else {
-                giftData.createdAt = serverTimestamp();
-                await addDoc(collection(db, 'gifts'), giftData);
+                // Масове завантаження та створення багатьох подарунків
+                const uploadPromises = previews.map(async (preview, index) => {
+                    const downloadUrl = await uploadLottie(preview.file);
+
+                    // Якщо базове ім'я пусте, беремо назву з файлу. Інакше додаємо індекс (якщо файлів більше одного).
+                    const baseNameUk = formData.name.uk || preview.name;
+                    const finalNameUk = previews.length > 1 && formData.name.uk ? `${baseNameUk} ${index + 1}` : baseNameUk;
+
+                    const giftData = {
+                        ...formData,
+                        name: {
+                            uk: finalNameUk,
+                            en: formData.name.en ? (previews.length > 1 ? `${formData.name.en} ${index + 1}` : formData.name.en) : ''
+                        },
+                        lottieUrl: downloadUrl,
+                        createdAt: serverTimestamp(),
+                        updatedAt: serverTimestamp()
+                    };
+                    return addDoc(collection(db, 'gifts'), giftData);
+                });
+
+                await Promise.all(uploadPromises);
             }
 
             onClose();
@@ -123,13 +160,13 @@ export default function GiftEditor({ existingGift, onClose }) {
                 <form className="editor-form" onSubmit={handleSave}>
                     <div className="form-group-row">
                         <div className="form-group">
-                            <label>Назва (Українська) *</label>
+                            <label>Базова Назва (Українська) {isEditMode ? '*' : '(залиште пустим, щоб взяти з файлів)'}</label>
                             <input
                                 type="text"
-                                required
+                                required={isEditMode}
                                 value={formData.name.uk}
                                 onChange={(e) => handleInputChange('name', e.target.value, true, 'uk')}
-                                placeholder="Напр. Золота платівка"
+                                placeholder={isEditMode ? "Напр. Золота платівка" : "Назва для всіх подарунків "}
                             />
                         </div>
                         <div className="form-group">
@@ -167,20 +204,40 @@ export default function GiftEditor({ existingGift, onClose }) {
                     </div>
 
                     <div className="form-group">
-                        <label>Анімація (Lottie JSON) *</label>
+                        <label>Анімація (Lottie JSON) {isEditMode ? '' : '*'}</label>
                         <div className="file-upload-box">
                             <input
                                 type="file"
                                 accept=".json"
+                                multiple={!isEditMode}
                                 onChange={handleFileChange}
-                                required={!isEditMode && !formData.lottieUrl}
                             />
-                            {formData.lottieUrl && !file && (
+                            {formData.lottieUrl && previews.length === 0 && (
                                 <div className="current-file">
-                                    ✓ Файл вже завантажено <a href={formData.lottieUrl} target="_blank" rel="noreferrer">Переглянути</a>
+                                    ✓ Файл завантажено <a href={formData.lottieUrl} target="_blank" rel="noreferrer">Переглянути поточний</a>
                                 </div>
                             )}
                         </div>
+
+                        {/* ПРЕВ'Ю СІТКА */}
+                        {previews.length > 0 && (
+                            <div className="gift-preview-grid">
+                                {previews.map((item, idx) => (
+                                    <div key={idx} className="preview-card">
+                                        <button
+                                            type="button"
+                                            className="remove-preview-btn"
+                                            onClick={() => removeFile(idx)}
+                                            title="Видалити"
+                                        >&times;</button>
+                                        <div className="preview-animation">
+                                            <Lottie animationData={item.animationData} loop={true} />
+                                        </div>
+                                        <div className="preview-name">{item.name}</div>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
                     </div>
 
                     {formData.type === 'nft' && (

@@ -156,6 +156,81 @@
     cursor: pointer;
 }
 
+/* --- Preview Grid --- */
+.gift-preview-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 1rem;
+    margin-top: 1rem;
+    padding: 1rem;
+    background: rgba(15, 23, 42, 0.5);
+    border-radius: 8px;
+    border: 1px solid #334155;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.preview-card {
+    background: #1e293b;
+    border: 1px solid #475569;
+    border-radius: 8px;
+    padding: 0.75rem;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    transition: transform 0.2s, border-color 0.2s;
+}
+
+.preview-card:hover {
+    transform: translateY(-2px);
+    border-color: #a855f7;
+}
+
+.remove-preview-btn {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: #ef4444;
+    color: white;
+    border: 2px solid #1e293b;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    cursor: pointer;
+    z-index: 2;
+    padding: 0;
+    line-height: 1;
+    transition: background 0.2s;
+}
+
+.remove-preview-btn:hover {
+    background: #dc2626;
+}
+
+.preview-animation {
+    width: 80px;
+    height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.preview-name {
+    font-size: 0.75rem;
+    color: #cbd5e1;
+    text-align: center;
+    width: 100%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
 .editor-footer {
     display: flex;
     justify-content: flex-end;

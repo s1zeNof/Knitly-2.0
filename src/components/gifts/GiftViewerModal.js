@@ -4,7 +4,11 @@ import { useLottieData } from '../../hooks/useLottieData';
 import './GiftViewerModal.css';
 
 const GiftViewerModal = ({ gift, onClose }) => {
-    const { animationData, loading } = useLottieData(gift.mediaType === 'lottie' ? gift.mediaUrl : null);
+    const { animationData, loading } = useLottieData(gift.lottieUrl || null);
+
+    const displayName = typeof gift.name === 'object'
+        ? (gift.name?.uk || gift.name?.en || 'Подарунок')
+        : (gift.name || 'Подарунок');
 
     return (
         <div className="gift-viewer-overlay" onClick={onClose}>
@@ -18,7 +22,7 @@ const GiftViewerModal = ({ gift, onClose }) => {
                     )}
                 </div>
                 <div className="viewer-info">
-                    <h3>{gift.name}</h3>
+                    <h3>{displayName}</h3>
                     <p>{gift.description}</p>
                 </div>
             </div>

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useQuery } from 'react-query';
 import { db } from '../../services/firebase';
-import { collection, getDocs } from 'firebase/firestore';
+import { collection, getDocs, query, where } from 'firebase/firestore';
 import Lottie from 'lottie-react';
 import { useLottieData } from '../../hooks/useLottieData';
 import GiftCard from './GiftCard';
@@ -9,9 +9,9 @@ import default_picture from '../../img/Default-Images/default-picture.svg';
 import './SendGiftModal.css';
 
 const PopupGiftMedia = ({ gift }) => {
-    const { animationData, loading } = useLottieData(gift.mediaType === 'lottie' ? gift.mediaUrl : null);
+    const { animationData, loading } = useLottieData(gift.lottieUrl || null);
 
-    if (gift.mediaType === 'lottie' && !loading && animationData) {
+    if (gift.lottieUrl && !loading && animationData) {
         return <Lottie animationData={animationData} loop={true} style={{ width: '100%', height: '100%' }} />;
     }
     return <div className="gift-placeholder">🎁</div>;
@@ -25,11 +25,15 @@ const SendGiftModal = ({ recipient, onClose, onGiftSendInitiated }) => {
     const [message, setMessage] = useState('');
     const [isAnonymous, setIsAnonymous] = useState(false);
 
-    const { data: gifts, isLoading } = useQuery('allGifts', () =>
-        getDocs(collection(db, 'gifts')).then(snap =>
-            snap.docs.map(doc => ({ id: doc.id, ...doc.data() }))
-        )
-    );
+    const { data: gifts, isLoading } = useQuery('allGifts', () => {
+        const q = query(collection(db, 'gifts'), where('status', '==', 'active'));
+        return getDocs(q).then(snap =>
+            // Фільтруємо на клієнті про всяк випадок, щоб відкинути старі тестові подарунки без типу
+            snap.docs
+                .map(doc => ({ id: doc.id, ...doc.data() }))
+                .filter(gift => gift.type === 'regular' || gift.type === 'nft')
+        );
+    });
 
     const handleGiftSelect = (gift) => {
         setSelectedGift(gift);
