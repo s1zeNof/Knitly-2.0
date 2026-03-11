@@ -65,6 +65,8 @@ import NotFoundPage from './pages/NotFoundPage';
 import EmailVerifiedPage from './pages/EmailVerifiedPage';
 import LibraryPage from './pages/LibraryPage';
 import EmailVerificationBanner from './components/common/EmailVerificationBanner';
+import RoomsPage from './pages/RoomsPage';
+import RoomPage from './pages/RoomPage';
 
 import './styles/index.css';
 import './components/posts/Post.css';
@@ -214,6 +216,8 @@ const AppLayout = () => {
                     <Route path="/notifications" element={<NotificationsPage />} />
                     <Route path="/report-result/:reportId" element={<ReportResultPage />} />
                     <Route path="/studio" element={<CreatorStudio />} />
+                    <Route path="/rooms" element={<RoomsPage />} />
+                    <Route path="/rooms/:roomId" element={<RoomPage />} />
                     <Route path="/forgot-password" element={<ForgotPassword />} />
                     <Route path="/email-verified" element={<EmailVerifiedPage />} />
                     <Route path="/migrate-cloudinary" element={<AdminRoute><CloudinaryMigration /></AdminRoute>} />
