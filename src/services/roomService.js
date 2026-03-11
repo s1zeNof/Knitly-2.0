@@ -225,20 +225,25 @@ export const listenToMessages = (roomId, callback, msgLimit = 150) => {
     });
 };
 
-export const listenToPublicRooms = (callback, limitCount = 30) => {
-    // Single equality filter + orderBy on same field avoids composite index requirement.
-    // We filter isPublic client-side and sort by participantsCount client-side.
+export const listenToPublicRooms = (callback, limitCount = 50) => {
+    // Only single equality filter — no orderBy on a different field to avoid composite index.
+    // Sorting is done client-side: by participantsCount desc, then updatedAt desc.
     const q = query(
         collection(db, 'rooms'),
         where('status', '==', 'active'),
-        orderBy('updatedAt', 'desc'),
         limit(limitCount)
     );
     return onSnapshot(q, (snap) => {
         const rooms = snap.docs
             .map(d => ({ id: d.id, ...d.data() }))
             .filter(r => r.isPublic !== false)
-            .sort((a, b) => (b.participantsCount || 0) - (a.participantsCount || 0));
+            .sort((a, b) => {
+                const countDiff = (b.participantsCount || 0) - (a.participantsCount || 0);
+                if (countDiff !== 0) return countDiff;
+                const aTime = a.updatedAt?.toMillis?.() || 0;
+                const bTime = b.updatedAt?.toMillis?.() || 0;
+                return bTime - aTime;
+            });
         callback(rooms);
     }, (error) => {
         console.error('[listenToPublicRooms] error:', error);

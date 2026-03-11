@@ -229,6 +229,47 @@ service cloud.firestore {
       }
     }
     // =======================================================
+    // rooms — кімнати спільного прослуховування (#17)
+    // =======================================================
+    match /rooms/{roomId} {
+      // Public rooms: будь-який авторизований може читати
+      // Private rooms: тільки учасники
+      allow read: if isSignedIn() && (
+                    resource == null ||
+                    resource.data.isPublic == true ||
+                    request.auth.uid in resource.data.participants
+                  );
+      // Створити кімнату може будь-який авторизований — і тільки від свого uid
+      allow create: if isSignedIn() &&
+                    request.resource.data.hostId == request.auth.uid;
+      // Оновити може хост (будь-що) або учасник (тільки participants/participantsCount/updatedAt)
+      allow update: if isSignedIn() && (
+                      resource.data.hostId == request.auth.uid ||
+                      request.resource.data.diff(resource.data)
+                        .affectedKeys()
+                        .hasOnly(['participants', 'participantsCount', 'updatedAt',
+                                  'currentTrack', 'isPlaying', 'playbackOffset', 'syncedAt',
+                                  'queue', 'status'])
+                    );
+      allow delete: if (isSignedIn() && resource.data.hostId == request.auth.uid) ||
+                    isAdmin();
+
+      match /messages/{messageId} {
+        allow read: if isSignedIn() && (
+                      get(/databases/$(database)/documents/rooms/$(roomId)).data.isPublic == true ||
+                      request.auth.uid in
+                        get(/databases/$(database)/documents/rooms/$(roomId)).data.participants
+                    );
+        allow create: if isSignedIn() && (
+                        request.resource.data.senderId == request.auth.uid ||
+                        request.resource.data.senderId == 'system'
+                      ) && request.auth.uid in
+                        get(/databases/$(database)/documents/rooms/$(roomId)).data.participants;
+        allow update, delete: if isSignedIn() &&
+                              request.auth.uid == resource.data.senderId;
+      }
+    }
+    // =======================================================
     // reports — система скарг
     // =======================================================
     match /reports/{reportId} {
