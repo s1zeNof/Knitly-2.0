@@ -13,6 +13,7 @@ const CreatePostIcon = () => <svg viewBox="0 0 24 24" fill="none" stroke="curren
 const UploadTrackIcon = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12" /></svg>;
 const StudioIcon = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 3v18h18"/><path d="M18.7 8a6 6 0 0 0-8.4 0l-6.3 6.3"/><path d="M12.3 14.7a2 2 0 0 0-2.8 0l-4.2 4.2"/></svg>;
 const StoryIcon = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2"/></svg>;
+const RoomsIcon = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 18v-6a9 9 0 0 1 18 0v6"/><path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"/></svg>;
 
 const BottomNavBar = ({ isPlayerVisible }) => {
     const { user } = useUserContext();
@@ -82,6 +83,10 @@ const BottomNavBar = ({ isPlayerVisible }) => {
                             <div className="creation-menu-item" onClick={() => { setCreationMenuOpen(false); setIsCreateStoryOpen(true); }}>
                                 <div className="creation-item-icon color-stories"><StoryIcon /></div>
                                 <span>Створити сторіс</span>
+                            </div>
+                            <div className="creation-menu-item" onClick={() => handleNavigationAction('/rooms')}>
+                                <div className="creation-item-icon color-rooms"><RoomsIcon /></div>
+                                <span>Кімнати</span>
                             </div>
                             <div className="creation-menu-item" onClick={() => handleNavigationAction('/studio')}>
                                 <div className="creation-item-icon color-green"><StudioIcon /></div>
