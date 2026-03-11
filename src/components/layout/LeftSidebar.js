@@ -16,6 +16,7 @@ const SettingsIcon = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentC
 const HelpIcon = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10" /><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" /><line x1="12" y1="17" x2="12.01" y2="17" /></svg>;
 // --- 👇 Оце та сама іконка, якої не вистачало ---
 const GiftIcon = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="20 12 20 22 4 22 4 12"></polyline><rect x="2" y="7" width="20" height="5"></rect><line x1="12" y1="22" x2="12" y2="7"></line><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"></path><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"></path></svg>;
+const RoomsIcon = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 18v-6a9 9 0 0 1 18 0v6"/><path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"/></svg>;
 const AppsIcon = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>;
 
 
@@ -50,6 +51,7 @@ const LeftSidebar = ({ isOpen }) => {
                 )}
                 <nav className="sidebar-nav">
                     <NavLink to="/" className="nav-item" title="Головна"><HomeIcon /><span className="nav-label">Головна</span></NavLink>
+                    <NavLink to="/rooms" className="nav-item" title="Кімнати 🎧"><RoomsIcon /><span className="nav-label">Кімнати</span></NavLink>
                     <NavLink to="/gifts" className="nav-item" title="Подарунки"><GiftIcon /><span className="nav-label">Подарунки</span></NavLink>
                     <NavLink to="/apps" className="nav-item" title="Міні-додатки"><AppsIcon /><span className="nav-label">Міні-додатки</span></NavLink>
                     {user && <NavLink to="/studio" className="nav-item" title="Творча студія"><DashboardIcon /><span className="nav-label">Творча студія</span></NavLink>}
