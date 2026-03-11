@@ -459,3 +459,37 @@ body.home-page-background::before {
         height: 200px;
     }
 }
+
+/* --- Discovery tabs (для незалогінених) --- */
+.discovery-tabs {
+    display: flex;
+    gap: 0.25rem;
+    padding: 0.25rem;
+    background: var(--dark-800);
+    border-radius: 12px;
+    margin-bottom: 1.5rem;
+    width: fit-content;
+}
+
+.discovery-tab {
+    padding: 0.5rem 1.25rem;
+    border-radius: 9px;
+    border: none;
+    background: transparent;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all var(--transition-base);
+}
+
+.discovery-tab:hover {
+    color: var(--text-primary);
+    background: var(--dark-700);
+}
+
+.discovery-tab.active {
+    background: var(--accent-purple);
+    color: #fff;
+    font-weight: 600;
+}

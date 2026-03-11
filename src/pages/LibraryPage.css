@@ -1,0 +1,240 @@
+.library-page {
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 2rem 1rem;
+}
+
+.library-header {
+  margin-bottom: 2rem;
+}
+
+.library-title {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 1.25rem;
+}
+
+.library-tabs {
+  display: flex;
+  gap: 0.25rem;
+  padding: 0.25rem;
+  background: var(--dark-800);
+  border-radius: 12px;
+  width: fit-content;
+}
+
+.library-tab {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1.25rem;
+  border-radius: 9px;
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition-base);
+}
+
+.library-tab:hover {
+  color: var(--text-primary);
+  background: var(--dark-700);
+}
+
+.library-tab.active {
+  background: var(--accent-purple);
+  color: #fff;
+  font-weight: 600;
+}
+
+.library-loader {
+  display: flex;
+  justify-content: center;
+  padding: 60px 0;
+}
+
+.library-section {
+  animation: fadeIn 0.2s ease;
+}
+
+.library-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 1rem;
+}
+
+.library-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  border-radius: 12px;
+  overflow: hidden;
+  background: var(--dark-800);
+  transition: transform var(--transition-base), background var(--transition-base);
+  text-decoration: none;
+  color: inherit;
+  border: 1px solid var(--border-subtle);
+}
+
+.library-card:hover {
+  transform: translateY(-3px);
+  background: var(--dark-700);
+}
+
+.library-card-cover {
+  aspect-ratio: 1;
+  overflow: hidden;
+  background: var(--dark-700);
+}
+
+.library-card-cover img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.library-card:hover .library-card-cover img {
+  transform: scale(1.05);
+}
+
+.library-card-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  padding: 0 0.75rem 0.75rem;
+}
+
+.library-card-title {
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.library-card-meta {
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+}
+
+/* Track list */
+.library-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.library-track-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.75rem;
+  border-radius: 10px;
+  background: var(--dark-800);
+  border: 1px solid var(--border-subtle);
+  text-decoration: none;
+  color: inherit;
+  transition: background var(--transition-base);
+}
+
+.library-track-row:hover {
+  background: var(--dark-700);
+}
+
+.library-track-cover {
+  width: 48px;
+  height: 48px;
+  border-radius: 8px;
+  object-fit: cover;
+  flex-shrink: 0;
+  background: var(--dark-700);
+}
+
+.library-track-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.library-track-title {
+  font-weight: 600;
+  font-size: 0.92rem;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.library-track-meta {
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+}
+
+.library-track-plays {
+  font-size: 0.78rem;
+  color: var(--text-tertiary);
+  flex-shrink: 0;
+}
+
+/* Empty state */
+.library-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 60px 20px;
+  color: var(--text-secondary);
+  text-align: center;
+}
+
+.library-empty svg {
+  opacity: 0.4;
+  width: 40px;
+  height: 40px;
+}
+
+.library-empty p {
+  font-size: 1rem;
+}
+
+.library-cta {
+  margin-top: 0.5rem;
+  padding: 0.6rem 1.5rem;
+  background: var(--accent-purple);
+  color: #fff;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  text-decoration: none;
+  transition: opacity var(--transition-base);
+}
+
+.library-cta:hover {
+  opacity: 0.85;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 768px) {
+  .library-page {
+    padding: 1rem 0.75rem;
+  }
+
+  .library-grid {
+    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  }
+
+  .library-track-plays {
+    display: none;
+  }
+}
