@@ -4,9 +4,10 @@
  * Guest: view-only
  */
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { db } from '../../services/firebase';
 import { collection, query, where, getDocs, orderBy, limit } from 'firebase/firestore';
+import { useUserContext } from '../../contexts/UserContext';
 import './RoomQueue.css';
 
 /* ── Icons ────────────────────────────────────────────────────── */
@@ -24,6 +25,9 @@ const MusicIcon = () => (
 );
 const PlusIcon = () => (
     <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" /></svg>
+);
+const UserIcon = () => (
+    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z" /></svg>
 );
 
 const TrackRow = ({ track, index, isHost, onPlay, onRemove }) => (
@@ -63,52 +67,100 @@ const TrackRow = ({ track, index, isHost, onPlay, onRemove }) => (
     </div>
 );
 
-/* ── Search tracks (from Firestore) ────────────────────────────── */
-const useTrackSearch = () => {
-    const [results, setResults] = useState([]);
-    const [searching, setSearching] = useState(false);
+/* ── Track card for search results ─────────────────────────────── */
+const TrackCard = ({ track, onAdd }) => (
+    <div className="rq-card">
+        <div className="rq-card-cover">
+            {track.coverArtUrl ? (
+                <img src={track.coverArtUrl} alt={track.title} />
+            ) : (
+                <div className="rq-card-cover--empty"><MusicIcon /></div>
+            )}
+        </div>
+        <div className="rq-card-info">
+            <p className="rq-card-title">{track.title || 'Без назви'}</p>
+            <p className="rq-card-artist">{track.authorName || track.artist || 'Невідомий'}</p>
+        </div>
+        <button className="rq-card-add" onClick={() => onAdd(track)} aria-label={`Додати ${track.title}`}>
+            <PlusIcon />
+        </button>
+    </div>
+);
 
-    const search = async (term) => {
-        if (!term.trim()) { setResults([]); return; }
-        setSearching(true);
-        try {
-            const end = term.toLowerCase() + '\uf8ff';
-            const q = query(
-                collection(db, 'tracks'),
-                where('titleLower', '>=', term.toLowerCase()),
-                where('titleLower', '<=', end),
-                orderBy('titleLower'),
-                limit(10)
+/* ── Track search hook ──────────────────────────────────────────── */
+const useTrackSearch = (activeTab, currentUserId) => {
+    const [allTracks, setAllTracks]   = useState([]);
+    const [myTracks, setMyTracks]     = useState([]);
+    const [searchTerm, setSearchTerm] = useState('');
+    const [loading, setLoading]       = useState(false);
+
+    // Fetch all recent tracks on mount
+    useEffect(() => {
+        const fetchAll = async () => {
+            setLoading(true);
+            try {
+                const snap = await getDocs(query(
+                    collection(db, 'tracks'),
+                    orderBy('createdAt', 'desc'),
+                    limit(50)
+                ));
+                setAllTracks(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+            } catch (e) {
+                console.error('[RoomQueue] fetchAll error:', e);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchAll();
+    }, []);
+
+    // Fetch user's tracks when "my tracks" tab is opened
+    useEffect(() => {
+        if (!currentUserId) return;
+        const fetchMy = async () => {
+            try {
+                const snap = await getDocs(query(
+                    collection(db, 'tracks'),
+                    where('authorId', '==', currentUserId),
+                    orderBy('createdAt', 'desc'),
+                    limit(30)
+                ));
+                setMyTracks(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+            } catch (e) {
+                console.error('[RoomQueue] fetchMy error:', e);
+            }
+        };
+        fetchMy();
+    }, [currentUserId]);
+
+    const sourceList = activeTab === 'my' ? myTracks : allTracks;
+
+    const filtered = searchTerm.trim()
+        ? sourceList.filter(t => {
+            const q = searchTerm.toLowerCase();
+            return (
+                (t.title || '').toLowerCase().includes(q) ||
+                (t.authorName || '').toLowerCase().includes(q) ||
+                (t.artist || '').toLowerCase().includes(q)
             );
-            const snap = await getDocs(q);
-            setResults(snap.docs.map(d => ({ id: d.id, ...d.data() })));
-        } catch (e) {
-            console.error('[RoomQueue] search error:', e);
-            setResults([]);
-        } finally {
-            setSearching(false);
-        }
-    };
+        })
+        : sourceList;
 
-    return { results, searching, search };
+    return { filtered, searchTerm, setSearchTerm, loading };
 };
 
 const RoomQueue = ({ queue = [], currentTrack, isHost, onPlayTrack, onRemoveFromQueue, onAddToQueue }) => {
+    const { user } = useUserContext();
     const [showSearch, setShowSearch] = useState(false);
-    const [searchTerm, setSearchTerm] = useState('');
-    const { results, searching, search } = useTrackSearch();
+    const [activeTab, setActiveTab]   = useState('all');
 
-    const handleSearchInput = (e) => {
-        const val = e.target.value;
-        setSearchTerm(val);
-        search(val);
-    };
+    const { filtered, searchTerm, setSearchTerm, loading } = useTrackSearch(activeTab, user?.uid);
 
-    const handleAddTrack = (track) => {
+    const handleAddTrack = useCallback((track) => {
         onAddToQueue(track);
         setShowSearch(false);
         setSearchTerm('');
-    };
+    }, [onAddToQueue, setSearchTerm]);
 
     return (
         <div className="rq-root">
@@ -127,38 +179,48 @@ const RoomQueue = ({ queue = [], currentTrack, isHost, onPlayTrack, onRemoveFrom
                 )}
             </div>
 
-            {/* Search panel (host only) */}
+            {/* Search + browse panel (host only) */}
             {isHost && showSearch && (
                 <div className="rq-search">
+                    {/* Tabs */}
+                    <div className="rq-search-tabs">
+                        <button
+                            className={`rq-search-tab${activeTab === 'all' ? ' rq-search-tab--active' : ''}`}
+                            onClick={() => setActiveTab('all')}
+                        >
+                            <SearchIcon /> Всі треки
+                        </button>
+                        <button
+                            className={`rq-search-tab${activeTab === 'my' ? ' rq-search-tab--active' : ''}`}
+                            onClick={() => setActiveTab('my')}
+                        >
+                            <UserIcon /> Мої треки
+                        </button>
+                    </div>
+
+                    {/* Search input */}
                     <div className="rq-search-row">
                         <SearchIcon />
                         <input
                             type="text"
                             className="rq-search-input"
-                            placeholder="Пошук треку…"
+                            placeholder={activeTab === 'my' ? 'Фільтр моїх треків…' : 'Пошук треку…'}
                             value={searchTerm}
-                            onChange={handleSearchInput}
+                            onChange={(e) => setSearchTerm(e.target.value)}
                             autoFocus
                         />
                     </div>
-                    <div className="rq-search-results">
-                        {searching && <p className="rq-search-loading">Пошук…</p>}
-                        {!searching && results.length === 0 && searchTerm && (
-                            <p className="rq-search-empty">Нічого не знайдено</p>
+
+                    {/* Results grid */}
+                    <div className="rq-cards-grid">
+                        {loading && <p className="rq-search-loading">Завантаження…</p>}
+                        {!loading && filtered.length === 0 && (
+                            <p className="rq-search-empty">
+                                {activeTab === 'my' ? 'У вас ще немає завантажених треків.' : 'Нічого не знайдено.'}
+                            </p>
                         )}
-                        {results.map((track) => (
-                            <div key={track.id} className="rq-result-row">
-                                <div className="rq-result-info">
-                                    <span className="rq-result-title">{track.title}</span>
-                                    <span className="rq-result-artist">{track.authorName || track.artist}</span>
-                                </div>
-                                <button
-                                    className="rq-result-add"
-                                    onClick={() => handleAddTrack(track)}
-                                >
-                                    + Додати
-                                </button>
-                            </div>
+                        {filtered.map((track) => (
+                            <TrackCard key={track.id} track={track} onAdd={handleAddTrack} />
                         ))}
                     </div>
                 </div>

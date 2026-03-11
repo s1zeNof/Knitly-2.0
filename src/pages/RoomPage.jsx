@@ -98,13 +98,13 @@ const RoomPage = () => {
         audioRef, volume,
         handlePlayTrack, handleTogglePlay, handleSkipTrack,
         handleAddToQueue, handleRemoveFromQueue, handleSeek,
-        handleSendMessage, handleSetVolume,
+        handleSendMessage, handleSetVolume, handleEndRoom,
     } = useRoom(roomId);
 
     // Mobile: which tab is active
     const [mobileTab, setMobileTab] = useState('queue');
 
-    /* ── Leave room ────────────────────────────────────────────── */
+    /* ── Leave room (participant) ──────────────────────────────── */
     const handleLeave = async () => {
         if (user?.uid && roomId) {
             await leaveRoom(roomId, user.uid).catch(() => {});
@@ -112,10 +112,16 @@ const RoomPage = () => {
         navigate('/rooms');
     };
 
-    /* ── Redirect if room ended ────────────────────────────────── */
+    /* ── End room (host only) ──────────────────────────────────── */
+    const handleEnd = async () => {
+        if (!isHost) return;
+        await handleEndRoom().catch(() => {});
+        navigate('/rooms');
+    };
+
+    /* ── Redirect if room ended (guests only) ──────────────────── */
     useEffect(() => {
         if (room?.status === 'ended' && !isHost) {
-            alert('Хост закрив кімнату.');
             navigate('/rooms');
         }
     }, [room?.status, isHost, navigate]);
@@ -189,10 +195,17 @@ const RoomPage = () => {
                     maxVisible={5}
                 />
 
-                <button className="room-leave-btn" onClick={handleLeave}>
-                    <LeaveIcon />
-                    <span className="room-leave-label">Вийти</span>
-                </button>
+                {isHost ? (
+                    <button className="room-end-btn" onClick={handleEnd}>
+                        <LeaveIcon />
+                        <span className="room-leave-label">Завершити</span>
+                    </button>
+                ) : (
+                    <button className="room-leave-btn" onClick={handleLeave}>
+                        <LeaveIcon />
+                        <span className="room-leave-label">Вийти</span>
+                    </button>
+                )}
             </div>
 
             {/* ── Main content ─────────────────────────────────────── */}

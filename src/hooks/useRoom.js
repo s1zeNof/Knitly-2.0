@@ -11,6 +11,7 @@ import {
     listenToMessages,
     joinRoom,
     leaveRoom,
+    endRoom,
     syncPlayback,
     playTrack,
     skipTrack,
@@ -31,6 +32,8 @@ export const useRoom = (roomId) => {
     const [error, setError]       = useState(null);
     const [joined, setJoined]     = useState(false);
     const [volume, setVolumeState] = useState(0.7);
+
+    const notFoundTimerRef = useRef(null);
 
     // Local audio element managed by this hook
     const audioRef      = useRef(new Audio());
@@ -63,9 +66,19 @@ export const useRoom = (roomId) => {
         setError(null);
 
         const unsubRoom = listenToRoom(roomId, (data) => {
-            setRoom(data);
-            setLoading(false);
-            if (!data) setError('Кімнату не знайдено або її закрито.');
+            if (data) {
+                clearTimeout(notFoundTimerRef.current);
+                setRoom(data);
+                setLoading(false);
+                setError(null);
+            } else {
+                // Give Firestore 3s to propagate a newly created room before showing error
+                notFoundTimerRef.current = setTimeout(() => {
+                    setRoom(null);
+                    setLoading(false);
+                    setError('Кімнату не знайдено або її закрито.');
+                }, 3000);
+            }
         });
 
         const unsubMsgs = listenToMessages(roomId, setMessages);
@@ -73,6 +86,7 @@ export const useRoom = (roomId) => {
         return () => {
             unsubRoom();
             unsubMsgs();
+            clearTimeout(notFoundTimerRef.current);
         };
     }, [roomId]);
 
@@ -203,6 +217,11 @@ export const useRoom = (roomId) => {
         return sendMessage(roomId, user, text);
     }, [user, roomId]);
 
+    const handleEndRoom = useCallback(() => {
+        if (!isHost) return Promise.resolve();
+        return endRoom(roomId);
+    }, [isHost, roomId]);
+
     const handleSetVolume = useCallback((v) => {
         setVolumeState(v);
     }, []);
@@ -228,5 +247,6 @@ export const useRoom = (roomId) => {
         handleSeek,
         handleSendMessage,
         handleSetVolume,
+        handleEndRoom,
     };
 };

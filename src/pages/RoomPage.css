@@ -242,6 +242,25 @@
 .room-leave-btn svg { width: 16px; height: 16px; }
 .room-leave-btn:hover { background: rgba(239, 68, 68, 0.15); color: #f87171; border-color: rgba(239, 68, 68, 0.4); }
 
+.room-end-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 14px;
+    border-radius: 10px;
+    border: 1px solid rgba(239, 68, 68, 0.5);
+    background: rgba(239, 68, 68, 0.18);
+    color: #f87171;
+    font-size: 0.82rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.15s;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+.room-end-btn svg { width: 16px; height: 16px; }
+.room-end-btn:hover { background: rgba(239, 68, 68, 0.3); color: #fca5a5; }
+
 /* ── Body ─────────────────────────────────────────────────────── */
 .room-body {
     flex: 1;
@@ -369,6 +388,7 @@
     .rp-participants { display: none; } /* hide on mobile — too cramped */
     .room-leave-label { display: none; }
     .room-leave-btn { padding: 7px; }
+    .room-end-btn { padding: 7px; }
 }
 
 @media (max-width: 480px) {

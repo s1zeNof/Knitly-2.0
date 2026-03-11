@@ -48,6 +48,33 @@
     flex-shrink: 0;
 }
 
+/* ── Search tabs ──────────────────────────────────────────────── */
+.rq-search-tabs {
+    display: flex;
+    gap: 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.rq-search-tab {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex: 1;
+    padding: 9px 12px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.4);
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    cursor: pointer;
+    transition: all 0.15s;
+    justify-content: center;
+}
+.rq-search-tab svg { width: 14px; height: 14px; }
+.rq-search-tab:hover { color: rgba(255, 255, 255, 0.7); }
+.rq-search-tab--active { color: #a855f7; border-bottom-color: #a855f7; }
+
 .rq-search-row {
     display: flex;
     align-items: center;
@@ -67,6 +94,93 @@
     font-family: inherit;
 }
 .rq-search-input::placeholder { color: rgba(255, 255, 255, 0.25); }
+
+/* ── Cards grid (search results) ──────────────────────────────── */
+.rq-cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 8px;
+    padding: 10px 12px;
+    max-height: 260px;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(168, 85, 247, 0.2) transparent;
+}
+
+.rq-card {
+    display: flex;
+    flex-direction: column;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    border-radius: 10px;
+    overflow: hidden;
+    transition: background 0.15s, transform 0.15s;
+    position: relative;
+}
+.rq-card:hover { background: rgba(255, 255, 255, 0.08); transform: translateY(-2px); }
+
+.rq-card-cover {
+    aspect-ratio: 1;
+    overflow: hidden;
+    background: rgba(255, 255, 255, 0.06);
+    flex-shrink: 0;
+}
+.rq-card-cover img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s;
+}
+.rq-card:hover .rq-card-cover img { transform: scale(1.05); }
+.rq-card-cover--empty {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: rgba(255, 255, 255, 0.15);
+}
+.rq-card-cover--empty svg { width: 28px; height: 28px; }
+
+.rq-card-info {
+    padding: 6px 8px 2px;
+    flex: 1;
+    min-width: 0;
+}
+.rq-card-title {
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.85);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin: 0;
+}
+.rq-card-artist {
+    font-size: 0.7rem;
+    color: rgba(255, 255, 255, 0.35);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin: 2px 0 0;
+}
+
+.rq-card-add {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    padding: 6px;
+    background: rgba(168, 85, 247, 0.15);
+    border: none;
+    border-top: 1px solid rgba(168, 85, 247, 0.15);
+    color: #a855f7;
+    cursor: pointer;
+    transition: background 0.15s;
+    flex-shrink: 0;
+}
+.rq-card-add svg { width: 16px; height: 16px; }
+.rq-card-add:hover { background: rgba(168, 85, 247, 0.3); color: #fff; }
 
 .rq-search-results {
     max-height: 200px;

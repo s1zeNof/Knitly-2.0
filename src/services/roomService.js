@@ -101,20 +101,19 @@ export const leaveRoom = async (roomId, userId) => {
     const roomSnap = await getDoc(roomRef);
     if (!roomSnap.exists()) return;
 
-    const roomData = roomSnap.data();
-
-    if (roomData.hostId === userId) {
-        // Host leaving → end the room for everyone
-        await updateDoc(roomRef, {
-            status: 'ended',
-            updatedAt: serverTimestamp(),
-        });
-        return;
-    }
-
+    // Always just remove the participant — room keeps running even if host leaves
     await updateDoc(roomRef, {
         [`participants.${userId}`]: deleteField(),
         participantsCount: increment(-1),
+        updatedAt: serverTimestamp(),
+    });
+};
+
+// Explicitly end the room — only callable by the host via UI button
+export const endRoom = async (roomId) => {
+    if (!roomId) return;
+    await updateDoc(doc(db, 'rooms', roomId), {
+        status: 'ended',
         updatedAt: serverTimestamp(),
     });
 };
@@ -226,16 +225,21 @@ export const listenToMessages = (roomId, callback, msgLimit = 150) => {
     });
 };
 
-export const listenToPublicRooms = (callback, limitCount = 20) => {
+export const listenToPublicRooms = (callback, limitCount = 30) => {
+    // Single equality filter + orderBy on same field avoids composite index requirement.
+    // We filter isPublic client-side and sort by participantsCount client-side.
     const q = query(
         collection(db, 'rooms'),
         where('status', '==', 'active'),
-        where('isPublic', '==', true),
-        orderBy('participantsCount', 'desc'),
+        orderBy('updatedAt', 'desc'),
         limit(limitCount)
     );
     return onSnapshot(q, (snap) => {
-        callback(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+        const rooms = snap.docs
+            .map(d => ({ id: d.id, ...d.data() }))
+            .filter(r => r.isPublic !== false)
+            .sort((a, b) => (b.participantsCount || 0) - (a.participantsCount || 0));
+        callback(rooms);
     }, (error) => {
         console.error('[listenToPublicRooms] error:', error);
         callback([]);
