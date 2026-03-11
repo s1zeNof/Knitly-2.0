@@ -147,9 +147,9 @@ export const useRoom = (roomId) => {
 
     /* ── Cleanup on unmount ─────────────────────────────────────── */
     useEffect(() => {
+        const audio = audioRef.current;
         return () => {
             clearInterval(syncTimerRef.current);
-            const audio = audioRef.current;
             audio.pause();
             audio.src = '';
             if (user?.uid && roomId) {
