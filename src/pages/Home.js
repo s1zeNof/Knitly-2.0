@@ -45,6 +45,8 @@ const Home = ({ openBrowser, openShareModal }) => {
     const [suggestedArtist, setSuggestedArtist] = useState(null);
     const [trendingCategories, setTrendingCategories] = useState([]);
     const [loading, setLoading] = useState(true);
+    // Таб відкриття для незалогінених: 'hot' | 'new'
+    const [discoveryTab, setDiscoveryTab] = useState('hot');
     // Відкладаємо рендер CreatePostForm (Lexical editor) щоб він не блокував GSAP анімацію Feed
     const [showCreateForm, setShowCreateForm] = useState(false);
 
@@ -204,7 +206,25 @@ const Home = ({ openBrowser, openShareModal }) => {
                                 </React.Suspense>
                             )}
 
+                            {!currentUser && !authLoading && (
+                                <div className="discovery-tabs">
+                                    <button
+                                        className={`discovery-tab${discoveryTab === 'hot' ? ' active' : ''}`}
+                                        onClick={() => setDiscoveryTab('hot')}
+                                    >
+                                        Актуальне
+                                    </button>
+                                    <button
+                                        className={`discovery-tab${discoveryTab === 'new' ? ' active' : ''}`}
+                                        onClick={() => setDiscoveryTab('new')}
+                                    >
+                                        Нові
+                                    </button>
+                                </div>
+                            )}
+
                             <Feed
+                                feedType={currentUser ? 'following' : discoveryTab}
                                 followingList={feedIds}
                                 openBrowser={openBrowser}
                                 openShareModal={openShareModal}

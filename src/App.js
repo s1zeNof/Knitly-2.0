@@ -63,6 +63,7 @@ import StoriesRow from './components/stories/StoriesRow';
 import ForgotPassword from './pages/ForgotPassword';
 import NotFoundPage from './pages/NotFoundPage';
 import EmailVerifiedPage from './pages/EmailVerifiedPage';
+import LibraryPage from './pages/LibraryPage';
 import EmailVerificationBanner from './components/common/EmailVerificationBanner';
 
 import './styles/index.css';
@@ -202,6 +203,7 @@ const AppLayout = () => {
                     <Route path="/settings/emoji-packs/edit/:packId" element={<EditEmojiPack />} />
                     <Route path="/upload" element={<UploadMusic />} />
                     <Route path="/create-album" element={<CreateAlbum />} />
+                    <Route path="/library" element={<LibraryPage />} />
                     <Route path="/playlist/:playlistId" element={<PlaylistPage />} />
                     <Route path="/messages" element={<MessagesPage openBrowser={openBrowser} />} />
                     <Route path="/userlist" element={<UserList />} />
