@@ -19,6 +19,12 @@ service cloud.firestore {
         .affectedKeys()
         .hasOnly(['reactions', 'likesCount', 'commentsCount', 'attachmentClicks']);
     }
+    // Учасник чату ставить/знімає реакцію — тільки поле reactions змінюється
+    function onlyMessageReactionsChanged() {
+      return request.resource.data.diff(resource.data)
+        .affectedKeys()
+        .hasOnly(['reactions']);
+    }
     function hasNoPrivilegedFields() {
       return !request.resource.data.keys().hasAny([
         'role', 'verified', 'isAdmin', 'isBanned', 'isModerator'
@@ -102,8 +108,16 @@ service cloud.firestore {
                            get(/databases/$(database)/documents/chats/$(chatId)).data.participants) ||
                         !exists(/databases/$(database)/documents/chats/$(chatId))
                       );
-        allow update, delete: if isSignedIn() &&
-                              request.auth.uid == resource.data.senderId;
+        // Відправник може редагувати/видаляти своє повідомлення
+        // Будь-який учасник чату може оновити лише поле reactions (реакція на emoji)
+        allow update: if isSignedIn() && (
+                        request.auth.uid == resource.data.senderId ||
+                        (request.auth.uid in
+                           get(/databases/$(database)/documents/chats/$(chatId)).data.participants &&
+                         onlyMessageReactionsChanged())
+                      );
+        allow delete: if isSignedIn() &&
+                      request.auth.uid == resource.data.senderId;
       }
     }
     match /messages/{messageId} {
@@ -112,8 +126,10 @@ service cloud.firestore {
                    request.auth.uid == resource.data.toUserId);
       allow create: if isSignedIn() &&
                     request.resource.data.senderId == request.auth.uid;
-      allow update, delete: if isSignedIn() &&
-                            request.auth.uid == resource.data.senderId;
+      allow update: if isSignedIn() &&
+                    request.auth.uid == resource.data.senderId;
+      allow delete: if isSignedIn() &&
+                    request.auth.uid == resource.data.senderId;
     }
     // =======================================================
     // posts
