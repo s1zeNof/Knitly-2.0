@@ -162,3 +162,7 @@
 .creation-item-icon.color-stories {
     background: linear-gradient(135deg, #f093fb 0%, #a855f7 50%, #667eea 100%);
 }
+
+.creation-item-icon.color-rooms {
+    background: linear-gradient(135deg, #f97316 0%, #ef4444 100%);
+}
