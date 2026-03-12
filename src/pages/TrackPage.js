@@ -21,7 +21,7 @@ const OptionsIcon = () => <svg viewBox="0 0 24 24" fill="currentColor"><circle c
 const TrackPage = () => {
     const { trackId } = useParams();
     const { handlePlayPause, isPlaying, currentTrack } = usePlayerContext();
-    const { user: currentUser } = useUserContext();
+    useUserContext(); // Available but unused for now
     const [track, setTrack] = useState(null);
     const [author, setAuthor] = useState(null);
     const [loading, setLoading] = useState(true);
