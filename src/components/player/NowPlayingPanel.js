@@ -5,6 +5,7 @@ import { db } from '../../services/firebase';
 import { doc, runTransaction, arrayUnion, arrayRemove } from 'firebase/firestore';
 import DynamicWaveform from './DynamicWaveform';
 import TrackComments from './TrackComments';
+import TrackSharePanel from './TrackSharePanel';
 import './NowPlayingPanel.css';
 
 /* ── Icons ───────────────────────────────────────────────────── */
@@ -66,6 +67,7 @@ const NowPlayingPanel = ({ isOpen, onClose }) => {
 
     const [isAnimatingOut, setIsAnimatingOut] = useState(false);
     const [processingLike, setProcessingLike] = useState(false);
+    const [showSharePanel, setShowSharePanel] = useState(false);
 
     const isLiked = currentUser?.likedTracks?.includes(currentTrack?.id);
 
@@ -231,9 +233,9 @@ const NowPlayingPanel = ({ isOpen, onClose }) => {
                 <div className="actions-bar">
                     <button className="action-btn">
                         <CommentIcon />
-                        <span>0</span>
+                        <span>{currentTrack.commentsCount || 0}</span>
                     </button>
-                    <button className="action-btn">
+                    <button className="action-btn" onClick={() => setShowSharePanel(true)}>
                         <ShareIcon />
                     </button>
                     <button className="action-btn">
@@ -241,6 +243,14 @@ const NowPlayingPanel = ({ isOpen, onClose }) => {
                     </button>
                 </div>
             </div>
+
+            {/* Share panel */}
+            {showSharePanel && (
+                <TrackSharePanel
+                    track={currentTrack}
+                    onClose={() => setShowSharePanel(false)}
+                />
+            )}
         </div>
     );
 };
