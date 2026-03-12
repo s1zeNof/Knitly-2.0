@@ -33,7 +33,9 @@ export const useRoom = (roomId) => {
     const [joined, setJoined]     = useState(false);
     const [volume, setVolumeState] = useState(0.7);
 
-    const notFoundTimerRef = useRef(null);
+    const notFoundTimerRef  = useRef(null);
+    // Tracks whether leave/end was already called explicitly — prevents double leaveRoom on unmount
+    const hasLeftExplicitlyRef = useRef(false);
 
     // Local audio element managed by this hook
     const audioRef      = useRef(new Audio());
@@ -166,7 +168,9 @@ export const useRoom = (roomId) => {
             clearInterval(syncTimerRef.current);
             audio.pause();
             audio.src = '';
-            if (user?.uid && roomId) {
+            // Only call leaveRoom if the user did NOT explicitly leave/end the room via a button.
+            // Prevents double-call: once from handleLeaveRoom/handleEndRoom, once from unmount.
+            if (!hasLeftExplicitlyRef.current && user?.uid && roomId) {
                 leaveRoom(roomId, user.uid).catch(() => {});
             }
         };
@@ -217,7 +221,15 @@ export const useRoom = (roomId) => {
         return sendMessage(roomId, user, text);
     }, [user, roomId]);
 
+    // Explicit leave for participants — call before navigate('/rooms')
+    const handleLeaveRoom = useCallback(() => {
+        hasLeftExplicitlyRef.current = true;
+        if (!user?.uid || !roomId) return Promise.resolve();
+        return leaveRoom(roomId, user.uid).catch(() => {});
+    }, [user?.uid, roomId]);
+
     const handleEndRoom = useCallback(() => {
+        hasLeftExplicitlyRef.current = true; // skip leaveRoom in cleanup
         if (!isHost) return Promise.resolve();
         return endRoom(roomId);
     }, [isHost, roomId]);
@@ -247,6 +259,7 @@ export const useRoom = (roomId) => {
         handleSeek,
         handleSendMessage,
         handleSetVolume,
+        handleLeaveRoom,
         handleEndRoom,
     };
 };
