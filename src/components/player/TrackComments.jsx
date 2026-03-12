@@ -17,6 +17,7 @@ import {
 } from 'firebase/firestore';
 import { db } from '../../services/firebase';
 import { useUserContext } from '../../contexts/UserContext';
+import EmojiPicker, { EmojiStyle } from 'emoji-picker-react';
 import default_picture from '../../img/Default-Images/default-picture.svg';
 import './TrackComments.css';
 
@@ -29,6 +30,14 @@ const HeartIcon = ({ filled }) => (
 const SendIcon = () => (
     <svg viewBox="0 0 24 24" fill="currentColor">
         <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" />
+    </svg>
+);
+const SmileIcon = () => (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <circle cx="12" cy="12" r="10" />
+        <path d="M8 13s1.5 2 4 2 4-2 4-2" />
+        <line x1="9" y1="9" x2="9.01" y2="9" />
+        <line x1="15" y1="9" x2="15.01" y2="9" />
     </svg>
 );
 
@@ -109,7 +118,7 @@ const CommentRow = ({ comment, trackId, currentUser, compact }) => {
 /**
  * TrackComments
  * @param {string}  trackId       — Firestore track document ID
- * @param {string}  trackAuthorId — UID of the track owner (for future notifications)
+ * @param {string}  trackAuthorId — UID of the track owner
  * @param {boolean} compact       — true = panel mode, false = full page mode
  */
 const TrackComments = ({ trackId, trackAuthorId, compact = false }) => {
@@ -119,17 +128,35 @@ const TrackComments = ({ trackId, trackAuthorId, compact = false }) => {
     const [loading, setLoading]     = useState(true);
     const [commentText, setText]    = useState('');
     const [submitting, setSubmitting] = useState(false);
-    // Full mode: how many to show (grows on "load more")
     const [fetchLimit, setFetchLimit] = useState(compact ? 5 : 20);
 
-    const textareaRef = useRef(null);
+    const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+    const [emojiPos, setEmojiPos] = useState({ top: 0, left: 0, width: 300, height: 350 });
+
+    const textareaRef    = useRef(null);
+    const emojiPickerRef = useRef(null);
+    const emojiButtonRef = useRef(null);
+
+    /* ── Close emoji picker on outside click ────────────────── */
+    useEffect(() => {
+        if (!showEmojiPicker) return;
+        const handleClickOutside = (e) => {
+            if (
+                emojiPickerRef.current && !emojiPickerRef.current.contains(e.target) &&
+                emojiButtonRef.current && !emojiButtonRef.current.contains(e.target)
+            ) {
+                setShowEmojiPicker(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, [showEmojiPicker]);
 
     /* ── Real-time listener ─────────────────────────────────── */
     useEffect(() => {
         if (!trackId) return;
         setLoading(true);
 
-        // Compact: newest-first (desc). Full: oldest-first (asc) for chronological reading.
         const q = query(
             collection(db, 'tracks', trackId, 'comments'),
             orderBy('timestamp', compact ? 'desc' : 'asc'),
@@ -167,7 +194,6 @@ const TrackComments = ({ trackId, trackAuthorId, compact = false }) => {
                     likesCount:        0,
                     likedBy:           [],
                 });
-                // Increment denormalized counter on the track doc
                 tx.update(trackRef, { commentsCount: increment(1) });
             });
 
@@ -189,12 +215,50 @@ const TrackComments = ({ trackId, trackAuthorId, compact = false }) => {
         }
     };
 
-    // Auto-resize textarea
     const handleChange = (e) => {
         setText(e.target.value);
         e.target.style.height = 'auto';
         e.target.style.height = `${Math.min(e.target.scrollHeight, 120)}px`;
     };
+
+    /* ── Emoji picker ────────────────────────────────────────── */
+    const handleToggleEmojiPicker = () => {
+        if (!showEmojiPicker && emojiButtonRef.current) {
+            const rect    = emojiButtonRef.current.getBoundingClientRect();
+            const pickerW = compact ? 280 : 320;
+            const pickerH = compact ? 340 : 400;
+
+            // Open upward by default; if not enough space, open downward
+            let top  = rect.top - pickerH - 8;
+            if (top < 8) top = rect.bottom + 8;
+
+            // Align right edge with button, keep within viewport
+            let left = rect.right - pickerW;
+            if (left < 8) left = 8;
+            if (left + pickerW > window.innerWidth - 8) left = window.innerWidth - pickerW - 8;
+
+            setEmojiPos({ top, left, width: pickerW, height: pickerH });
+        }
+        setShowEmojiPicker(v => !v);
+    };
+
+    const insertEmoji = useCallback((emojiData) => {
+        const emoji = emojiData.emoji;
+        const ta = textareaRef.current;
+        if (!ta) {
+            setText(prev => prev + emoji);
+            return;
+        }
+        const start   = ta.selectionStart;
+        const end     = ta.selectionEnd;
+        const newText = commentText.substring(0, start) + emoji + commentText.substring(end);
+        setText(newText);
+        // Restore cursor after emoji
+        requestAnimationFrame(() => {
+            ta.selectionStart = ta.selectionEnd = start + emoji.length;
+            ta.focus();
+        });
+    }, [commentText]);
 
     const handleLoadMore = () => setFetchLimit(prev => prev + 20);
 
@@ -211,31 +275,63 @@ const TrackComments = ({ trackId, trackAuthorId, compact = false }) => {
                         className="tc-compose-avatar"
                         onError={(e) => { e.target.src = default_picture; }}
                     />
-                    <div className="tc-compose-field">
-                        <textarea
-                            ref={textareaRef}
-                            value={commentText}
-                            onChange={handleChange}
-                            onKeyDown={handleKeyDown}
-                            placeholder={compact ? 'Коментар...' : 'Написати коментар до треку...'}
-                            className="tc-compose-textarea"
-                            rows={1}
-                            disabled={submitting}
-                        />
-                        <button
-                            className="tc-send-btn"
-                            onClick={handleSubmit}
-                            disabled={!commentText.trim() || submitting}
-                            aria-label="Відправити"
-                        >
-                            <SendIcon />
-                        </button>
+                    <div className="tc-compose-wrapper">
+                        <div className="tc-compose-field">
+                            <textarea
+                                ref={textareaRef}
+                                value={commentText}
+                                onChange={handleChange}
+                                onKeyDown={handleKeyDown}
+                                placeholder={compact ? 'Коментар...' : 'Написати коментар до треку...'}
+                                className="tc-compose-textarea"
+                                rows={1}
+                                disabled={submitting}
+                            />
+                            <button
+                                ref={emojiButtonRef}
+                                type="button"
+                                className={`tc-emoji-btn ${showEmojiPicker ? 'tc-emoji-btn--active' : ''}`}
+                                onClick={handleToggleEmojiPicker}
+                                aria-label="Emoji"
+                                tabIndex={-1}
+                            >
+                                <SmileIcon />
+                            </button>
+                            <button
+                                className="tc-send-btn"
+                                onClick={handleSubmit}
+                                disabled={!commentText.trim() || submitting}
+                                aria-label="Відправити"
+                            >
+                                <SendIcon />
+                            </button>
+                        </div>
                     </div>
                 </div>
             ) : (
                 <p className="tc-login-hint">
                     <Link to="/login">Увійдіть</Link>, щоб залишити коментар
                 </p>
+            )}
+
+            {/* ── Emoji Picker (position:fixed to escape overflow:hidden) ── */}
+            {showEmojiPicker && (
+                <div
+                    ref={emojiPickerRef}
+                    className="tc-emoji-picker-wrap"
+                    style={{ top: emojiPos.top, left: emojiPos.left }}
+                >
+                    <EmojiPicker
+                        onEmojiClick={insertEmoji}
+                        emojiStyle={EmojiStyle.APPLE}
+                        theme="dark"
+                        width={emojiPos.width}
+                        height={emojiPos.height}
+                        searchPlaceholder="Пошук emoji..."
+                        previewConfig={{ showPreview: false }}
+                        lazyLoadEmojis
+                    />
+                </div>
             )}
 
             {/* ── Comment list ──────────────────────────────── */}

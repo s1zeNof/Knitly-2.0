@@ -278,3 +278,94 @@ export const sharePostToChats = async (senderId, recipientIds, post) => {
     if (sent.length > 0) await batch.commit();
     return { sent, blocked };
 };
+
+export const shareTrackToChats = async (senderId, recipientIds, track) => {
+    if (!senderId || !recipientIds.length || !track) return { sent: [], blocked: [] };
+
+    const batch = writeBatch(db);
+    const senderDoc = await getDoc(doc(db, 'users', senderId));
+    if (!senderDoc.exists()) return { sent: [], blocked: [] };
+    const senderData = senderDoc.data();
+
+    const sent = [];
+    const blocked = [];
+
+    for (const recipientId of recipientIds) {
+        const recipientDoc = await getDoc(doc(db, 'users', recipientId));
+        if (!recipientDoc.exists()) continue;
+        const recipientData = recipientDoc.data();
+
+        const privacy = recipientData.settings?.privacy?.messagePrivacy ?? 'everyone';
+        let isMessageRequest = false;
+
+        if (privacy === 'nobody') {
+            blocked.push({ uid: recipientId, displayName: recipientData.displayName, reason: 'nobody' });
+            continue;
+        }
+        if (privacy === 'following') {
+            const followerRef = doc(db, 'users', recipientId, 'followers', senderId);
+            const followerSnap = await getDoc(followerRef);
+            if (!followerSnap.exists()) {
+                blocked.push({ uid: recipientId, displayName: recipientData.displayName, reason: 'following' });
+                continue;
+            }
+        }
+        if (privacy === 'requests') {
+            const followerRef = doc(db, 'users', recipientId, 'followers', senderId);
+            const followerSnap = await getDoc(followerRef);
+            if (!followerSnap.exists()) isMessageRequest = true;
+        }
+
+        const participants = [senderId, recipientId].sort();
+        const chatId = participants.join('_');
+        const chatRef = doc(db, 'chats', chatId);
+        const chatSnap = await getDoc(chatRef);
+
+        const messageContent = {
+            type: 'forwarded_track',
+            trackId: track.id,
+            trackTitle: track.title,
+            trackAuthorName: track.authorName,
+            trackCoverUrl: track.coverArtUrl || null,
+        };
+
+        if (!chatSnap.exists()) {
+            batch.set(chatRef, {
+                participants,
+                isGroup: false,
+                ...(isMessageRequest ? { isMessageRequest: true, messageRequestFrom: senderId } : {}),
+                participantInfo: [
+                    { uid: senderId, displayName: senderData.displayName, photoURL: senderData.photoURL, nickname: senderData.nickname },
+                    { uid: recipientId, displayName: recipientData.displayName, photoURL: recipientData.photoURL, nickname: recipientData.nickname },
+                ],
+                lastMessage: { text: 'Поширено трек', senderId },
+                lastUpdatedAt: serverTimestamp(),
+                unreadCounts: { [recipientId]: 1, [senderId]: 0 },
+                createdAt: serverTimestamp(),
+            });
+        } else {
+            batch.update(chatRef, {
+                lastMessage: { text: 'Поширено трек', senderId },
+                lastUpdatedAt: serverTimestamp(),
+                [`unreadCounts.${recipientId}`]: increment(1),
+            });
+        }
+
+        const messageRef = doc(collection(db, 'chats', chatId, 'messages'));
+        batch.set(messageRef, {
+            senderId,
+            type: 'shared_content',
+            content: messageContent,
+            timestamp: serverTimestamp(),
+            reactions: {},
+            isEdited: false,
+            replyTo: null,
+            deletedFor: [],
+        });
+
+        sent.push(recipientId);
+    }
+
+    if (sent.length > 0) await batch.commit();
+    return { sent, blocked };
+};
