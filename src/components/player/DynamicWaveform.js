@@ -19,7 +19,7 @@ const DynamicWaveform = () => {
             progressColor: '#a855f7',
             barWidth: 3,
             barRadius: 2,
-            height: 80,
+            height: 60,
             cursorWidth: 0,
             interact: true,
         });

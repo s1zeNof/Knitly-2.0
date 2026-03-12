@@ -74,11 +74,12 @@
     position: relative;
     z-index: 1;
     flex-grow: 1;
-    padding: 0.5rem 2rem 1.75rem;
+    padding: 0.5rem 1.5rem 1.25rem;
     display: flex;
     flex-direction: column;
     align-items: center;
-    overflow: hidden;
+    overflow-y: auto; /* Дозволяємо прокрутку, якщо екран дуже маленький */
+    overflow-x: hidden;
 }
 
 /* ── Artwork carousel ────────────────────────────────────────── */
@@ -87,10 +88,10 @@
     align-items: center;
     justify-content: center;
     width: 100%;
-    height: 44vh;
-    max-height: 370px;
+    height: 38vh; /* Трохи менше висоти */
+    max-height: 320px;
     position: relative;
-    margin-bottom: 1.75rem;
+    margin-bottom: 1.25rem;
 }
 
 .carousel-artwork {
@@ -151,7 +152,7 @@
     align-items: center;
     justify-content: space-between;
     gap: 1rem;
-    margin-bottom: 1.5rem;
+    margin-bottom: 1rem;
 }
 
 .track-details-text {
@@ -211,7 +212,7 @@
 /* ── Progress section ────────────────────────────────────────── */
 .progress-section {
     width: 100%;
-    margin-bottom: 1.75rem;
+    margin-bottom: 1.25rem;
 }
 
 .waveform-wrapper {
@@ -224,6 +225,7 @@
     width: 100%; height: 100%;
     margin: 0;
     -webkit-appearance: none;
+    appearance: none;
     background: transparent;
     cursor: pointer;
     opacity: 0;
@@ -251,7 +253,7 @@
     justify-content: center;
     gap: 2.75rem;
     width: 100%;
-    margin-bottom: 2.25rem;
+    margin-bottom: 1.5rem;
 }
 
 .main-controls button {
@@ -277,8 +279,8 @@
 .play-pause-main {
     background-color: var(--color-text-primary) !important;
     color: var(--color-bg-deep) !important;
-    width: 78px;
-    height: 78px;
+    width: 68px;
+    height: 68px;
     border-radius: 50% !important;
     padding: 0 !important;
     transition: transform 0.15s, background-color 0.2s !important;

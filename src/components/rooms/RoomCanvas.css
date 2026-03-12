@@ -1,0 +1,60 @@
+.room-canvas-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 5; /* Above background but below UI like chat/queue */
+    pointer-events: auto; /* Catch drawing events */
+    overflow: hidden;
+}
+
+.room-canvas {
+    width: 100%;
+    height: 100%;
+    display: block;
+    cursor: crosshair;
+    /* Optional: subtle blend mode to make it glow with the background */
+    mix-blend-mode: screen; 
+}
+
+.room-canvas-overlay {
+    position: absolute;
+    bottom: 25%;
+    left: 50%;
+    transform: translateX(-50%);
+    pointer-events: none; /* Let clicks pass through to canvas */
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    z-index: 6;
+    opacity: 0.6;
+    animation: fadePulse 4s infinite alternate ease-in-out;
+}
+
+.canvas-hint {
+    background: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 8px 16px;
+    border-radius: 20px;
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 0.8rem;
+    font-weight: 500;
+    letter-spacing: 0.03em;
+}
+
+@keyframes fadePulse {
+    0% { opacity: 0.3; }
+    100% { opacity: 0.8; }
+}
+
+/* On mobile, canvas might be smaller or need adjustments */
+@media (max-width: 900px) {
+    .room-canvas-container {
+        /* On mobile, the player might be pinned differently,
+           so ensure the canvas only covers the background area */
+        z-index: 0; /* Move behind the active tab content */
+        opacity: 0.8;
+    }
+}
