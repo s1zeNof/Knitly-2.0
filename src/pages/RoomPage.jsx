@@ -17,7 +17,6 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useUserContext } from '../contexts/UserContext';
 import { useRoom } from '../hooks/useRoom';
-import { leaveRoom } from '../services/roomService';
 import RoomPlayer from '../components/rooms/RoomPlayer';
 import RoomChat   from '../components/rooms/RoomChat';
 import RoomQueue  from '../components/rooms/RoomQueue';
@@ -98,17 +97,16 @@ const RoomPage = () => {
         audioRef, volume,
         handlePlayTrack, handleTogglePlay, handleSkipTrack,
         handleAddToQueue, handleRemoveFromQueue, handleSeek,
-        handleSendMessage, handleSetVolume, handleEndRoom,
+        handleSendMessage, handleSetVolume,
+        handleLeaveRoom, handleEndRoom,
     } = useRoom(roomId);
 
     // Mobile: which tab is active
     const [mobileTab, setMobileTab] = useState('queue');
 
-    /* ── Leave room (participant) ──────────────────────────────── */
+    /* ── Leave room (participant or host browsing away) ────────── */
     const handleLeave = async () => {
-        if (user?.uid && roomId) {
-            await leaveRoom(roomId, user.uid).catch(() => {});
-        }
+        await handleLeaveRoom();
         navigate('/rooms');
     };
 

@@ -13,9 +13,19 @@
   box-sizing: border-box;
   z-index: 1000;
   gap: 2rem;
-  /* --- ПОЧАТОК ЗМІН --- */
-  /* Забираємо початкове зміщення, бо тепер видимість контролюється монтуванням компонента */
-  transition: transform 0.4s ease-in-out;
+  transition: transform 0.4s ease-in-out, padding-left 0.25s ease;
+}
+
+/* ── Sidebar-aware left padding so track info and center section
+      align with the visible content area (not behind the sidebar) ── */
+@media (min-width: 769px) {
+  body.sidebar-mode-full .player-container {
+    padding-left: calc(280px + 1.5rem);
+  }
+  body.sidebar-mode-hover .player-container,
+  body.sidebar-mode-icons .player-container {
+    padding-left: calc(64px + 1.5rem);
+  }
 }
 
 /* Клас для анімації зникнення */
