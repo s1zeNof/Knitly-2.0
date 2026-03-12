@@ -273,30 +273,15 @@
     color: var(--color-text-secondary);
 }
 
-.track-comments-section h4 {
-    font-size: 1.2rem;
-    margin-bottom: 1rem;
+.track-comments-section {
+    padding-top: 2rem;
+    border-top: 1px solid var(--color-border);
 }
 
-.comment-input-placeholder {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-}
-
-.comment-input-placeholder img {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-}
-
-.comment-input-placeholder input {
-    flex-grow: 1;
-    background-color: var(--color-bg-light);
-    border: 1px solid var(--color-border);
-    border-radius: 2rem;
-    padding: 0.75rem 1rem;
-    color: var(--color-text-primary);
+.track-comments-section h3 {
+    margin: 0 0 1.5rem 0;
+    font-size: 1.5rem;
+    font-weight: 700;
 }
 
 /* --- Сайдбар --- */

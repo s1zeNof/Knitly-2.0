@@ -4,6 +4,7 @@ import { useUserContext } from '../../contexts/UserContext';
 import { db } from '../../services/firebase';
 import { doc, runTransaction, arrayUnion, arrayRemove } from 'firebase/firestore';
 import DynamicWaveform from './DynamicWaveform';
+import TrackComments from './TrackComments';
 import './NowPlayingPanel.css';
 
 /* ── Icons ───────────────────────────────────────────────────── */
@@ -166,7 +167,7 @@ const NowPlayingPanel = ({ isOpen, onClose }) => {
 
                         return (
                             <img
-                                key={`${track.id}-${index}`}
+                                key={track.id}
                                 src={track.coverArtUrl || 'https://placehold.co/280x280/181818/333333?text=K'}
                                 alt={track.title}
                                 className={`carousel-artwork ${positionClass}`}
@@ -217,8 +218,14 @@ const NowPlayingPanel = ({ isOpen, onClose }) => {
                     </button>
                 </div>
 
-                {/* Comment input placeholder */}
-                <div className="comment-placeholder">Залишити коментар...</div>
+                {/* Track comments — compact panel mode */}
+                <div className="panel-comments-section">
+                    <TrackComments
+                        trackId={currentTrack.id}
+                        trackAuthorId={currentTrack.authorId}
+                        compact={true}
+                    />
+                </div>
 
                 {/* Secondary actions */}
                 <div className="actions-bar">

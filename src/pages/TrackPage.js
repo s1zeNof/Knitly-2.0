@@ -3,9 +3,11 @@ import { useParams, Link } from 'react-router-dom';
 import { db } from '../services/firebase';
 import { doc, getDoc, collection, query, where, orderBy, limit, getDocs } from 'firebase/firestore';
 import { usePlayerContext } from '../contexts/PlayerContext';
-import Waveform from '../components/player/Waveform'; // <<< ПЕРЕВІРТЕ НАЯВНІСТЬ ЦЬОГО ІМПОРТУ
+import { useUserContext } from '../contexts/UserContext';
+import Waveform from '../components/player/Waveform';
 import TrackList from '../components/common/TrackList';
 import PageLoader from '../components/common/PageLoader';
+import TrackComments from '../components/player/TrackComments';
 import './TrackPage.css';
 import default_picture from '../img/Default-Images/default-picture.svg';
 
@@ -19,6 +21,7 @@ const OptionsIcon = () => <svg viewBox="0 0 24 24" fill="currentColor"><circle c
 const TrackPage = () => {
     const { trackId } = useParams();
     const { handlePlayPause, isPlaying, currentTrack } = usePlayerContext();
+    const { user: currentUser } = useUserContext();
     const [track, setTrack] = useState(null);
     const [author, setAuthor] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -181,12 +184,13 @@ const TrackPage = () => {
                     </div>
 
 
-                     <div className="track-comments-section">
-                        <h4>Коментарі (Blank)</h4>
-                        <div className="comment-input-placeholder">
-                            <img src={author?.photoURL || default_picture} alt="avatar"/>
-                            <input type="text" placeholder="Написати коментар..." disabled />
-                        </div>
+                    <div className="track-comments-section">
+                        <h3>Коментарі</h3>
+                        <TrackComments
+                            trackId={trackId}
+                            trackAuthorId={track.authorId}
+                            compact={false}
+                        />
                     </div>
                 </div>
                 <aside className="track-sidebar">
@@ -196,7 +200,7 @@ const TrackPage = () => {
                             <span>{track.playCount || 0} прослуховувань</span>
                             <span>{track.likesCount || 0} лайків</span>
                             <span>0 репостів</span>
-                            <span>0 коментарів</span>
+                            <span>{track.commentsCount || 0} коментарів</span>
                         </div>
                     </div>
                     <div className="sidebar-module">

@@ -291,22 +291,11 @@
     transform: scale(0.95) !important;
 }
 
-/* ── Comment placeholder ─────────────────────────────────────── */
-.comment-placeholder {
+/* ── Comments section ────────────────────────────────────────── */
+.panel-comments-section {
     width: 100%;
-    padding: 0.7rem 1.25rem;
-    background-color: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.09);
-    border-radius: 2rem;
-    color: var(--color-text-secondary);
-    font-size: 0.875rem;
-    cursor: pointer;
     margin-bottom: auto;
-    transition: background-color 0.2s, border-color 0.2s;
-}
-.comment-placeholder:hover {
-    background-color: rgba(255, 255, 255, 0.08);
-    border-color: rgba(255, 255, 255, 0.16);
+    /* TrackComments compact handles its own internal spacing */
 }
 
 /* ── Actions bar ─────────────────────────────────────────────── */
