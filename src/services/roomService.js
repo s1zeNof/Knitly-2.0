@@ -30,7 +30,8 @@ const normalizeTrack = (track) => ({
     title: track.title || 'Невідомий трек',
     artist: track.artist || track.authorName || track.authors?.[0]?.displayName || 'Невідомий артист',
     coverArtUrl: track.coverArtUrl || track.coverUrl || track.imageUrl || null,
-    audioUrl: track.audioUrl || track.url || track.fileUrl || '',
+    // Tracks uploaded via UploadMusic.js use 'trackUrl' — include all known variants
+    audioUrl: track.audioUrl || track.trackUrl || track.url || track.fileUrl || '',
     duration: track.duration || 0,
 });
 

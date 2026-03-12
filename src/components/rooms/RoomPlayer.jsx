@@ -44,6 +44,7 @@ const RoomPlayer = ({
     const [currentTime, setCurrentTime] = useState(0);
     const [duration, setDuration]       = useState(0);
     const [muted, setMuted] = useState(false);
+    const [autoplayBlocked, setAutoplayBlocked] = useState(false);
     const seekBarRef = useRef(null);
 
     /* ── Sync local time with audio ────────────────────────────── */
@@ -53,17 +54,36 @@ const RoomPlayer = ({
 
         const onTimeUpdate = () => setCurrentTime(audio.currentTime);
         const onDuration   = () => setDuration(audio.duration || 0);
+        // When audio actually starts playing, autoplay was allowed (or user interacted)
+        const onPlay       = () => setAutoplayBlocked(false);
 
         audio.addEventListener('timeupdate', onTimeUpdate);
         audio.addEventListener('loadedmetadata', onDuration);
         audio.addEventListener('durationchange', onDuration);
+        audio.addEventListener('play', onPlay);
 
         return () => {
             audio.removeEventListener('timeupdate', onTimeUpdate);
             audio.removeEventListener('loadedmetadata', onDuration);
             audio.removeEventListener('durationchange', onDuration);
+            audio.removeEventListener('play', onPlay);
         };
     }, [audioRef]);
+
+    /* ── Detect autoplay block ────────────────────────────── */
+    useEffect(() => {
+        const audio = audioRef?.current;
+        if (!audio || !room?.isPlaying || !room?.currentTrack?.audioUrl) return;
+        // If audio is paused but room says it's playing, try to play
+        // and catch the NotAllowedError that browsers throw for autoplay
+        if (audio.paused) {
+            audio.play().catch((err) => {
+                if (err.name === 'NotAllowedError') {
+                    setAutoplayBlocked(true);
+                }
+            });
+        }
+    }, [room?.isPlaying, room?.currentTrack?.audioUrl, audioRef]);
 
     /* ── Mute ──────────────────────────────────────────────────── */
     const toggleMute = () => {
@@ -89,6 +109,19 @@ const RoomPlayer = ({
 
     return (
         <div className="rp-player">
+            {/* Autoplay blocked banner */}
+            {autoplayBlocked && (
+                <button
+                    className="rp-autoplay-btn"
+                    onClick={() => {
+                        audioRef?.current?.play().catch(() => {});
+                        setAutoplayBlocked(false);
+                    }}
+                >
+                    ▶️ Натисніть, щоб почати слухати 🎵
+                </button>
+            )}
+
             {/* Track info */}
             <div className="rp-track-info">
                 {currentTrack?.coverArtUrl ? (

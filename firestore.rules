@@ -232,13 +232,13 @@ service cloud.firestore {
     // rooms — кімнати спільного прослуховування (#17)
     // =======================================================
     match /rooms/{roomId} {
-      // Public rooms: будь-який авторизований може читати
-      // Private rooms: тільки учасники
-      allow read: if isSignedIn() && (
-                    resource == null ||
+      // list — колекційні запити (onSnapshot + where) не мають доступу до resource.data
+      // Тому list завжди дозволяємо — фільтрація по isPublic/status відбувається у коді
+      allow list: if true;
+      // get — читання конкретного документа: публічні без авторизації, приватні — тільки учасники
+      allow get: if resource == null ||
                     resource.data.isPublic == true ||
-                    request.auth.uid in resource.data.participants
-                  );
+                    (isSignedIn() && request.auth.uid in resource.data.participants);
       // Створити кімнату може будь-який авторизований — і тільки від свого uid
       allow create: if isSignedIn() &&
                     request.resource.data.hostId == request.auth.uid;

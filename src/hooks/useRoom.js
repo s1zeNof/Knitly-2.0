@@ -6,6 +6,8 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useUserContext } from '../contexts/UserContext';
+import { db } from '../services/firebase';
+import { doc, getDoc } from 'firebase/firestore';
 import {
     listenToRoom,
     listenToMessages,
@@ -39,10 +41,15 @@ export const useRoom = (roomId) => {
     const audioRef      = useRef(new Audio());
     const lastTrackId   = useRef(null);
     const syncTimerRef  = useRef(null);
+    // Keep latest isHost value accessible in stale closures (e.g. unmount cleanup)
+    const isHostRef     = useRef(false);
 
     /* ── Derived ───────────────────────────────────────────────── */
     const isHost        = !!(room && user && room.hostId === user.uid);
     const isParticipant = !!(room && user && room.participants?.[user.uid]);
+
+    // Keep ref in sync so the unmount cleanup always has the latest value
+    useEffect(() => { isHostRef.current = isHost; }, [isHost]);
 
     /**
      * Calculate where the track *should* be playing right now,
@@ -106,12 +113,12 @@ export const useRoom = (roomId) => {
         if (!room) return;
         const audio = audioRef.current;
 
-        // Track changed
-        const newSrc = room.currentTrack?.audioUrl || '';
+        // Track changed — also check trackUrl for backward-compat (old normalized data)
+        const newSrc = room.currentTrack?.audioUrl || room.currentTrack?.trackUrl || '';
         if (room.currentTrack?.id !== lastTrackId.current) {
             lastTrackId.current = room.currentTrack?.id || null;
-            audio.src = newSrc;
             if (newSrc) {
+                audio.src = newSrc;
                 const seekTo = getExpectedTime();
                 audio.currentTime = seekTo > 0 ? seekTo : 0;
             }
@@ -134,6 +141,34 @@ export const useRoom = (roomId) => {
             }
         }
     }, [room?.currentTrack?.id, room?.isPlaying, room?.syncedAt]); // eslint-disable-line react-hooks/exhaustive-deps
+
+    /* ── Fallback: fetch real audio URL from Firestore when stored one is empty ──
+     * Covers tracks that were normalized before the trackUrl fix was applied. */
+    useEffect(() => {
+        const trackId = room?.currentTrack?.id;
+        const alreadyHasUrl = !!(room?.currentTrack?.audioUrl || room?.currentTrack?.trackUrl);
+        if (!trackId || alreadyHasUrl) return;
+
+        let cancelled = false;
+        const fetchUrl = async () => {
+            try {
+                const snap = await getDoc(doc(db, 'tracks', trackId));
+                if (cancelled || !snap.exists()) return;
+                const data = snap.data();
+                const url = data.audioUrl || data.trackUrl || data.url || data.fileUrl || '';
+                if (!url) return;
+                const audio = audioRef.current;
+                audio.src = url;
+                if (room?.isPlaying) {
+                    audio.play().catch(() => {});
+                }
+            } catch (err) {
+                console.warn('[useRoom] fallback track URL fetch failed:', err);
+            }
+        };
+        fetchUrl();
+        return () => { cancelled = true; };
+    }, [room?.currentTrack?.id, room?.currentTrack?.audioUrl]); // eslint-disable-line react-hooks/exhaustive-deps
 
     /* ── Host: broadcast playback position periodically ───────── */
     useEffect(() => {
@@ -166,7 +201,9 @@ export const useRoom = (roomId) => {
             clearInterval(syncTimerRef.current);
             audio.pause();
             audio.src = '';
-            if (user?.uid && roomId) {
+            // Only non-host participants leave on unmount.
+            // The host keeps the room alive — they can only end it via the "Завершити" button.
+            if (!isHostRef.current && user?.uid && roomId) {
                 leaveRoom(roomId, user.uid).catch(() => {});
             }
         };
@@ -175,6 +212,27 @@ export const useRoom = (roomId) => {
     /* ── Exposed actions ─────────────────────────────────────────── */
     const handlePlayTrack = useCallback((track) => {
         if (!isHost) return Promise.resolve();
+        const audio = audioRef.current;
+        const normalizedUrl = track.audioUrl || track.url || track.fileUrl || '';
+
+        // Pre-set lastTrackId so the audio sync effect won't re-assign src
+        // when the Firestore snapshot arrives (avoiding a double-load reset).
+        lastTrackId.current = track.id || null;
+
+        if (normalizedUrl) {
+            audio.src = normalizedUrl;
+            audio.currentTime = 0;
+            // Wait for audio to load before playing — avoids 0:00 stuck state.
+            // 'canplay' fires when browser has enough data to start playback.
+            const tryPlay = () => {
+                audio.play().catch(() => {});
+                audio.removeEventListener('canplay', tryPlay);
+            };
+            audio.addEventListener('canplay', tryPlay);
+            // Fallback: if 'canplay' never fires (e.g. already loaded), try once
+            if (audio.readyState >= 3) tryPlay();
+        }
+
         return playTrack(roomId, track);
     }, [isHost, roomId]);
 
@@ -182,6 +240,14 @@ export const useRoom = (roomId) => {
         if (!isHost) return Promise.resolve();
         const audio = audioRef.current;
         const nowPlaying = !room?.isPlaying;
+        // Immediately play/pause locally while user gesture is still active.
+        // We cannot wait for the Firestore round-trip — by then the browser
+        // will have lost the user-interaction context and block autoplay.
+        if (nowPlaying && audio.src) {
+            audio.play().catch(() => {}); // will succeed — called from user gesture
+        } else {
+            audio.pause();
+        }
         return syncPlayback(roomId, {
             isPlaying: nowPlaying,
             playbackOffset: audio.currentTime,

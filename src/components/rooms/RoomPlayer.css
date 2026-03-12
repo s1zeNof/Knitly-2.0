@@ -276,6 +276,35 @@
     cursor: pointer;
 }
 
+/* ── Autoplay blocked banner ──────────────────────────────── */
+.rp-autoplay-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    padding: 0.6rem 1rem;
+    background: linear-gradient(90deg, rgba(126, 34, 206, 0.5), rgba(168, 85, 247, 0.4));
+    border: 1px solid rgba(168, 85, 247, 0.5);
+    border-radius: 10px;
+    color: #e9d5ff;
+    font-size: 0.85rem;
+    font-weight: 600;
+    font-family: inherit;
+    cursor: pointer;
+    animation: rp-autoplay-pulse 2s ease-in-out infinite;
+    transition: background 0.15s, transform 0.1s;
+    letter-spacing: 0.01em;
+    margin-bottom: 2px;
+}
+.rp-autoplay-btn:hover {
+    background: linear-gradient(90deg, rgba(126, 34, 206, 0.7), rgba(168, 85, 247, 0.6));
+    transform: scale(1.01);
+}
+@keyframes rp-autoplay-pulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(168, 85, 247, 0.3); }
+    50%       { box-shadow: 0 0 0 6px rgba(168, 85, 247, 0); }
+}
+
 @media (max-width: 480px) {
     .rp-volume-slider { width: 60px; }
     .rp-player { padding: 12px 16px; }
