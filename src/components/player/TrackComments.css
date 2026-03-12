@@ -1,0 +1,319 @@
+/* ── Root containers ─────────────────────────────────────────── */
+.tc-root {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+}
+
+/* ── Compact mode (NowPlayingPanel) ──────────────────────────── */
+.tc-root--compact {
+    gap: 0.75rem;
+}
+
+/* ── Full mode (TrackPage) ───────────────────────────────────── */
+.tc-root--full {
+    gap: 1.25rem;
+}
+
+/* ── Compose row ─────────────────────────────────────────────── */
+.tc-compose {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+}
+
+.tc-compose-avatar {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0;
+    margin-top: 0.2rem;
+}
+
+.tc-root--full .tc-compose-avatar {
+    width: 40px;
+    height: 40px;
+}
+
+.tc-compose-field {
+    flex: 1;
+    display: flex;
+    align-items: flex-end;
+    gap: 0.5rem;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 1.25rem;
+    padding: 0.55rem 0.55rem 0.55rem 1rem;
+    transition: border-color 0.2s, background 0.2s;
+}
+
+.tc-compose-field:focus-within {
+    border-color: rgba(255, 255, 255, 0.22);
+    background: rgba(255, 255, 255, 0.09);
+}
+
+.tc-root--full .tc-compose-field {
+    background: var(--color-bg-light);
+    border-color: var(--color-border);
+    border-radius: 1rem;
+    padding: 0.7rem 0.6rem 0.7rem 1.1rem;
+}
+
+.tc-root--full .tc-compose-field:focus-within {
+    border-color: var(--color-accent);
+    background: var(--color-bg-medium);
+}
+
+.tc-compose-textarea {
+    flex: 1;
+    background: none;
+    border: none;
+    outline: none;
+    resize: none;
+    color: var(--color-text-primary);
+    font-size: 0.875rem;
+    line-height: 1.5;
+    min-height: 22px;
+    max-height: 120px;
+    overflow-y: auto;
+    font-family: inherit;
+    padding: 0;
+}
+
+.tc-compose-textarea::placeholder {
+    color: var(--color-text-secondary);
+}
+
+/* ── Send button ─────────────────────────────────────────────── */
+.tc-send-btn {
+    flex-shrink: 0;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: none;
+    background-color: var(--color-accent);
+    color: #fff;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: opacity 0.18s, transform 0.15s, background-color 0.18s;
+    opacity: 1;
+}
+
+.tc-send-btn svg {
+    width: 16px;
+    height: 16px;
+    margin-left: 2px;
+}
+
+.tc-send-btn:disabled {
+    opacity: 0.3;
+    cursor: default;
+    transform: none;
+}
+
+.tc-send-btn:not(:disabled):hover {
+    background-color: var(--color-accent-hover, #9333ea);
+    transform: scale(1.08);
+}
+
+.tc-send-btn:not(:disabled):active {
+    transform: scale(0.94);
+}
+
+/* ── Login hint ──────────────────────────────────────────────── */
+.tc-login-hint {
+    font-size: 0.85rem;
+    color: var(--color-text-secondary);
+    text-align: center;
+    padding: 0.5rem 0;
+}
+
+.tc-login-hint a {
+    color: var(--color-accent);
+    text-decoration: none;
+}
+
+.tc-login-hint a:hover {
+    text-decoration: underline;
+}
+
+/* ── State messages ──────────────────────────────────────────── */
+.tc-state-msg {
+    font-size: 0.82rem;
+    color: var(--color-text-secondary);
+    text-align: center;
+    padding: 0.5rem 0;
+}
+
+.tc-state-msg--empty {
+    opacity: 0.7;
+}
+
+/* ── Comment list ────────────────────────────────────────────── */
+.tc-list {
+    display: flex;
+    flex-direction: column;
+}
+
+.tc-root--compact .tc-list {
+    gap: 0.6rem;
+    max-height: 240px;
+    overflow-y: auto;
+    /* Custom thin scrollbar */
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255,255,255,0.1) transparent;
+}
+
+.tc-root--compact .tc-list::-webkit-scrollbar {
+    width: 4px;
+}
+.tc-root--compact .tc-list::-webkit-scrollbar-thumb {
+    background: rgba(255,255,255,0.12);
+    border-radius: 2px;
+}
+
+.tc-root--full .tc-list {
+    gap: 0;
+}
+
+/* ── Comment row ─────────────────────────────────────────────── */
+.tc-comment {
+    display: flex;
+    gap: 0.75rem;
+    align-items: flex-start;
+}
+
+.tc-root--full .tc-comment {
+    padding: 1rem 0;
+    border-bottom: 1px solid var(--color-border);
+}
+
+.tc-root--full .tc-comment:last-child {
+    border-bottom: none;
+}
+
+.tc-comment-avatar-link {
+    flex-shrink: 0;
+}
+
+.tc-comment-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    object-fit: cover;
+    transition: opacity 0.2s;
+}
+
+.tc-root--full .tc-comment-avatar {
+    width: 40px;
+    height: 40px;
+}
+
+.tc-comment-avatar-link:hover .tc-comment-avatar {
+    opacity: 0.8;
+}
+
+.tc-comment-body {
+    flex: 1;
+    min-width: 0;
+}
+
+.tc-comment-header {
+    display: flex;
+    align-items: baseline;
+    gap: 0.5rem;
+    margin-bottom: 0.25rem;
+}
+
+.tc-comment-author {
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--color-text-primary);
+    text-decoration: none;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.tc-root--full .tc-comment-author {
+    font-size: 0.9rem;
+}
+
+.tc-comment-author:hover {
+    text-decoration: underline;
+}
+
+.tc-comment-time {
+    font-size: 0.74rem;
+    color: var(--color-text-secondary);
+    flex-shrink: 0;
+}
+
+.tc-comment-text {
+    font-size: 0.875rem;
+    color: var(--color-text-primary);
+    margin: 0 0 0.4rem;
+    line-height: 1.45;
+    word-break: break-word;
+    white-space: pre-wrap;
+}
+
+.tc-root--compact .tc-comment-text {
+    font-size: 0.82rem;
+}
+
+/* ── Like button on comment ──────────────────────────────────── */
+.tc-like-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    background: none;
+    border: none;
+    color: var(--color-text-secondary);
+    cursor: pointer;
+    font-size: 0.78rem;
+    padding: 0.2rem 0.3rem;
+    border-radius: 0.375rem;
+    transition: color 0.18s, background 0.18s;
+}
+
+.tc-like-btn svg {
+    width: 14px;
+    height: 14px;
+}
+
+.tc-like-btn:hover:not(:disabled) {
+    color: var(--color-text-primary);
+    background: rgba(255, 255, 255, 0.06);
+}
+
+.tc-like-btn--liked {
+    color: var(--color-accent) !important;
+}
+
+.tc-like-btn:disabled {
+    cursor: default;
+    opacity: 0.5;
+}
+
+/* ── Load more (full mode) ───────────────────────────────────── */
+.tc-load-more {
+    width: 100%;
+    padding: 0.75rem;
+    background: var(--color-bg-light);
+    border: 1px solid var(--color-border);
+    border-radius: 0.5rem;
+    color: var(--color-text-primary);
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.2s;
+    margin-top: 0.5rem;
+}
+
+.tc-load-more:hover {
+    background: var(--color-border);
+}

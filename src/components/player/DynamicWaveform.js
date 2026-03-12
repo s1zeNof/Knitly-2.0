@@ -57,7 +57,7 @@ const DynamicWaveform = () => {
         }
     }, [currentTrack?.trackUrl, audioElement]);
 
-    return <div ref={waveformRef} style={{ width: '100%' }} />;
+    return <div ref={waveformRef} style={{ width: '100%', cursor: 'pointer' }} />;
 };
 
 export default React.memo(DynamicWaveform);
