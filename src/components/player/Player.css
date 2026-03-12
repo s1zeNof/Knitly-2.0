@@ -7,7 +7,9 @@
   background-color: var(--color-bg-medium);
   border-top: 1px solid var(--color-border);
   display: grid;
-  grid-template-columns: 1fr auto 1fr;
+  /* minmax(0, 1fr) on sides + minmax(300px, 2fr) in center
+     gives the progress bar room to grow instead of staying at min-content */
+  grid-template-columns: minmax(0, 1fr) minmax(300px, 2fr) minmax(0, 1fr);
   align-items: center;
   padding: 0 1.5rem;
   box-sizing: border-box;
@@ -88,7 +90,7 @@
     align-items: center;
     gap: 0.5rem;
     width: 100%;
-    max-width: 600px;
+    /* No max-width — let the grid column control the size */
 }
 
 .player-controls {
