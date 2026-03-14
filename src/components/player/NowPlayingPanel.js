@@ -1,4 +1,4 @@
-import React, { useState, useRef, useCallback } from 'react';
+import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { usePlayerContext, usePlayerTime } from '../../contexts/PlayerContext';
 import { useUserContext } from '../../contexts/UserContext';
 import { db } from '../../services/firebase';
@@ -61,6 +61,24 @@ const OptionsIcon = () => (
         <path fill="currentColor" d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z" />
     </svg>
 );
+const QueueIcon = () => (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+        <line x1="9" y1="6" x2="20" y2="6" />
+        <line x1="9" y1="12" x2="20" y2="12" />
+        <line x1="9" y1="18" x2="20" y2="18" />
+        <circle cx="4" cy="6" r="1.5" fill="currentColor" stroke="none" />
+        <circle cx="4" cy="12" r="1.5" fill="currentColor" stroke="none" />
+        <circle cx="4" cy="18" r="1.5" fill="currentColor" stroke="none" />
+    </svg>
+);
+const VisualizerIcon = () => (
+    <svg viewBox="0 0 24 24" fill="currentColor">
+        <rect x="2"  y="11" width="3" height="9"  rx="1.5" />
+        <rect x="7"  y="7"  width="3" height="13" rx="1.5" />
+        <rect x="12" y="4"  width="3" height="16" rx="1.5" />
+        <rect x="17" y="8"  width="3" height="12" rx="1.5" />
+    </svg>
+);
 
 /* ══════════════════════════════════════════════════════════════ */
 const NowPlayingPanel = ({ isOpen, onClose }) => {
@@ -72,18 +90,27 @@ const NowPlayingPanel = ({ isOpen, onClose }) => {
     } = usePlayerContext();
     const { currentTime, duration } = usePlayerTime();
 
-    const [isAnimatingOut, setIsAnimatingOut]     = useState(false);
-    const [processingLike, setProcessingLike]     = useState(false);
-    const [showSharePanel, setShowSharePanel]     = useState(false);
+    const [isAnimatingOut, setIsAnimatingOut]       = useState(false);
+    const [processingLike, setProcessingLike]       = useState(false);
+    const [showSharePanel, setShowSharePanel]       = useState(false);
     const [showCommentsSheet, setShowCommentsSheet] = useState(false);
+    const [panelView, setPanelView]                 = useState('queue');
 
     /* ── Drag-to-close refs ──────────────────────────────────── */
-    const panelRef      = useRef(null);
-    const dragStartYRef = useRef(null);
-    const isDraggingRef = useRef(false);
-    const dragDeltaRef  = useRef(0);
+    const panelRef        = useRef(null);
+    const dragStartYRef   = useRef(null);
+    const isDraggingRef   = useRef(false);
+    const dragDeltaRef    = useRef(0);
+    const activeItemRef   = useRef(null);
 
     const isLiked = currentUser?.likedTracks?.includes(currentTrack?.id);
+
+    /* ── Scroll queue to current track when opened ───────────── */
+    useEffect(() => {
+        if (panelView === 'queue' && activeItemRef.current) {
+            activeItemRef.current.scrollIntoView({ block: 'center', behavior: 'smooth' });
+        }
+    }, [panelView, currentTrack?.id]);
 
     /* ── Like toggle ────────────────────────────────────────── */
     const handleLikeToggle = async () => {
@@ -200,7 +227,9 @@ const NowPlayingPanel = ({ isOpen, onClose }) => {
 
     if (!isOpen || !currentTrack) return null;
 
-    const coverUrl = currentTrack.coverArtUrl || '';
+    const coverUrl        = currentTrack.coverArtUrl || '';
+    const historyTracks   = (history || []).slice(-5);
+    const queueTracks     = (queue   || []).slice(0, 30);
 
     return (
         <div
@@ -296,9 +325,93 @@ const NowPlayingPanel = ({ isOpen, onClose }) => {
                     </button>
                 </div>
 
-                {/* Ambient audio visualizer — desktop only */}
+                {/* Desktop: queue / visualizer toggle area */}
                 <div className="panel-visualizer-wrap">
-                    <AudioVisualizer />
+                    {/* Toggle tabs */}
+                    <div className="panel-view-toggle">
+                        <button
+                            className={`panel-view-btn ${panelView === 'queue' ? 'active' : ''}`}
+                            onClick={() => setPanelView('queue')}
+                            aria-label="Черга треків"
+                        >
+                            <QueueIcon />
+                            <span>Черга</span>
+                        </button>
+                        <button
+                            className={`panel-view-btn ${panelView === 'visualizer' ? 'active' : ''}`}
+                            onClick={() => setPanelView('visualizer')}
+                            aria-label="Аудіовізуалайзер"
+                        >
+                            <VisualizerIcon />
+                            <span>Візуалайзер</span>
+                        </button>
+                    </div>
+
+                    {/* Content area */}
+                    <div className="panel-view-content">
+                        {panelView === 'queue' ? (
+                            <div className="queue-list">
+                                {/* History tracks */}
+                                {historyTracks.map(track => (
+                                    <div key={`h-${track.id}`} className="queue-item queue-history">
+                                        <img
+                                            src={track.coverArtUrl || default_picture}
+                                            alt={track.title}
+                                            className="queue-item-cover"
+                                            onError={e => { e.target.onerror = null; e.target.src = default_picture; }}
+                                        />
+                                        <div className="queue-item-info">
+                                            <div className="queue-item-title">{track.title}</div>
+                                            <div className="queue-item-artist">{track.authorName}</div>
+                                        </div>
+                                    </div>
+                                ))}
+
+                                {/* Current track */}
+                                <div
+                                    ref={activeItemRef}
+                                    className="queue-item queue-active"
+                                >
+                                    <img
+                                        src={currentTrack.coverArtUrl || default_picture}
+                                        alt={currentTrack.title}
+                                        className="queue-item-cover"
+                                        onError={e => { e.target.onerror = null; e.target.src = default_picture; }}
+                                    />
+                                    <div className="queue-item-info">
+                                        <div className="queue-item-title">{currentTrack.title}</div>
+                                        <div className="queue-item-artist">{currentTrack.authorName}</div>
+                                    </div>
+                                    <div className="queue-item-playing">
+                                        <span /><span /><span />
+                                    </div>
+                                </div>
+
+                                {/* Upcoming queue */}
+                                {queueTracks.map(track => (
+                                    <div key={`q-${track.id}`} className="queue-item">
+                                        <img
+                                            src={track.coverArtUrl || default_picture}
+                                            alt={track.title}
+                                            className="queue-item-cover"
+                                            onError={e => { e.target.onerror = null; e.target.src = default_picture; }}
+                                        />
+                                        <div className="queue-item-info">
+                                            <div className="queue-item-title">{track.title}</div>
+                                            <div className="queue-item-artist">{track.authorName}</div>
+                                        </div>
+                                    </div>
+                                ))}
+
+                                {queueTracks.length === 0 && historyTracks.length === 0 && (
+                                    <div className="queue-empty">Черга порожня</div>
+                                )}
+                            </div>
+                        ) : (
+                            /* AudioVisualizer — перемикається через toggle */
+                            <AudioVisualizer />
+                        )}
+                    </div>
                 </div>
 
                 {/* Secondary actions */}
