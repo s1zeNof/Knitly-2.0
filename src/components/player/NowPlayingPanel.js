@@ -4,6 +4,7 @@ import { useUserContext } from '../../contexts/UserContext';
 import { db } from '../../services/firebase';
 import { doc, runTransaction, arrayUnion, arrayRemove } from 'firebase/firestore';
 import DynamicWaveform from './DynamicWaveform';
+import AudioVisualizer from './AudioVisualizer';
 import TrackComments from './TrackComments';
 import TrackSharePanel from './TrackSharePanel';
 import default_picture from '../../img/Default-Images/default-picture.svg';
@@ -293,6 +294,11 @@ const NowPlayingPanel = ({ isOpen, onClose }) => {
                     <button onClick={playNext} aria-label="Наступний трек">
                         <NextIcon />
                     </button>
+                </div>
+
+                {/* Ambient audio visualizer — desktop only */}
+                <div className="panel-visualizer-wrap">
+                    <AudioVisualizer />
                 </div>
 
                 {/* Secondary actions */}
