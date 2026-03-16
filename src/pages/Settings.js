@@ -206,7 +206,7 @@ const Settings = () => {
             }
 
             const userRef = doc(db, 'users', user.uid);
-            const combinedDisplayName = [firstName.trim(), lastName.trim()].filter(Boolean).join(' ');
+            const combinedDisplayName = [firstName.trim(), lastName.trim()].filter(Boolean).join(' ') || user.displayName || '';
             const updatedData = {
                 firstName: firstName.trim(),
                 lastName: lastName.trim(),

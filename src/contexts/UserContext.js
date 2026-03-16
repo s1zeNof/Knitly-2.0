@@ -77,61 +77,77 @@ export const UserProvider = ({ children }) => {
                 setAuthLoading(true);
                 const userRef = doc(db, 'users', authUser.uid);
 
-                userDocUnsubscribe = onSnapshot(userRef, async (userDoc) => {
-                    diag('UserContext: onSnapshot fired — user doc changed');
-                    if (userDoc.exists()) {
-                        const userData = userDoc.data();
-                        setUser({
-                            uid: authUser.uid,
-                            // emailVerified comes from Firebase Auth, NOT Firestore
-                            emailVerified: authUser.emailVerified,
-                            ...userData,
-                            chatFolders: userData.chatFolders || [],
-                            subscribedPackIds: userData.subscribedPackIds || []
-                        });
-                        await fetchAndCacheUserEmojiPacks(authUser.uid);
-                    } else {
-                        // Generate nickname from displayName (Google) or email username, then add 4-digit suffix
-                        let baseSlug = '';
-                        if (authUser.displayName) {
-                            baseSlug = authUser.displayName
-                                .toLowerCase()
-                                .replace(/[^a-z0-9\s]/g, '')
-                                .trim()
-                                .replace(/\s+/g, '-')
-                                .substring(0, 28);
-                        } else if (authUser.email) {
-                            baseSlug = authUser.email
-                                .split('@')[0]
-                                .toLowerCase()
-                                .replace(/[^a-z0-9]/g, '-')
-                                .replace(/-+/g, '-')
-                                .replace(/^-|-$/g, '')
-                                .substring(0, 28);
+                // ── Ensure Firestore doc exists, then subscribe ───────────────
+                // IMPORTANT: user doc creation uses a one-time getDoc, NOT onSnapshot.
+                // onSnapshot can fire with !exists() on transient network issues, and
+                // calling setDoc inside it would wipe all data (likedTracks, followers,
+                // gifts…) with empty defaults — a critical, hard-to-reproduce data loss.
+                (async () => {
+                    try {
+                        const initialSnap = await getDoc(userRef);
+                        if (!initialSnap.exists()) {
+                            // Truly new user — create doc exactly once
+                            let baseSlug = '';
+                            if (authUser.displayName) {
+                                baseSlug = authUser.displayName
+                                    .toLowerCase()
+                                    .replace(/[^a-z0-9\s]/g, '')
+                                    .trim()
+                                    .replace(/\s+/g, '-')
+                                    .substring(0, 28);
+                            } else if (authUser.email) {
+                                baseSlug = authUser.email
+                                    .split('@')[0]
+                                    .toLowerCase()
+                                    .replace(/[^a-z0-9]/g, '-')
+                                    .replace(/-+/g, '-')
+                                    .replace(/^-|-$/g, '')
+                                    .substring(0, 28);
+                            }
+                            if (!baseSlug) baseSlug = 'user';
+                            const randomNum = Math.floor(Math.random() * 9000) + 1000;
+                            const nickname = `${baseSlug}-${randomNum}`;
+                            const newUserName = authUser.displayName || 'Новий Артист';
+                            await setDoc(userRef, {
+                                uid: authUser.uid,
+                                displayName: newUserName,
+                                displayName_lowercase: newUserName.toLowerCase(),
+                                email: authUser.email,
+                                photoURL: authUser.photoURL || null,
+                                nickname,
+                                followers: [],
+                                following: [],
+                                likedTracks: [],
+                                createdAt: serverTimestamp(),
+                                chatFolders: [],
+                                subscribedPackIds: []
+                            });
                         }
-                        if (!baseSlug) baseSlug = 'user';
-                        const randomNum = Math.floor(Math.random() * 9000) + 1000;
-                        const nickname = `${baseSlug}-${randomNum}`;
-                        const newUserName = authUser.displayName || 'Новий Артист';
-                        const newUser = {
-                            uid: authUser.uid,
-                            displayName: newUserName,
-                            displayName_lowercase: newUserName.toLowerCase(),
-                            email: authUser.email,
-                            photoURL: authUser.photoURL || null,
-                            nickname: nickname,
-                            followers: [],
-                            following: [],
-                            likedTracks: [],
-                            createdAt: serverTimestamp(),
-                            chatFolders: [],
-                            subscribedPackIds: []
-                        };
-                        await setDoc(userRef, newUser);
-                        setUser(newUser);
+                    } catch (e) {
+                        console.error('[UserContext] initial user doc check failed:', e);
                     }
-                    setAuthLoading(false);
-                });
+
+                    userDocUnsubscribe = onSnapshot(userRef, async (userDoc) => {
+                        diag('UserContext: onSnapshot fired — user doc changed');
+                        if (userDoc.exists()) {
+                            const userData = userDoc.data();
+                            setUser({
+                                uid: authUser.uid,
+                                // emailVerified comes from Firebase Auth, NOT Firestore
+                                emailVerified: authUser.emailVerified,
+                                ...userData,
+                                chatFolders: userData.chatFolders || [],
+                                subscribedPackIds: userData.subscribedPackIds || []
+                            });
+                            await fetchAndCacheUserEmojiPacks(authUser.uid);
+                        } else {
+                            // Doc missing — transient network issue. Do NOT recreate it
+                            // here; that would wipe all user data with empty defaults.
+                            console.warn('[UserContext] onSnapshot: user doc missing — ignoring to prevent data loss');
+                        }
+                        setAuthLoading(false);
+                    });
+                })();
 
             } else {
                 setUser(null);
