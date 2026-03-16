@@ -65,21 +65,31 @@ const PostCard = ({ post, openBrowser, openShareModal, isDetailView = false }) =
         .map(a => a.uid)
         .filter(uid => uid && uid !== currentUser?.uid);
 
-    const { data: fetchedRoles = {} } = useQuery(
-        ['authorRoles', ...otherAuthorUids.sort()],
+    const { data: fetchedAuthorData = {} } = useQuery(
+        ['authorData', ...otherAuthorUids.sort()],
         () => Promise.all(otherAuthorUids.map(uid => getDoc(doc(db, 'users', uid))))
             .then(snaps => {
                 const map = {};
-                snaps.forEach(snap => { if (snap.exists()) map[snap.id] = snap.data().roles || []; });
+                snaps.forEach(snap => {
+                    if (snap.exists()) {
+                        const d = snap.data();
+                        map[snap.id] = { roles: d.roles || [], photoURL: d.photoURL || null };
+                    }
+                });
                 return map;
             }),
         { enabled: otherAuthorUids.length > 0, staleTime: 5 * 60 * 1000 }
     );
 
-    // Збагачуємо authors ролями: своїми — з контексту, чужими — з Firestore (кеш)
+    // Збагачуємо authors актуальними даними: своїми — з контексту, чужими — з Firestore (кеш)
+    // photoURL береться з живих даних, а НЕ з вбудованого поля посту — уникає розсинхрону
     const allAuthors = rawAuthors.map(author => {
-        if (author.uid === currentUser?.uid) return { ...author, roles: currentUser?.roles };
-        if (fetchedRoles[author.uid])        return { ...author, roles: fetchedRoles[author.uid] };
+        if (author.uid === currentUser?.uid) {
+            return { ...author, roles: currentUser?.roles, photoURL: currentUser?.photoURL };
+        }
+        if (fetchedAuthorData[author.uid]) {
+            return { ...author, ...fetchedAuthorData[author.uid] };
+        }
         return author;
     });
 
